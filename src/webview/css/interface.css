@@ -1,0 +1,171 @@
+.button {
+    /*display: inline-block;*/
+    padding: 5px 15px;
+    font-size: 24px;
+      width: 100%;
+    cursor: pointer;
+    text-align: center;
+    /*text-decoration: none;*/
+    outline: none;
+    color: #fff;
+    /*color: grey;*/
+    /*background-color: #4CAF50;*/
+    background-color: grey;
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 5px #999;
+}
+
+.button:hover {background-color: #3e8e41}
+
+.button:active {
+    background-color: #3e8e41;
+    box-shadow: 0 2px #666;
+    transform: translateY(4px);
+}
+
+
+routenav {
+    font-size: 24pt;
+    text-align: center; 
+    width: 50px;
+    height: 30px;
+    color: white;
+    /*background-color: grey;*/
+    opacity: 0.5;
+    position: fixed;
+    top: 5px;  
+    z-index: 1;
+}
+
+.prev {
+    top: 12px;  
+    left: 20px;
+}  
+
+.next {
+    top: 12px;  
+    left: 250px;
+} 
+
+.current {
+    top: 6px;  
+    left: 75px;
+    /*background-color: grey;*/
+    width: 140px;
+    padding: 5px 15px;
+    font-size: 24px;
+    border-radius: 10px;
+} 
+
+.new {
+    top: 0px;  
+    left: 310px;
+    width: 80px;
+} 
+
+.export {
+    top: 12px;  
+    left: 410px;
+    width:100px;
+} 
+.import {
+    top: 12px;  
+    left: 515px;
+    width:100px;
+} 
+
+/*      camel {
+font-size: 24pt;
+text-align: center; 
+width: 200px;
+height: 600px;
+color: white;
+background-color: grey;
+opacity: 0.5;
+position: absolute;
+top: 10px;
+right: 10px;
+z-index: 10;
+}*/
+
+p {
+    font-size: 24pt;
+    text-align: center; 
+    width: 100px;
+    height: 35px;
+    color: white;
+    /*background-color: grey;*/
+    opacity: 0.5;
+    position: fixed;
+    top: 30px;  
+    z-index: 1;
+}
+
+.producer {
+    left: 20px;
+}  
+
+.consumer {
+    left: 125px;
+    opacity: .2;
+} 
+
+/* FROM activities */
+.direct-s {
+    left: 20px;
+    top: 70px;
+} 
+
+.timer {
+    left: 20px;
+    top: 117px;
+} 
+
+
+
+    /* TO activities */
+    .log {
+        left: 125px;
+        top: 70px;
+    } 
+
+    .direct {
+        left: 125px;
+        /*top: 120px;*/
+        top: 109px;
+    } 
+
+    .choice {
+        /*width: 220px;*/
+        left: 125px;
+        top: 172px;  
+    } 
+
+    .multicast {
+        left: 125px;
+        top: 220px;  
+    } 
+
+.activityconfig {
+    font-size: 12pt;
+    width: 500px;
+    height: 20%;
+    position: fixed; /* or absolute */
+    /*          top: 50%;
+    left: 50%;*/
+    transform: translate(-50%, -50%);
+    top:80%;
+    left: 50%;
+    background-color: grey;
+    visibility: hidden;
+    border-radius: 10px;
+}
+
+.delete {
+    position: absolute;
+    font-size: 14pt;
+
+    right: 10px;
+    bottom:10px;
+} 

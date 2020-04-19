@@ -1,0 +1,50 @@
+{
+	"name": "camel-designer",
+	"displayName": "camel-designer",
+	"description": "A visual designer to model Camel routes",
+	"version": "0.0.1",
+	"publisher": "testpublisher",
+	"engines": {
+		"vscode": "^1.44.0"
+	},
+	"categories": [
+		"Other"
+	],
+	"activationEvents": [
+		"onLanguage:xml"
+	],
+	"main": "./extension.js",
+	"contributes": {
+		"commands": [
+			{
+				"command": "extension.showDesigner",
+				"title": "Camel Designer: show Designer view",
+				"icon": {
+					"light": "src/media/preview.svg",
+					"dark": "src/media/preview.svg"
+				}
+			}
+		],
+		"menus": {
+			"editor/title": [{
+				"when": "editorLangId == xml",
+				"command": "extension.showDesigner",
+				"group": "navigation"
+			}]
+		}
+	},
+	"scripts": {
+		"test": "node ./test/runTest.js"
+	},
+	"devDependencies": {
+		"@types/glob": "^7.1.1",
+		"@types/mocha": "^5.2.6",
+		"@types/node": "^10.12.21",
+		"@types/vscode": "^1.44.0",
+		"eslint": "^5.13.0",
+		"glob": "^7.1.4",
+		"mocha": "^6.1.4",
+		"typescript": "^3.3.1",
+		"vscode-test": "^1.0.2"
+	}
+}

@@ -1,0 +1,22 @@
+<camelContext xmlns="http://camel.apache.org/schema/spring" id="camel">
+
+  <route id="route1">
+    <from uri="timer:demo" id="timer-1"/>
+    <log message="demo trace 2" id="log-2"/>
+    <choice>
+      <when>
+        <simple>dummy = 'true'</simple>
+        <to uri="direct:route1" id="direct-4"/>
+      </when>
+      <otherwise>
+        <to uri="direct:route1" id="direct-5"/>
+      </otherwise>
+    </choice>
+    <multicast strategyRef="demoStrategy">
+      <to uri="direct:route1" id="direct-8"/>
+      <to uri="direct:route1" id="direct-9"/>
+    </multicast>
+    <log message="demo trace 11" id="log-11"/>
+  </route>
+
+</camelContext>

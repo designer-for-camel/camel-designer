@@ -1,0 +1,1260 @@
+      //Switch to stream edit updates
+      var syncEditorEnabled = true;
+      
+      //Camera default position in axis
+      var cameraY = 0;
+      var cameraZ = 7;
+
+      // var routes = ["route1", "route2"];
+      var routes = ["route1"];
+      var routeNum = 1;
+
+      var startActivityPos = -5;
+      var stepPos = 2;
+      //var sceneFlag = false;
+      var setGreen = false;
+      
+      var logId = 0;
+var linkCounter = 0;
+      // var newX = -1;
+      
+      var moving = false;
+      var movingObj = null;
+      var movingObjX = null;
+      var movingObjY = null;
+      var event1X = null;
+      var event1Y = null;
+
+// var lastCreated = null;
+      var configObj = null;
+
+      var currentConfigPane = "introconfig";
+
+      var timestampFirstClick = Date.now();
+
+      var hintDirectPending = true; 
+      // var hintDirectPending = false; 
+
+      var flagTestEnabled = false;
+
+      // var callDirectEnabled = false;
+
+//needs revision
+addPulse('whatever');
+      
+      AFRAME.registerComponent('myoutline', {
+        init: function () {
+          
+    //           this.el.addEventListener('click', function(){
+    //   console.log("test log");;
+    // })
+          
+
+        }
+        
+      });
+      
+
+      function enableToButtons(enabled)
+      {
+          let opacity;
+
+          if(enabled)
+          {
+            opacity = .5;
+          }
+          else
+          {
+            opacity = .2;
+          }
+
+          //UX buttons for consumers are disabled to start with
+          //When first 'from' activity is created, we enable consumer buttons
+          var element = document.getElementsByClassName("consumer");
+          for(let i=0; i<element.length; i++) {
+            element[i].style.opacity = opacity;
+            element[i].firstChild.disabled = !enabled;
+          }
+
+          // enableCallDirect(callDirectEnabled);
+      }
+
+      function enableFromButtons(enabled)
+      {
+          let opacity;
+
+          if(enabled)
+          {
+            opacity = .5;
+          }
+          else
+          {
+            opacity = .2;
+          }
+
+          //UX buttons for consumers are disabled to start with
+          //When first 'from' activity is created, we enable consumer buttons
+          var element = document.getElementsByClassName("producer");
+          for(let i=0; i<element.length; i++) {
+            element[i].style.opacity = opacity;
+            element[i].firstChild.disabled = !enabled;
+          }
+      
+      }
+
+      function enableCallDirect(enabled)
+      {
+          let opacity;
+
+          if(enabled)
+          {
+            opacity = .5;
+          }
+          else
+          {
+            opacity = .2;
+          }
+
+          var element = document.getElementsByClassName("direct")[0];
+
+          element.style.opacity = opacity;
+          element.firstChild.disabled = !enabled;
+      }
+
+
+
+      function tests()
+      {
+        // console.log("initiating testcollidable")
+
+        // entity = document.getElementById('testsphere');
+        // entity.setAttribute('testcollidable','');
+        // entity.setAttribute('class', 'clickable');
+
+        // document.querySelector('a-scene');
+
+
+        // var scene = document.getElementById(routes[0]);
+        // var mys = document.createElement('a-sphere');
+        // mys.setAttribute('material', {color: '#52F40C', transparent: true, opacity: 0.5});
+        // scene.appendChild(mys);
+
+        // var text = document.createElement('a-text');
+        // // var text = document.createElement('a-entity');
+        // // text.setAttribute('text', "value: test; height: 10");
+        // // text.setAttribute('primitive', "a-text");
+        // text.setAttribute('value', "test");
+        // // text.text = "color: white; align: center; value: Animating color; width: 1.5";
+        // mys.appendChild(text);
+        // mys.appendChild(text);
+
+        // var camera = document.getElementById("main-camera");
+        // camera.setAttribute('animation', {property: 'position', dur: '2500', to: {x: 0, y: 0, z: 10}, loop: false});
+      }
+
+
+      function init()
+      {
+
+
+        tests();
+
+        initPanes();
+        resetCameraToDefault();
+        initCamelGenerator();
+// initCameraFocus();
+        // addDebugGrid();
+      }
+
+      function resetCameraToDefault()
+      {
+        var camera = document.getElementById("main-camera");
+        
+        // camera.setAttribute("position", "0 0 7");
+
+        //Since A-Frame v1.0.0 the camera angle seems different, so we have adjusted
+        // let cameraPosition = {x: 0, y: cameraY, z: cameraZ};
+        camera.setAttribute("position", {x: 0, y: cameraY, z: cameraZ});
+        // camera.setAttribute("position", "0 "+cameraY+" "+cameraZ);
+      }
+
+      function newRoute()
+      {
+        initPanes();
+
+        var routeId = "route"+(++routeNum);
+
+        var scene = document.querySelector('a-scene');
+        var newRoute = document.createElement('a-entity');
+        newRoute.setAttribute('class','not-clickable');
+        newRoute.setAttribute('id', routeId);
+        newRoute.setAttribute('route', '');
+        newRoute.setAttribute('position','0 0 0');
+        scene.appendChild(newRoute);
+
+          //we add new route in position 2 (index 1) deactivated.
+          routes.splice(1,0,routeId);
+
+          //switching to next route will select the new route 
+          nextRoute(routeId);
+      }
+
+      function initPanes()
+      {
+          // var element = document.getElementById("newDirect");
+          // var routeSelected = element.getElementsByTagName("input")[0].value;
+          var element = document.getElementsByClassName("consumer");
+          for(let i=0; i<element.length; i++) {
+            element[i].style.opacity = .2;
+            element[i].firstChild.disabled = true;
+          }
+
+          switchConfigPane("introconfig");
+
+          document.getElementsByTagName("routenav")[1].innerHTML = routes[0];
+      }
+
+      //THIS IS THE LOG CONFIG
+      function submitLogConfig()
+      {
+        //obtain user input
+        var element = document.getElementById("loginput");
+        var logText = element.getElementsByTagName("input")[0].value;
+
+        var text = configObj.getElementsByTagName("a-text")[0].firstChild;
+
+        //display new value
+        text.setAttribute('value', '"'+logText+'"');
+      }
+
+      function nextRoute(routeId)
+      {
+        //if not given, we rotate from the end
+        routeId = routeId || routes[routes.length-1];
+
+              // console.log("Routes content: ");
+
+              // routes.forEach(item => {
+              //   console.log(item);
+              // });
+
+              // console.log("got label: "+routeId);
+              // console.log("before: "+ routes[0]);
+
+        document.getElementById(routes[0]).setAttribute('visible', false)
+        document.getElementById(routes[0]).setAttribute('class', 'not-clickable')
+
+              // console.log("index of: "+ routes.indexOf(routeId));
+              // console.log("index of route[0]: "+ routes.indexOf(routes[0]));
+              // console.log("routes.length: "+ routes.length);
+
+        var tempRoute =  routes.splice(routes.indexOf(routeId),1);
+        routes.unshift(tempRoute[0]);
+
+              // console.log("tempRoute: "+ tempRoute);
+              // console.log("routes[0]: "+ routes[0]);
+              // console.log("routes.length: "+ routes.length);
+
+        document.getElementById(routes[0]).setAttribute('visible', true)
+        document.getElementById(routes[0]).setAttribute('class', 'clickable')
+
+// showAll()
+        document.getElementsByTagName("routenav")[1].innerHTML = routes[0];
+
+
+  var defaultActivity = document.getElementById(routes[0]).getAttribute("lastCreated");
+
+// scene.setAttribute("lastCreated", to.id);
+// setConfigSelector(activity);
+
+        switchConfigPaneByActivity(document.getElementById(defaultActivity));
+        // resetCameraToDefault();
+        setCameraFocus(document.getElementById(defaultActivity), true);
+
+      }
+
+      function reloadRoutes(list)
+      {
+          //clean list
+          while (list.firstChild) {
+            list.removeChild(list.firstChild);
+          }
+
+          //populate default option
+          let option;// = document.createElement('option');
+          // option.value = "[new Route]";   
+          // option.innerHTML = item;   
+          // list.appendChild(option);
+
+    // var iterator = document.evaluate('//a-entity[@id="'+routeId+'"]//a-sphere[@start and @processor-type = "direct-s"]', document, null, XPathResult.ANY_TYPE, null);
+    let directs = document.evaluate('//a-sphere[@start and @processor-type = "direct"]', document, null, XPathResult.ANY_TYPE, null);
+
+    let thisNode = directs.iterateNext();
+    let allDirects = [];
+
+          while(thisNode) {
+            allDirects.push(thisNode.parentNode.id);
+            thisNode = directs.iterateNext();
+          };
+
+          // while(thisNode) {
+          allDirects.forEach(item => {
+
+            option = document.createElement('option');
+            option.value = item;
+            option.innerHTML = item;   
+            list.appendChild(option);
+
+          });
+
+          // //populate available routes
+          // routes.forEach(item => {
+          //   option = document.createElement('option');
+          //   option.value = item;
+          //   option.innerHTML = item;   
+          //   list.appendChild(option);
+          // });
+      }
+
+
+
+
+
+      // TODO clean this, and give function a good name
+      //THIS IS LABEL of DIRECT activity
+      function updateLabel(label, activity)
+      {
+        activity = activity || configObj;
+
+console.log("running update: " +label);
+          //obtain dialog
+          var element = document.getElementById("newDirect");
+          // var routeSelected = element.getElementsByTagName("input")[0].value;
+          var list = element.getElementsByTagName("select")[0];
+          // var routeSelected = list.value;
+
+reloadRoutes(list)
+
+
+        if(label == null)
+        {
+// console.log("label is null");
+
+          list.value = activity.querySelector("#routeLabel").getAttribute('value');
+        }
+        else
+        {
+// console.log("select value: " + list.value);
+
+          let routeLabel = activity.querySelector("#routeLabel");
+
+          //The route might not have been configured yet
+          if(routeLabel){ 
+          list.value = label;
+            activity.querySelector("#routeLabel").setAttribute('value',label); 
+          }
+
+        }
+
+        if(list.value.length == 0)
+        {
+          // document.getElementById("hint-direct-config").style.visibility = "visible";
+          // alert("needs configuration")
+
+          // let hint = "To configure the call, ensure a Route exists with a 'Direct' starting activity. Then select from the drop down list the target route to call.";
+
+          // let hintLabel = document.createElement('label');
+          // hintLabel.value = hint;
+          // element.appendChild(hintLabel);
+        }
+        else
+        {
+          document.getElementById("hint-direct-config").style.visibility = "hidden";
+
+        }
+      }
+
+
+
+      function getNextSequencePosition(scene, shiftX, isGroup)
+      {
+        shiftX = shiftX || 0;
+        isGroup = isGroup || false;
+          // if(shiftX == null)
+
+          let refActivity;
+
+          if(isGroup) //for groups we keep reference of last activity created
+          {
+            refActivity = document.getElementById(scene.getAttribute("lastCreated"));
+          }
+          else // for anything else new positions are given from
+          {
+            refActivity = getActiveActivity();
+          }
+
+          let lastInGroup = isBoxed(refActivity);
+
+          var refPos;
+
+          if(lastInGroup)
+          {
+            let parentPos = refActivity.parentNode.getAttribute('position');
+            refPos = {x: parentPos.x+1, y: parentPos.y, z:0}
+          }
+          else
+          {
+            // refPos = document.getElementById(scene.getAttribute("lastCreated")).getAttribute('position');
+            refPos = refActivity.getAttribute('position');
+          }
+
+
+
+var nextPos = refPos.x+2+shiftX;
+
+
+          // var scene = document.getElementById(routes[0]);
+          // var nextPos = parseInt(scene.getAttribute("nextPos"))+shiftX;
+
+          // scene.setAttribute("nextPos", nextPos+stepPos);
+
+          return {x: nextPos, y: refPos.y, z: 0};
+          // return {x: nextPos, y: 0, z: 0};
+      }
+
+      function getNextParallelPosition(scene, current, total, shiftX, boxed)
+      {
+        shiftX = shiftX || 0;
+
+        let baseY = 0;
+        let gap = 2;
+
+        if(boxed)
+        {
+          gap = 1;
+        }
+
+        let posY = ((current-1)*gap) - (total*gap/2) + gap/2;// + (baseY);
+        posY = -posY + baseY;
+
+          // var scene = document.getElementById(routes[0]);
+          // var nextPos = parseInt(scene.getAttribute("nextPos")-shiftX);
+
+          //scene.setAttribute("nextPos", nextPos+stepPos);
+
+          if(boxed)
+          {
+            return {x: 0, y: posY, z: 0};
+          }
+
+          var position = getNextSequencePosition(scene, shiftX, true);
+
+          position.y += posY;
+
+          return position;
+
+          // return {x: nextPos, y: posY, z: 0};
+          // return {x: 0, y: posY, z: 0};
+          // return {x: posY, y: posY, z: 0};
+      }
+
+
+
+
+      function setConfigSelector(activity)
+      {
+        //it might be a new route that was created or a route switch.
+        //we reset camera to default
+        if(activity == null)
+        {
+          resetCameraToDefault();
+          return;
+        }
+
+        // console.log("setConfigSelector");
+
+        let ring = document.querySelector("#selector");
+
+        // console.log("ring: "+ ring.getAttribute('id'));
+
+        //Since A-Frame 1.0.0
+        //A problem moving the ring forces us te destroy and recreate
+        if(ring != null)
+        {
+            ring.parentElement.removeChild(ring);
+        }
+
+        //Since A-Frame 1.0.0
+        //A problem moving the ring forces us te destroy and recreate
+        //if(ring == null)
+        {
+          ring = document.createElement('a-ring');
+          activity.appendChild(ring);
+          ring.setAttribute('id', 'selector');
+          ring.setAttribute('side', 'double');
+          ring.setAttribute('color', 'yellow');
+          // ring.setAttribute('src', '#routeThumbnail');
+          ring.setAttribute('radius-inner', .7);
+          ring.setAttribute('radius-outer', .71);
+          // return ring;
+
+
+        //   ring.parentElement.removeChild(ring);
+          //ring.setAttribute('color', 'yellow');
+        //   ring.setAttribute('visible', true);
+        //   activity.appendChild(ring);
+          //ring.flushToDOM;
+        }
+        //else
+        {
+          //ring = document.createElement('a-ring');
+        //   activity.appendChild(ring);
+        //   ring.setAttribute('id', 'selector');
+        //   ring.setAttribute('side', 'double');
+        //   ring.setAttribute('color', 'yellow');
+        //   ring.setAttribute('radius-inner', .7);
+        //   ring.setAttribute('radius-outer', .71);
+
+        //   ring.parentElement.removeChild(ring);
+          //ring.setAttribute('color', 'yellow');
+        //   ring.setAttribute('visible', true);
+          //activity.appendChild(ring);
+        }
+
+        console.log("ring created on: "+activity.id);
+        //console.log("ring id: "+activity.);
+
+        setCameraFocus(activity);
+      }
+
+
+      function setCameraFocus(activity, strict)
+      {
+          strict = strict || false;
+
+          // temp hack, ignore focus on DIRECT as it conflicts with Jump-to animation
+          if(   !strict
+              && activity.getAttribute('processor-type') == "direct")
+          {
+              return;
+          }
+
+          var camera = document.getElementById("main-camera");
+
+          //listens animation end
+          camera.addEventListener('animationcomplete', function scrollFocus() {
+
+              //delete listener
+              this.removeEventListener('animationcomplete', scrollFocus);
+
+              //delete animation
+              this.removeAttribute('animation__focus');
+          });
+
+
+          let posActivity = getPositionInScene(activity);
+          // let posCamera = camera.getAttribute('position');
+
+        //   let target = {
+        //         x: posActivity.x,
+        //         y: 0,
+        //         z: 7}
+
+          //Since A-Frame v1.0.0 the camera angle seems different, so we have adjusted
+          let target = {
+            x: posActivity.x,
+            y: cameraY,
+            z: cameraZ}
+
+          camera.setAttribute('animation__focus', {property: 'position', dur: '1500', to: target, loop: false, easing: "easeInOutQuad"});
+      }
+
+      
+      function createDirectHint(activity)
+      {
+        //inactivate hints on new direct activities
+        hintDirectPending = false;
+
+        console.log("creating arrow on top");
+
+        //hint pointer
+        var arrow = document.createElement('a-triangle');
+        activity.appendChild(arrow);
+        arrow.setAttribute("vertex-a","0 .8 0")
+        arrow.setAttribute("vertex-b","-.25 1.3 0")
+        arrow.setAttribute("vertex-c",".25 1.3 0")
+        arrow.setAttribute("color","grey")
+        arrow.setAttribute('side', 'double');
+
+        //hint label
+        var text = document.createElement('a-text');
+        activity.appendChild(text);
+        text.setAttribute('value', "double-click \n to open route");
+        text.setAttribute('color', 'grey');
+        text.setAttribute('position', {x: .3, y: .9, z: 0});
+        text.setAttribute('side', 'double');
+
+        //hint animation
+        // var animation = document.createElement('a-animation');
+        // animation.setAttribute('attribute','position');
+        // animation.setAttribute('dur','500');
+        // animation.setAttribute('to','0 -0.25 0');
+        // animation.setAttribute('repeat','indefinite');
+        // animation.setAttribute('direction','alternate');
+        // arrow.appendChild(animation);
+
+        //since A-Frame v1.0.0 it seems animations work as attributes, not as childs.
+        arrow.setAttribute('animation', {property: 'position', dur: '500', to: '0 -0.25 0', loop: true, dir: 'alternate'});
+      }
+
+
+      //Logs (for Debug) all links of an activity
+      function printActivityLinks(activity)
+      {
+        // we look at the links the source has
+        var links = JSON.parse(activity.getAttribute("links"));
+        console.log("analysing: "+ activity.id);
+        
+        if(links)
+        {
+          for(let i=0; i< links.length; i++)
+          {
+            console.log("  "+activity.id+"-"+i+": "+links[i]);
+
+            let link = document.getElementById(links[i]);
+
+            console.log("    ->"+link.id+"-source: "+link.getAttribute('source'));
+            console.log("    ->"+link.id+"-destination: "+link.getAttribute('destination'));
+          }
+        }
+
+      }
+
+      //A link connects 2 ends
+      //Its shape will consist on an invisible cylinder with a child visible line
+      //This shape allows interaction not possible with the line alone.
+      function getEditableLink(src, dst, srcPos, dstPos)
+      {
+        var radius = .2;
+        var opacity = 0.2;
+        // var opacity = 0;
+
+
+        //create shape cylinder
+        var cilinder = document.createElement('a-cylinder');
+
+        //3D properties
+        cilinder.setAttribute('material','opacity: '+opacity);
+        cilinder.setAttribute('radius',radius);
+
+        if(src.getAttribute('processor-type') == 'choice-start')
+        {
+          //choice labels
+          let text = document.createElement('a-text');
+          cilinder.appendChild(text);
+          text.setAttribute('value', "when");
+          text.setAttribute('position', {x: 0.32, y: 0.3, z: 0});
+          text.setAttribute('rotation', {x: 0, y: 0, z: -90});
+          text.setAttribute('side', 'double');
+
+          let lable = "dummy = 'true'";
+          text = document.createElement('a-text');
+          cilinder.appendChild(text);
+          text.setAttribute('value', lable);
+          text.setAttribute('position', {x: 0, y: .03*lable.length, z: 0});
+          text.setAttribute('rotation', {x: 0, y: 0, z: -90});
+          text.setAttribute('side', 'double');
+          text.setAttribute('scale', '.7 .7 .7');
+
+          cilinder.setAttribute('pulse', '');
+          cilinder.setAttribute('animation', {startEvents:'mouseenter',pauseEvents:'mouseleave', property: 'scale', dir: 'alternate', dur: '500', to: '1.1 1.1 1.1', loop: 5});
+          cilinder.setAttribute('animation__2', {startEvents:'mouseleave', property: 'scale', dur: '500', to: '1.0 1.0 1.0'});
+        }
+
+        //Visible line
+        var testline = document.createElement('a-entity');
+        cilinder.appendChild(testline);
+
+        //Calculate Link 3D positioning
+        resetLink(cilinder, srcPos, dstPos);
+
+        return cilinder;
+      }
+
+      // A static link connects 2 ends 
+      // Its shape is a 3 segments elbow line
+      // they are not editable, no activities can be injected
+      function getStaticLink(src, dst, srcPos, dstPos)
+      {
+        var testline = document.createElement('a-entity');
+        src.parentNode.appendChild(testline);
+
+// console.log("getStaticLink")
+// console.log(srcPos)
+// console.log(dstPos)
+// console.log("src x: "+ srcPos.x)
+// console.log("typoof srcPos: "+ (typeof srcPos))
+// console.log("typoof srcPos.x: "+ (typeof srcPos.x))
+
+// console.log("getStaticLink")
+// console.log(srcPos)
+// console.log("src x: "+ srcPos.x)
+
+        if(src.getAttribute('processor-type').startsWith("multicast"))
+        {
+          // 3 segment elbow lines
+          testline.setAttribute('line__1', {start: {x: srcPos.x+.25,  y: srcPos.y, z: 0}});
+          testline.setAttribute('line__1', {  end: {x: srcPos.x+.5,   y: srcPos.y, z: 0}});
+
+          testline.setAttribute('line__2', {start: {x: srcPos.x+.5,   y: srcPos.y, z: 0}});
+          testline.setAttribute('line__2', {  end: {x: srcPos.x+.5,   y: dstPos.y, z: 0}});
+
+          testline.setAttribute('line__3', {start: {x: srcPos.x+.5,   y: dstPos.y, z: 0}});
+          testline.setAttribute('line__3', {  end: {x: dstPos.x-.25,  y: dstPos.y, z: 0}});
+        }
+        else if (src.getAttribute('processor-type') == "direct")
+        {
+          // 3 segment elbow lines
+          testline.setAttribute('line__1', {start: {x: srcPos.x+.25,  y: srcPos.y, z: 0}});
+          testline.setAttribute('line__1', {  end: {x: srcPos.x+.5,   y: srcPos.y, z: 0}});
+
+          testline.setAttribute('line__2', {start: {x: srcPos.x+.5,   y: srcPos.y, z: 0}});
+          testline.setAttribute('line__2', {end:   {x: dstPos.x-.5,   y: dstPos.y, z: 0}});
+
+          testline.setAttribute('line__3', {start: {x: dstPos.x-.5,   y: dstPos.y, z: 0}});
+          testline.setAttribute('line__3', {end:   {x: dstPos.x-.25,  y: dstPos.y, z: 0}});
+        }
+
+        return testline;
+      }
+
+      function resetLink(cilinder, srcPos, dstPos)
+      {
+
+// console.log("resetLink...(srcPos/dstPos)")
+// console.log(srcPos);
+// console.log(dstPos);
+
+        //calculate Hypotenuse
+        var hypo = Math.sqrt(Math.pow(dstPos.x-srcPos.x, 2) + Math.pow(dstPos.y-srcPos.y, 2));
+
+        //calculate tilt between activities
+        var angle = Math.asin((dstPos.y-srcPos.y)/Math.abs(hypo));
+
+        //Height of link cilinder (-1 because of twice half-sphere from src and dst)
+        var height = hypo -1;
+
+        var linedistance = height / 2;
+
+        //default rotation set to horizontal (90 degrees)
+        var rotation = 90;
+
+        if((dstPos.x-srcPos.x) > 0) {
+          rotation += (angle * (180/Math.PI));
+        }
+        else {
+          rotation -= (angle * (180/Math.PI));
+        } 
+
+        //set size and tilt
+        cilinder.setAttribute('height',   height);
+        cilinder.setAttribute('rotation', {z: rotation});
+
+        //set position
+        cilinder.setAttribute('position', {
+            x: srcPos.x+((dstPos.x-srcPos.x)/2),
+            y: srcPos.y+((dstPos.y-srcPos.y)/2),
+            z: 0
+        });
+
+// console.log("link pos: ")
+// console.log(cilinder.getAttribute('position'))
+
+        //Draw line
+        // cilinder.firstChild.setAttribute('line', {start: {x: 0, y: height/2, z: 0}});
+        // cilinder.firstChild.setAttribute('line', {end: {x: 0, y: -(height/2), z: 0}});
+      }
+
+      //updates the activity to include the new link ID
+      function addLink(activity, linkId)
+      {
+        var links = JSON.parse(activity.getAttribute("links"));
+
+        if(links == null)
+        {
+          links = [];
+        }
+
+        links.push(linkId);
+        activity.setAttribute("links", JSON.stringify(links));
+      }
+      
+      function addPulse(name)
+      {
+        AFRAME.registerComponent("pulse", {
+          init: function () {
+            
+
+
+            //for 'Drag&Drop' effect, when mousedown is detected
+            //we add a 'mousemove' listener to follow mouse movement
+            this.el.addEventListener('mousedown', function(){
+                  
+              movingObj = this;
+            
+
+              //discard links for dragNdrop functionality
+              if(this.nodeName.toLowerCase() != "a-cylinder")
+              {
+              document.onmousemove = function(event){
+                  if(movingObjX == null)
+                  {
+                    event1X = event.clientX;
+                    event1Y = event.clientY;
+                    movingObjX = movingObj.getAttribute('position').x;
+                    movingObjY = movingObj.getAttribute('position').y;
+                  }
+        
+                  //map mouse to screen movement
+                  var vectorX = ((event1X-event.clientX)/-80) + movingObjX;
+                  var vectorY = ((event1Y-event.clientY)/80)  + movingObjY;
+                
+                  //update activity position
+                  movingObj.setAttribute('position', {x: vectorX, y: vectorY, z: movingObj.getAttribute('position').z});
+
+                  //obtain links to other activities
+                  var links = JSON.parse(movingObj.getAttribute("links"));
+
+                  var objectInGroup = movingObj.nodeName.toLowerCase() == "a-box";
+// console.log("checking entity: "+movingObj.nodeName);
+
+                  // if(movingObj.nodeName.toLowerCase() == "a-box")
+                  if(objectInGroup)
+                  {
+// console.log("is box");
+// console.log("movingObj.firstChild: " +movingObj.firstChild.nodeName);
+// console.log("movingObj.firstChild.id: " +movingObj.firstChild.id);
+
+                    // links = JSON.parse(movingObj.firstChild.getAttribute("links"));
+                    links = JSON.parse(document.getElementById(movingObj.getAttribute("group-start")).getAttribute("links"));
+// console.log("movingObj.id: " + movingObj.id);
+// console.log("movingObj.firstChild.id: " + movingObj.firstChild.id);
+// // console.log("linksStart nodeName: " + links.nodeName);
+// console.log("linksStart nodeName: " + links.nodeName);
+// console.log("linksStart id: " + links.id);
+// console.log("linksStart length: " + links.length);
+// console.log("linksStart: " + links);
+
+//                 console.log("moving obj end: " + movingObj.getAttribute("group-end"));
+//                 console.log("moving obj end: " + document.getElementById(movingObj.getAttribute("group-end")).id);
+
+                    var linksEnd = document.getElementById(movingObj.getAttribute("group-end")).getAttribute("links");
+
+// console.log("linksEnd length: " + linksEnd.length);
+// console.log("linksEnd: " + linksEnd);
+
+                    links = links.concat(
+                              // JSON.parse(document.getElementById(movingObj.getAttribute("group-end")).getAttribute("links"))
+                              JSON.parse(linksEnd)
+                            );
+                  }//end of if(objectInGroup)
+
+                  //iterate links
+                  for (var i in links) {
+
+                    //obtain link
+                    var link = document.querySelector("#"+links[i]);
+
+// console.log("link type: "+ link.nodeName)
+
+                    // we only want to update EDITABLE links (cylinders).
+                    // Groups contain link lines (NON-EDITABLE links) that must stay static
+                    if(link.nodeName.toLowerCase() == "a-cylinder")
+                    {
+
+                      let src = document.querySelector('#'+link.getAttribute('source'))
+                      let dst = document.querySelector('#'+link.getAttribute('destination'))
+
+                      let srcNotInGroup = !isBoxed(src);
+                      let dstNotInGroup = !isBoxed(dst);
+
+                      //obtain source and destination activities coordinates
+                      var srcPos;
+                      var dstPos;
+
+                      //resolution of src position
+                      if(srcNotInGroup)
+                      {
+                        srcPos = src.getAttribute("position");
+                      }
+                      else
+                      {
+                        srcPos = src.parentNode.getAttribute("position");
+
+                        srcPos = {
+                            x: srcPos.x+src.getAttribute('position').x,
+                            y: srcPos.y,//+dst.parentNode.getAttribute('position').y,
+                            z: srcPos.z }
+                      }
+
+                      //resolution of dst position
+                      if(dstNotInGroup)
+                      {
+                        dstPos = dst.getAttribute("position");
+                      }
+                      else
+                      {
+                        dstPos = dst.parentNode.getAttribute("position");
+
+                        dstPos = {
+                            x: dstPos.x+dst.getAttribute('position').x,
+                            y: dstPos.y,//+dst.parentNode.getAttribute('position').y,
+                            z: dstPos.z }
+                      }
+
+                      //adjust link
+                      resetLink(link, srcPos, dstPos);
+                    }
+                  }//end FOR loop
+
+                }; //end [document.onmousemove]
+
+                moving = true;
+                } // end of link filter
+            }) // end of ==> this.el.addEventListener('mousedown', function(){
+
+
+
+            // when [mouseup] is detected we remove 'mousemove' tracking to stop drag'n'drop effect
+            this.el.addEventListener('mouseup', function(){                      
+              document.onmousemove = null;
+              movingObj = null;
+              movingObjX = null;
+            })
+            
+            //we use click event to highlight activity clicked
+            this.el.addEventListener('click', function(evt){
+                  
+              //we ignore choice-start for now on this prototype
+              //this for now prevents a problem with adding new activities from it
+              // if(this.getAttribute('processor-type') == 'choice-start')
+              // {
+              //   return;
+              // }
+
+              // console.log(evt.detail.intersection.point);
+
+              var now = Date.now();
+              let notGroup = this.nodeName.toLowerCase() != "a-box";
+
+              //user's double clicks are used to jump to a different route 
+              var isDoubleClick = 300 > (now - timestampFirstClick);
+
+              timestampFirstClick = now;
+
+              if(isDoubleClick)
+              {
+                //alert(isDoubleClick);
+              }
+
+              // only highlight/configure activities, and ignore groups (boxes)
+              if(notGroup)
+              {
+                configObj = this;
+              }
+
+              // console.log("this.nodeName");
+              // console.log(this.nodeName);
+
+              if(this.getAttribute('processor-type') == "log")
+              {
+                switchConfigPaneByActivity(this);
+              }
+              else if(this.getAttribute('processor-type') == "direct")
+              {
+                //don't jump if activity not configured yet
+                let isConfigured = (configObj.querySelector("#routeLabel").getAttribute('value').length > 0)
+
+                if(isDoubleClick && notGroup && isConfigured)
+                {
+                  // var camera = document.getElementsByTagName("a-camera");
+                  var camera = document.getElementById("main-camera");
+
+                // configObj = this;
+
+                  // // console.log(this.nodeName);
+                  // // console.log(this.getAttribute('position'));
+
+                  //listens animation end
+                  camera.addEventListener('animationcomplete', function enterDirect() {
+
+                    //delete listener
+                    this.removeEventListener('animationcomplete', enterDirect);
+
+                    //delete animation
+                    this.removeAttribute('animation');
+
+                    //switch route
+                    nextRoute(configObj.querySelector("#routeLabel").getAttribute('value'));
+
+                    //reset camera position
+                    // resetCameraToDefault();
+                  });
+
+                //   let target = this.getAttribute('position').object3D.position;
+                  let target = this.components.position.data;
+                    console.log("target: "+target);
+                    console.log("target.x: "+target.x);
+                    console.log("target.value: "+target.value);
+
+                //   let campos = camera.getAttribute('position');
+
+                  //if activity is encapsulated in group we need to add parent/child coordinates
+                  if(isBoxed(this))
+                  {
+                    target = {
+                        x: target.x+this.parentNode.getAttribute('position').x,
+                        y: target.y+this.parentNode.getAttribute('position').y, 
+                        z: target.z}
+                  }
+
+                  //animation starts from this moment
+                //   var tcamera = document.getElementById("main-camera");
+                // target = {x: -3, y: 0, z: 0};
+                  camera.setAttribute('animation', {property: 'position', dur: '1500', to: target, loop: false});
+                //   camera.setAttribute('animation', {property: 'position', dur: '1500', from: {x: 0, y: 0, z: 7}, to: target, loop: false});
+                
+                //   var camera = document.getElementById("main-camera");
+                //   camera.setAttribute('animation', {property: 'position', dur: '2500', to: {x: 0, y: 0, z: 10}, loop: false});
+                // camera.setAttribute('animation', {property: 'position', dur: '1500', to: {x: -3, y: 0, z: 0}, loop: false});
+          
+                }
+                else//if not double-click
+                {
+                  switchConfigPaneByActivity(this);
+
+                  // updateLabel();
+                }
+              }
+              else if(this.nodeName.toLowerCase() == "a-box")
+              {
+                //do nothing
+              }
+              else
+              {
+                // console.log("it's unknown");
+
+                switchConfigPaneByActivity(this);
+              }
+
+            }); //end on mouse [click]
+
+          }// end of init()
+
+        }); //end of AFRAME.registerComponent
+
+      } //end of pulse()
+      
+      function addGrid(parent)
+      {
+                  movingObj = parent;
+                  var grid = document.createElement('a-plane');
+                  grid.setAttribute('grid','');
+                  grid.setAttribute('position', {x: 0, y: 0, z: 0})
+                  grid.setAttribute('height','20');
+                  
+                  grid.setAttribute('width','20');
+        //grid.setAttribute('parent',parent);
+                  //parent.appendChild(grid);
+        var scene = document.getElementById(routes[0]);
+        scene.appendChild(grid);
+        
+        AFRAME.registerComponent('grid', {
+          init: function () {
+            
+                  this.el.addEventListener('click', function(evt){
+                    
+                    
+                    console.log("im the grid !!");
+                    console.log(evt.detail.intersection.point);
+                    
+                    console.log(this);
+                    
+                    console.log(movingObj);
+                    
+                         //var parent = this.getAttribute('parent');
+                    //var parent = this.parentElement;
+                         movingObj.setAttribute('position', {x: evt.detail.intersection.point.x, y: evt.detail.intersection.point.y, z: evt.detail.intersection.point.z});
+                    movingObj = null;
+                    moving = false;
+                  });
+          }
+        });        
+        
+        
+
+      }
+      
+//       AFRAME.registerComponent('myplane', {
+//           init: function () {
+            
+//                   this.el.addEventListener('click', function(evt){
+//                     dependencies: ['raycaster']
+                    
+//                          //var parent = this.getAttribute('parent');
+//                     //var parent = this.parentElement;
+//                          console.log(evt.detail.intersection.point);
+//                   });
+//           }
+//         }); 
+      
+      function switchConfigPane(newConfigPane)
+      {
+        document.getElementById(currentConfigPane).style.visibility = "hidden";
+        currentConfigPane = newConfigPane;
+        document.getElementById(currentConfigPane).style.visibility = "visible";
+      }
+
+      function switchConfigPaneByActivity(activity)
+      {
+        setConfigSelector(activity);
+
+        if(activity == null)
+        {
+          switchConfigPane("introconfig");
+          return;
+        }
+
+        let newConfigPane = "introconfig";
+        let type     = activity.getAttribute('processor-type');
+
+        //prepare conditions to enable/disable buttons
+        let isChoice = (type == 'choice-start')
+        let isFork   = isBoxed(activity) && (type != "multicast-end");
+        let isFrom   = activity.hasAttribute('start');
+
+        if(   (isChoice)
+           || (isFork)
+           || (isFrom && activity.hasAttribute('links')))
+        {
+          enableToButtons(false);
+        }
+        else
+        {
+          enableToButtons(true);
+        }
+
+
+        switch(type) {
+          case 'log':
+              newConfigPane = "loginput";
+              updateConfigLog();
+              break;
+          case 'direct':
+              if(!activity.hasAttribute('start')){ //filter out start activity
+                updateLabel(null,activity);
+                newConfigPane = "newDirect";
+              }
+              break;
+          default:
+              //code block
+        }
+
+        // if(type == 'direct')
+        // {
+        //   newConfigPane = "newDirect";
+        // }
+        // else if(type == 'log')
+        // {
+        //   newConfigPane = "loginput";
+        //   updateConfigLog();
+        // }
+
+        if(activity.nodeName.toLowerCase() == "a-cylinder")
+        {
+          newConfigPane = "config-choice-when";
+        }
+
+        switchConfigPane(newConfigPane);
+      }
+
+      function updateConfigLog()//activity)
+      {
+
+                    //obtain user input
+                    var element = document.getElementById("loginput");
+                    var logText = element.getElementsByTagName("input")[0].value;
+
+                    //obtain 3D label
+                    // var text = configObj.getElementsByTagName("a-text")[0].firstChild;
+                    var text = getActiveActivity().getElementsByTagName("a-text")[0].firstChild;
+
+                    //if null it gets created
+                    if(text == null)
+                    {
+                      element.getElementsByTagName("input")[0].value = "";
+                    }
+                    else
+                    {
+                      element.getElementsByTagName("input")[0].value = text.getAttribute('value').slice(1, -1);
+                    }
+
+      }
+
+      // function showAll()
+      // {
+        
+      //   //var sceneEl = document.querySelector('a-scene');
+      //   var sceneEl = document.getElementById(routes[0]);
+        
+      //   var all = sceneEl.querySelectorAll('a-text');
+        
+      //   var text = routes[0]+"<br/>";
+        
+      //   for (var i = 0; i < all.length; i++) {
+      //     text = text + all[i].getAttribute('value')+"<br/>";
+      //   }
+      //           document.getElementById("camel").innerHTML = text;
+      //   // var camel = document.querySelector('camel');
+      //   // camel.value="update";
+      // }
+      
+
+      function addDebugGrid()
+      {
+        
+        var sceneEl = document.querySelector('a-scene');
+        // var sceneEl = document.getElementById(routes[0]);
+        
+        for (var i = -3; i <= 3; i++) {
+
+          var testline = document.createElement('a-entity');
+          sceneEl.appendChild(testline);
+
+          // 3 segment elbow lines
+          testline.setAttribute('line__x'+i, {start: {x: i,  y: -3, z: 0}});
+          testline.setAttribute('line__x'+i, {  end: {x: i,   y: 3, z: 0}});
+
+
+          testline.setAttribute('line__y'+i, {start: {x: -3,  y: i, z: 0}});
+          testline.setAttribute('line__y'+i, {  end: {x: 3,   y: i, z: 0}});
+
+        }    
+
+
+
+        var all = sceneEl.querySelectorAll('a-text');
+        
+        var text = routes[0]+"<br/>";
+        
+        for (var i = 0; i < all.length; i++) {
+          text = text + all[i].getAttribute('value')+"<br/>";
+        }
+                // document.getElementById("camel").innerHTML = text;
+        // var camel = document.querySelector('camel');
+        // camel.value="update";
+      }
+      
+      
+      
+      
