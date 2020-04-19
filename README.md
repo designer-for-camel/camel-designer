@@ -6,7 +6,7 @@ Implement *Apache Camel* routes using a visual designer. It synchronises the edi
 Please bear in mind this *VSCode* extension is in 'early-prototype' phase and is yet not functional. It helps playing with ideas on how the initiative can progress.
 
 
-![feature X](docs/images/readme/vs-extension.gif)
+![feature X](https://github.com/brunoNetId/camel-designer/blob/master/docs/images/readme/vs-extension.gif)
 
 
 ## Features

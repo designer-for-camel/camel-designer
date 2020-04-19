@@ -3,7 +3,7 @@
 	"displayName": "camel-designer",
 	"description": "A visual designer to model Camel routes",
 	"version": "0.0.1",
-	"publisher": "testpublisher",
+	"publisher": "brunoNetId",
 	"engines": {
 		"vscode": "^1.44.0"
 	},
