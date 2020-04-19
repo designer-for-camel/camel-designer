@@ -4,6 +4,8 @@
 	"description": "A visual designer to model Camel routes",
 	"version": "0.0.1",
 	"publisher": "brunoNetId",
+	"preview": true,
+	"icon": "src/media/designer-icon.jpg",
 	"engines": {
 		"vscode": "^1.44.0"
 	},
