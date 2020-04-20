@@ -9,6 +9,7 @@ var te;
 
 //Camel Visual Designer (webview panel)
 var vd;
+var td;
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -24,14 +25,18 @@ function activate(context) {
 
     //keep reference of Camel XML editor
     te = vscode.window.activeTextEditor;
-
+    td = te.document;
     // if(vd == null)
     // {
       currentPanel = vscode.window.createWebviewPanel(
-      'VR Camel', 'VR Camel', vscode.ViewColumn.Three, {
-          enableScripts: true,
-          localResourceRoots: [vscode.Uri.file(path.join(context.extensionPath, 'src', 'webview')).with({ scheme: 'vscode-resource' })]
-      });
+        'VR Camel',
+        'VR Camel',
+        vscode.ViewColumn.Three,
+        {
+            retainContextWhenHidden: true,
+            enableScripts: true,
+            localResourceRoots: [vscode.Uri.file(path.join(context.extensionPath, 'src', 'webview')).with({ scheme: 'vscode-resource' })]
+        });
 
       //Path to local source HTML (index.html)
       const onDiskPath = vscode.Uri.file(path.join(context.extensionPath, 'src', 'webview', 'index.html'));
@@ -61,20 +66,30 @@ function activate(context) {
 
             case 'insert':
               // console.log('insert message handler');
-              te.edit(TextEditorEdit => {
+              te = vscode.window.showTextDocument(td,1,true).then(e => {
+                e.edit(edit => {
+                    // edit.insert(new vscode.Position(0, 0), "Your advertisement here");
 
-                //the whole editor content is selected (to be replaced)
-                var firstLine = te.document.lineAt(0);
-                var lastLine = te.document.lineAt(te.document.lineCount - 1);
-                var textRange = new vscode.Range(firstLine.range.start, lastLine.range.end);
+                  //the window may have been destroyed and a new one created
+                  //we need to reset the languageId if unset
+                  if(e.document.languageId != "xml"){
+                    vscode.languages.setTextDocumentLanguage(e.document, "xml");
+                  }
 
-                //Content replaced with Designer update
-                TextEditorEdit.replace(textRange, message.text);
+                  //the full content is selected (to be replaced)
+                  var firstLine = e.document.lineAt(0);
+                  var lastLine = e.document.lineAt(e.document.lineCount - 1);
+                  var textRange = new vscode.Range(firstLine.range.start, lastLine.range.end);
 
-                //we clear selection
-                let pos0 = new vscode.Position(0, 0);
-                te.selection = new vscode.Selection(pos0, pos0);
+                  //Content replaced with Designer update
+                  edit.replace(textRange, message.text);
+
+                  //we clear selection
+                  let pos0 = new vscode.Position(0, 0);
+                  e.selection = new vscode.Selection(pos0, pos0);
+                });
               });
+
               return;
 
             case 'alert':
@@ -99,6 +114,33 @@ function activate(context) {
     // else{
     //   currentPanel.webview.html = vd;
     // }
+
+	// // In this example, we want to start watching the currently open doc
+	// let currActiveDoc = currOpenEditor.document;
+
+	// let onDidChangeDisposable = vscode.workspace.onDidChangeTextDocument((event: vscode.TextDocumentChangeEvent)=>{
+	// 	if (event.document === currActiveDoc){
+	// 		console.log('Watched doc changed');
+	// 	}
+	// 	else {
+	// 		console.log('Non watched doc changed');
+	// 	}
+  // });
+  
+          //sample code change
+          vscode.workspace.onDidChangeTextDocument((e) => {
+            console.log("is it our document: "+(te.document == e.document));          
+            // console.log("TEST textChange: "+e.document.fileName);
+            // console.log(`changed: ${JSON.stringify(e)}`);
+          })
+
+          //sample code change
+          vscode.window.onDidChangeTextEditorSelection((e) => {
+            console.log("is it our textEditor: "+(te == e.textEditor));          
+            // console.log("TEST textChange: "+e.document.fileName);
+            console.log(`changed: ${JSON.stringify(e)}`);
+          })
+
 
     console.log('showDesigner has been registered');
   }); //end of registerCommand
