@@ -146,7 +146,7 @@ function createTo(processorType, scale)
 
             // scene.setAttribute("nextPos", nextPos+stepPos);
 
-            //Needed From A-FRAME v1.0.0
+            //Needed since A-FRAME v1.0.0
             to.setAttribute('class', 'clickable');
 
             to.setAttribute('processor-type', processorType);
@@ -543,6 +543,10 @@ function goLiveTo(to, givenPos, sources, staticLink, parent, handleRewires)
 if(boxed)
 {
         box = document.createElement('a-box')
+
+        //Needed since A-FRAME v1.0.0
+        box.setAttribute('class', 'clickable');
+
         // rootActivity.appendChild(box);
         box.setAttribute('id', "multicast-box")
         box.setAttribute('opacity', .1)
