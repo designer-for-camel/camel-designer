@@ -4,6 +4,15 @@ const vscode = require('vscode');
 const path = require("path");
 const fs = require("fs");
 
+              //xpath testing
+              var dom = require('xmldom').DOMParser;
+              var xpath = require('xpath');
+
+              var xml = "<book><title>Harry Potter</title></book>"
+              var doc = new dom().parseFromString(xml)
+              var title = xpath.select("//title/text()", doc).toString()
+              console.log(title)
+
 //Camel XML editor (textEditor)
 var te;
 
@@ -136,9 +145,25 @@ function activate(context) {
 
           //sample code change
           vscode.window.onDidChangeTextEditorSelection((e) => {
-            console.log("is it our textEditor: "+(te == e.textEditor));          
+            console.log("is it our textEditor: "+(te == e.textEditor));
+            
+            //obtains textLine at cursor
+            var line = e.textEditor.document.lineAt(e.selections[0].start.line);
+
+            //obtains Camel ID of activity
+            var result = line.text.match(/id="([^"]+)"/)[1];
+            console.log("id is: "+result);
+
+            // Send a message to our webview.
+            // You can send any JSON serializable data.
+            currentPanel.webview.postMessage({ command: 'setFocus' , id: result});
+
             // console.log("TEST textChange: "+e.document.fileName);
-            console.log(`changed: ${JSON.stringify(e)}`);
+            // console.log(`changed: ${JSON.stringify(e)}`);
+            // if(te == e.textEditor)
+            // {
+            //   e.textEditor.
+            // }
           })
 
 

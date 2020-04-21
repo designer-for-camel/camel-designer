@@ -28,11 +28,13 @@
 			}
 		],
 		"menus": {
-			"editor/title": [{
-				"when": "editorLangId == xml",
-				"command": "extension.showDesigner",
-				"group": "navigation"
-			}]
+			"editor/title": [
+				{
+					"when": "editorLangId == xml",
+					"command": "extension.showDesigner",
+					"group": "navigation"
+				}
+			]
 		}
 	},
 	"scripts": {
@@ -50,6 +52,8 @@
 		"vscode-test": "^1.0.2"
 	},
 	"dependencies": {
-		"@types/vscode": "^1.44.0"
+		"@types/vscode": "^1.44.0",
+		"xmldom": "^0.3.0",
+		"xpath": "0.0.27"
 	}
 }

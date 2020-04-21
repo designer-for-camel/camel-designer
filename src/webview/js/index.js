@@ -15,7 +15,7 @@
       var setGreen = false;
       
       var logId = 0;
-var linkCounter = 0;
+      var linkCounter = 0;
       // var newX = -1;
       
       var moving = false;
@@ -25,7 +25,7 @@ var linkCounter = 0;
       var event1X = null;
       var event1Y = null;
 
-// var lastCreated = null;
+      // var lastCreated = null;
       var configObj = null;
 
       var currentConfigPane = "introconfig";
@@ -39,21 +39,25 @@ var linkCounter = 0;
 
       // var callDirectEnabled = false;
 
-//needs revision
-addPulse('whatever');
-      
-      AFRAME.registerComponent('myoutline', {
-        init: function () {
-          
-    //           this.el.addEventListener('click', function(){
-    //   console.log("test log");;
-    // })
-          
+        // Handle the message inside the webview
+        window.addEventListener('message', event => {
 
-        }
-        
-      });
-      
+          const message = event.data; // The JSON data our extension sent
+
+          switch (message.command) {
+              case 'setFocus':
+                  console.log("got focus command"+ message.id);
+                  let activity = document.getElementById(message.id);
+                  // setCameraFocus(activity);
+                  setConfigSelector(activity);
+                  break;
+          }
+        });
+
+
+      //needs revision
+      addPulse('whatever');
+                 
 
       function enableToButtons(enabled)
       {
@@ -155,14 +159,13 @@ addPulse('whatever');
 
       function init()
       {
-
-
         tests();
 
         initPanes();
         resetCameraToDefault();
         initCamelGenerator();
-// initCameraFocus();
+
+        // initCameraFocus();
         // addDebugGrid();
       }
 
@@ -229,7 +232,7 @@ addPulse('whatever');
 
       function nextRoute(routeId)
       {
-        //if not given, we rotate from the end
+        //if not given, we rotate the list from the end (so that it starts from first)
         routeId = routeId || routes[routes.length-1];
 
               // console.log("Routes content: ");
@@ -269,9 +272,47 @@ addPulse('whatever');
 
         switchConfigPaneByActivity(document.getElementById(defaultActivity));
         // resetCameraToDefault();
-        setCameraFocus(document.getElementById(defaultActivity), true);
-
+        
+        //was
+        //setCameraFocus(document.getElementById(defaultActivity), true);
       }
+
+      function triggerRouteSwitch(activity)
+      {
+        // reference to camera
+        var camera = document.getElementById("main-camera");
+
+        //add listener for animation end
+        camera.addEventListener('animationcomplete', function cleaner() {
+
+          //delete listener
+          this.removeEventListener('animationcomplete', cleaner);
+
+          //delete animation
+          this.removeAttribute('animation');
+
+          //we change position of camera from low Y-coordinate to high Y-coordinate
+          //this will give the impression target Route will come from bottom when focus is set
+          camera.setAttribute("position", {
+              x: camera.components.position.data.x,
+              y: 10, 
+              z: camera.components.position.data.z
+          });
+
+          //switch route
+          nextRoute(getActivityRoute(activity).id);
+        });
+
+        //we give impression current Route disappears upwards by giving camera low Y-coordinate
+        let target = {
+            x: camera.components.position.data.x,
+            y: -10, 
+            z: camera.components.position.data.z}
+
+        //animation starts from this moment
+        camera.setAttribute('animation', {property: 'position', dur: '500', to: target, loop: false});
+      }
+
 
       function reloadRoutes(list)
       {
@@ -471,6 +512,14 @@ var nextPos = refPos.x+2+shiftX;
           return;
         }
 
+        //An activity from a different route may have been selected
+        if(getActivityRoute(activity).id != getActiveRoute().id)
+        {
+          //in that case we need to switch to the activity's Route
+          triggerRouteSwitch(activity);
+          return;
+        }
+
         // console.log("setConfigSelector");
 
         let ring = document.querySelector("#selector");
@@ -532,7 +581,7 @@ var nextPos = refPos.x+2+shiftX;
       {
           strict = strict || false;
 
-          // temp hack, ignore focus on DIRECT as it conflicts with Jump-to animation
+          // temporary hack, ignore focus on DIRECT as it conflicts with Jump-to animation
           if(   !strict
               && activity.getAttribute('processor-type') == "direct")
           {
@@ -566,7 +615,7 @@ var nextPos = refPos.x+2+shiftX;
             y: cameraY,
             z: cameraZ}
 
-          camera.setAttribute('animation__focus', {property: 'position', dur: '1500', to: target, loop: false, easing: "easeInOutQuad"});
+          camera.setAttribute('animation__focus', {property: 'position', dur: '1000', to: target, loop: false, easing: "easeInOutQuad"});
       }
 
       

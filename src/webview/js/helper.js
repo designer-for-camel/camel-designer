@@ -1,4 +1,21 @@
 
+//Returns the activity (visible) Route
+function getActiveRoute()
+{
+  return document.getElementById(routes[0]);
+}
+
+//Returns the activity (visible) route
+function getActivityRoute(activity)
+{
+  //the activity may be 'boxed' (i.e. multicast)
+  if(isBoxed(activity)){
+    return activity.parentNode.parentNode;
+  }
+
+  return activity.parentNode;
+}
+
 //Returns the activity currently being configured (with circle around)
 function getActiveActivity()
 {

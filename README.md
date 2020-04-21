@@ -11,12 +11,15 @@ Please bear in mind this *VSCode* extension is in 'early-prototype' phase and is
 
 ## Features
 
-* Easy processing flow design
-* Drag & drop activities to organise them
+* Easy visual design of processing flows
+* Organise activities with drag & drop
 * Create multiple routes (process flows)
+* Use the text editor to navigate:
+  - switch between routes
+  - select activities to configure
 * Connect flows using the 'direct' activity
-* Configure activities
-* Create parallel flows
+* Configuration panel for activities
+* Create parallel flows (fork)
 * Create *Choice* flows
 
 
