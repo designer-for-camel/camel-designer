@@ -269,7 +269,21 @@
         var text = configObj.getElementsByTagName("a-text")[0].firstChild;
 
         //display new value
-        text.setAttribute('value', body+':');
+        text.setAttribute('value', '"'+body+'"');
+      }
+
+      //Updates the activity with the configuration settings
+      function submitConfigChoice()
+      {
+        //obtain user input
+        var element = document.getElementById("config-choice-when");
+        var condition = element.getElementsByTagName("input")[0].value;
+
+        //obtain activity label
+        var text = configObj.getElementsByTagName("a-text")[1];
+
+        //display new value
+        text.setAttribute('value', condition);
       }
 
       function nextRoute(routeId)
@@ -730,49 +744,48 @@ var nextPos = refPos.x+2+shiftX;
         var opacity = 0.2;
         // var opacity = 0;
 
-
         //create shape cylinder
-        var cilinder = document.createElement('a-cylinder');
-
-        //Needed since A-FRAME v1.0.0
-        cilinder.setAttribute('class', 'clickable');
+        var cylinder = document.createElement('a-cylinder');
 
         //3D properties
-        cilinder.setAttribute('material','opacity: '+opacity);
-        cilinder.setAttribute('radius',radius);
+        cylinder.setAttribute('material','opacity: '+opacity);
+        cylinder.setAttribute('radius',radius);
 
         if(src.getAttribute('processor-type') == 'choice-start')
         {
+          //Needed since A-FRAME v1.0.0
+          cylinder.setAttribute('class', 'clickable');
+
           //choice labels
           let text = document.createElement('a-text');
-          cilinder.appendChild(text);
+          cylinder.appendChild(text);
           text.setAttribute('value', "when");
           text.setAttribute('position', {x: 0.32, y: 0.3, z: 0});
           text.setAttribute('rotation', {x: 0, y: 0, z: -90});
           text.setAttribute('side', 'double');
 
-          let lable = "dummy = 'true'";
+          let label = "dummy = 'true'";
           text = document.createElement('a-text');
-          cilinder.appendChild(text);
-          text.setAttribute('value', lable);
-          text.setAttribute('position', {x: 0, y: .03*lable.length, z: 0});
+          cylinder.appendChild(text);
+          text.setAttribute('value', label);
           text.setAttribute('rotation', {x: 0, y: 0, z: -90});
           text.setAttribute('side', 'double');
           text.setAttribute('scale', '.7 .7 .7');
+          text.setAttribute('align', 'center');
 
-          cilinder.setAttribute('pulse', '');
-          cilinder.setAttribute('animation', {startEvents:'mouseenter',pauseEvents:'mouseleave', property: 'scale', dir: 'alternate', dur: '500', to: '1.1 1.1 1.1', loop: 5});
-          cilinder.setAttribute('animation__2', {startEvents:'mouseleave', property: 'scale', dur: '500', to: '1.0 1.0 1.0'});
+          cylinder.setAttribute('pulse', '');
+          cylinder.setAttribute('animation', {startEvents:'mouseenter',pauseEvents:'mouseleave', property: 'scale', dir: 'alternate', dur: '500', to: '1.1 1.1 1.1', loop: 5});
+          cylinder.setAttribute('animation__2', {startEvents:'mouseleave', property: 'scale', dur: '500', to: '1.0 1.0 1.0'});
         }
 
         //Visible line
         var testline = document.createElement('a-entity');
-        cilinder.appendChild(testline);
+        cylinder.appendChild(testline);
 
         //Calculate Link 3D positioning
-        resetLink(cilinder, srcPos, dstPos);
+        resetLink(cylinder, srcPos, dstPos);
 
-        return cilinder;
+        return cylinder;
       }
 
       // A static link connects 2 ends 
@@ -1279,6 +1292,7 @@ var nextPos = refPos.x+2+shiftX;
         if(activity.nodeName.toLowerCase() == "a-cylinder")
         {
           newConfigPane = "config-choice-when";
+          updateConfigChoice();
         }
 
         switchConfigPane(newConfigPane);
@@ -1335,6 +1349,20 @@ var nextPos = refPos.x+2+shiftX;
 
         //replace panel values using activity values
         configBody.value = text.getAttribute('value').slice(1, -1); //gets rid of start/end double quotes
+      }
+
+      //Sets Configuration Panel with Activity configuration
+      function updateConfigChoice()//activity)
+      {
+        //obtains panel elements
+        var element = document.getElementById("config-choice-when");
+        var condition = element.getElementsByTagName("input")[0];
+
+        //obtain 3D labels
+        var text = getActiveActivity().getElementsByTagName("a-text")[1];
+
+        //replace panel values using activity values
+        condition.value = text.getAttribute('value');//.slice(1, -1); //gets rid of start/end double quotes
       }
 
       // function showAll()

@@ -86,13 +86,12 @@
           <option>constant</option>
         </select>
         <br/>
-        <input type="text" size="50">
-        <button type="submit" name="uname" value="uname" onclick="//nothing for now">ok</button>
+        <input type="text" size="50" oninput="submitConfigChoice();syncEditor();">
       </p>
 
       <p class="activityconfig" id="name-value-pair"><br/>
         <label>Name:</label></br>
-        <input type="text" size="50" oninput="submitConfigNameValuePair()"></br>
+        <input type="text" size="50" oninput="submitConfigNameValuePair();syncEditor();"></br>
         </br>
         <label>expression language:</label>
         <select>
@@ -100,7 +99,7 @@
           <option>constant</option>
         </select>
         <br/>
-        <input type="text" size="50" oninput="submitConfigNameValuePair()">
+        <input type="text" size="50" oninput="submitConfigNameValuePair();syncEditor();">
         <button class="delete" type="submit" onclick="deleteConfigActivity()">delete</button>
       </p>
 
@@ -111,7 +110,7 @@
           <option>constant</option>
         </select>
         <br/>
-        <input type="text" size="50" oninput="submitConfigBody()">
+        <input type="text" size="50" oninput="submitConfigBody();syncEditor();">
         <button class="delete" type="submit" onclick="deleteConfigActivity()">delete</button>
       </p>
 

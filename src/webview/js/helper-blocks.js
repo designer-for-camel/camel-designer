@@ -805,6 +805,7 @@ else
         labels[0].setAttribute('value','otherwise');
         labels[0].setAttribute('position','0 .5 0');
         otherwise.removeChild(labels[1]);
+        otherwise.setAttribute('class', 'non-clickable');
 
         //now we're done, we switch back on, and we sync.
         syncEditorEnabled = true;
