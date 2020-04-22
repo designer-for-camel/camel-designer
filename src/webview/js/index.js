@@ -49,7 +49,8 @@
                   console.log("got focus command"+ message.id);
                   let activity = document.getElementById(message.id);
                   // setCameraFocus(activity);
-                  setConfigSelector(activity);
+                  //setConfigSelector(activity);
+                  switchConfigPaneByActivity(activity);
                   break;
           }
         });
@@ -75,6 +76,14 @@
           //UX buttons for consumers are disabled to start with
           //When first 'from' activity is created, we enable consumer buttons
           var element = document.getElementsByClassName("consumer");
+          for(let i=0; i<element.length; i++) {
+            element[i].style.opacity = opacity;
+            element[i].firstChild.disabled = !enabled;
+          }
+
+          //UX buttons for consumers are disabled to start with
+          //When first 'from' activity is created, we enable consumer buttons
+          var element = document.getElementsByClassName("setter");
           for(let i=0; i<element.length; i++) {
             element[i].style.opacity = opacity;
             element[i].firstChild.disabled = !enabled;
@@ -204,20 +213,23 @@
 
       function initPanes()
       {
+          enableToButtons(true);
+          enableToButtons(false);
           // var element = document.getElementById("newDirect");
           // var routeSelected = element.getElementsByTagName("input")[0].value;
-          var element = document.getElementsByClassName("consumer");
-          for(let i=0; i<element.length; i++) {
-            element[i].style.opacity = .2;
-            element[i].firstChild.disabled = true;
-          }
+
+          // var element = document.getElementsByClassName("consumer");
+          // for(let i=0; i<element.length; i++) {
+          //   element[i].style.opacity = .2;
+          //   element[i].firstChild.disabled = true;
+          // }
 
           switchConfigPane("introconfig");
 
           document.getElementsByTagName("routenav")[1].innerHTML = routes[0];
       }
 
-      //THIS IS THE LOG CONFIG
+      //Updates the activity with the configuration settings
       function submitLogConfig()
       {
         //obtain user input
@@ -228,6 +240,36 @@
 
         //display new value
         text.setAttribute('value', '"'+logText+'"');
+      }
+
+      //Updates the activity with the configuration settings
+      function submitConfigNameValuePair()
+      {
+        //obtain user input
+        var element = document.getElementById("name-value-pair");
+        var fieldName = element.getElementsByTagName("input")[0].value;
+        var fieldValue = element.getElementsByTagName("input")[1].value;
+
+        var textName = configObj.getElementsByTagName("a-text")[0].firstChild;
+        var textValue = configObj.getElementsByTagName("a-text")[0].lastChild;
+
+        //display new value
+        textName.setAttribute('value', fieldName+':');
+        textValue.setAttribute('value', '"'+fieldValue+'"');
+      }
+
+      //Updates the activity with the configuration settings
+      function submitConfigBody()
+      {
+        //obtain user input
+        var element = document.getElementById("set-body");
+        var body = element.getElementsByTagName("input")[0].value;
+
+        //obtain activity label
+        var text = configObj.getElementsByTagName("a-text")[0].firstChild;
+
+        //display new value
+        text.setAttribute('value', body+':');
       }
 
       function nextRoute(routeId)
@@ -691,6 +733,9 @@ var nextPos = refPos.x+2+shiftX;
 
         //create shape cylinder
         var cilinder = document.createElement('a-cylinder');
+
+        //Needed since A-FRAME v1.0.0
+        cilinder.setAttribute('class', 'clickable');
 
         //3D properties
         cilinder.setAttribute('material','opacity: '+opacity);
@@ -1205,6 +1250,18 @@ var nextPos = refPos.x+2+shiftX;
                 newConfigPane = "newDirect";
               }
               break;
+          case 'property':
+              newConfigPane = "name-value-pair";
+              updateConfigNameValuePair();
+              break;
+          case 'header':
+              newConfigPane = "name-value-pair";
+              updateConfigNameValuePair();
+              break;
+          case 'body':
+              newConfigPane = "set-body";
+              updateConfigBody();
+              break;
           default:
               //code block
         }
@@ -1227,27 +1284,57 @@ var nextPos = refPos.x+2+shiftX;
         switchConfigPane(newConfigPane);
       }
 
+      //Sets Configuration Panel with Activity configuration
       function updateConfigLog()//activity)
       {
+        //obtain user input
+        var element = document.getElementById("loginput");
+        var logText = element.getElementsByTagName("input")[0].value;
 
-                    //obtain user input
-                    var element = document.getElementById("loginput");
-                    var logText = element.getElementsByTagName("input")[0].value;
+        //obtain 3D label
+        // var text = configObj.getElementsByTagName("a-text")[0].firstChild;
+        var text = getActiveActivity().getElementsByTagName("a-text")[0].firstChild;
 
-                    //obtain 3D label
-                    // var text = configObj.getElementsByTagName("a-text")[0].firstChild;
-                    var text = getActiveActivity().getElementsByTagName("a-text")[0].firstChild;
+        //if null it gets created
+        if(text == null)
+        {
+          element.getElementsByTagName("input")[0].value = "";
+        }
+        else
+        {
+          element.getElementsByTagName("input")[0].value = text.getAttribute('value').slice(1, -1); //gets rid of double quotes at start/end
+        }
+      }
 
-                    //if null it gets created
-                    if(text == null)
-                    {
-                      element.getElementsByTagName("input")[0].value = "";
-                    }
-                    else
-                    {
-                      element.getElementsByTagName("input")[0].value = text.getAttribute('value').slice(1, -1);
-                    }
+      //Sets Configuration Panel with Activity configuration
+      function updateConfigNameValuePair()//activity)
+      {
+        //obtains panel elements
+        var element = document.getElementById("name-value-pair");
+        var fieldName = element.getElementsByTagName("input")[0];
+        var fieldValue = element.getElementsByTagName("input")[1];
 
+        //obtain 3D labels
+        var textName = getActiveActivity().getElementsByTagName("a-text")[0].firstChild;
+        var textValue = getActiveActivity().getElementsByTagName("a-text")[0].lastChild;
+
+        //replace panel values using activity values
+        fieldName.value = textName.getAttribute('value').slice(0, -1); //gets rid of tail character ':'
+        fieldValue.value = textValue.getAttribute('value').slice(1, -1); //gets rid of double quotes at start/end
+      }
+
+      //Sets Configuration Panel with Activity configuration
+      function updateConfigBody()//activity)
+      {
+        //obtains panel elements
+        var element = document.getElementById("set-body");
+        var configBody = element.getElementsByTagName("input")[0];
+
+        //obtain 3D labels
+        var text = getActiveActivity().getElementsByTagName("a-text")[0].firstChild;
+
+        //replace panel values using activity values
+        configBody.value = text.getAttribute('value').slice(1, -1); //gets rid of start/end double quotes
       }
 
       // function showAll()

@@ -106,46 +106,63 @@ p {
     left: 20px;
 }  
 
-.consumer {
+.setter {
     left: 125px;
+    opacity: .2;
+}  
+
+.consumer {
+    /* left: 125px; */
+    left: 230px;
     opacity: .2;
 } 
 
 /* FROM activities */
 .direct-s {
-    left: 20px;
+    /* left: 20px; */
     top: 70px;
 } 
 
 .timer {
-    left: 20px;
+    /* left: 20px; */
     top: 117px;
 } 
 
-
-
-    /* TO activities */
-    .log {
-        left: 125px;
+    /* SET activities */
+    .prop {
         top: 70px;
     } 
 
-    .direct {
-        left: 125px;
-        /*top: 120px;*/
-        top: 109px;
+    .header {
+        top: 117px;
     } 
 
-    .choice {
-        /*width: 220px;*/
-        left: 125px;
-        top: 172px;  
+    .body {
+        top: 165px;  
     } 
 
-    .multicast {
-        left: 125px;
-        top: 220px;  
-    } 
+        /* TO activities */
+        .log {
+            /* left: 125px; */
+            top: 70px;
+        } 
+
+        .direct {
+            /* left: 125px; */
+            /*top: 120px;*/
+            top: 109px;
+        } 
+
+        .choice {
+            /*width: 220px;*/
+            /* left: 125px; */
+            top: 172px;  
+        } 
+
+        .multicast {
+            /* left: 125px; */
+            top: 220px;  
+        } 
 
 .activityconfig {
     font-size: 12pt;

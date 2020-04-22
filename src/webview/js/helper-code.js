@@ -260,6 +260,21 @@ function renderRouteActivity(activity, mycode, iterator) {
         case 'log':
             mycode.text += mycode.tab+'<log message='+activity.getElementsByTagName('a-text')[0].firstChild.getAttribute('value')+' id="'+activity.id+'"/>\n'
             break;
+        case 'property':
+            mycode.text += mycode.tab+'<setProperty name="'+activity.getElementsByTagName('a-text')[0].firstChild.getAttribute('value').slice(0,-1)+'" id="'+activity.id+'">\n'+
+                           mycode.tab+mycode.tab+'<simple>'+activity.getElementsByTagName('a-text')[0].lastChild.getAttribute('value').slice(1,-1)+'</simple>\n'+
+                           mycode.tab+'</setProperty>\n'
+            break;
+        case 'header':
+            mycode.text += mycode.tab+'<setHeader name="'+activity.getElementsByTagName('a-text')[0].firstChild.getAttribute('value').slice(0,-1)+'" id="'+activity.id+'">\n'+
+                           mycode.tab+mycode.tab+'<simple>'+activity.getElementsByTagName('a-text')[0].lastChild.getAttribute('value').slice(1,-1)+'</simple>\n'+
+                           mycode.tab+'</setHeader>\n'
+            break;
+        case 'body':
+            mycode.text += mycode.tab+'<setBody id="'+activity.id+'">\n'+
+                           mycode.tab+mycode.tab+'<simple>'+activity.getElementsByTagName('a-text')[0].firstChild.getAttribute('value').slice(1,-1)+'</simple>\n'+
+                           mycode.tab+'</setBody>\n'
+            break;
         case 'direct':
             mycode.text += mycode.tab+'<to uri="direct:'+activity.querySelector("#routeLabel").getAttribute('value')+'" id="'+activity.id+'"/>\n'
             break;

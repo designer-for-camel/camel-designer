@@ -147,17 +147,53 @@ function activate(context) {
           vscode.window.onDidChangeTextEditorSelection((e) => {
             console.log("is it our textEditor: "+(te == e.textEditor));
             
-            //obtains textLine at cursor
-            var line = e.textEditor.document.lineAt(e.selections[0].start.line);
+            //textLine reference
+            var line = null;
 
-            //obtains Camel ID of activity
-            var result = line.text.match(/id="([^"]+)"/)[1];
-            console.log("id is: "+result);
+            //result of regEx matches
+            var result = null;
 
-            // Send a message to our webview.
-            // You can send any JSON serializable data.
-            currentPanel.webview.postMessage({ command: 'setFocus' , id: result});
+            //loop to look for activity id
+            //the strategy is:
+            //  we explore from bottom to top, as the 'id' is an attribute of the parent element
+            //  for example, if the cursor is placed at the bottom of the following node:
+            //     <setProperty name="dummy" id="prop1">
+            //        <simple>dummy</simple>
+            //     </setProperty>
+            //  we need to seek the 'id' moving upwards
+            for(currentLine = e.selections[0].start.line; currentLine > 0; currentLine--)
+            {
+              //obtains textLine where cursor is placed
+              line = e.textEditor.document.lineAt(currentLine).text.trim();
 
+              //if we find a route, we seek the 1st activity in the route to find its 'id'
+              if(line.startsWith("<route"))
+              {
+                line = e.textEditor.document.lineAt(currentLine+1).text.trim();
+              }
+
+              //return if if line is empty
+              if(line.length == 0){
+                console.log("empty line");
+                return;
+              }
+
+              //run the regular expression looking for the 'id'
+              result = line.match(/id="([^"]+)"/);
+
+              //if matches are found
+              if(result != null)
+              {
+                console.log("id is: "+result[1]);
+
+                // Send a message to our webview.
+                // You can send any JSON serializable data.
+                currentPanel.webview.postMessage({ command: 'setFocus' , id: result[1]});
+                
+                //when we find a match we stop
+                return;
+              }
+            }
             // console.log("TEST textChange: "+e.document.fileName);
             // console.log(`changed: ${JSON.stringify(e)}`);
             // if(te == e.textEditor)

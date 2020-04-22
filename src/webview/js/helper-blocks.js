@@ -237,7 +237,79 @@ function createLog()
 
 }
 
+function createProperty()
+{
+  createNameValuePair('property');
+}
 
+function createHeader()
+{
+  createNameValuePair('header');
+}
+
+function createNameValuePair(setterType)
+{
+  let activity = createTo(setterType);
+
+  var text = document.createElement('a-text');
+  activity.appendChild(text);
+  text.setAttribute('value', setterType);
+  text.setAttribute('color', 'white');
+  text.setAttribute('align', 'center');
+  text.setAttribute('side', 'double');
+
+  //defaults
+  let defaultName = "name";
+  let defaultValue = "dummy";
+
+  //label for field name
+  let label = document.createElement('a-text');
+  text.appendChild(label);
+  label.setAttribute('value', defaultName+':');
+  label.setAttribute('color', 'grey');
+  label.setAttribute('align', 'center');
+  label.setAttribute('position', {x: 0, y: -.7, z: 0});
+  label.setAttribute('side', 'double');
+
+  //label for field value
+  label = document.createElement('a-text');
+  text.appendChild(label);
+  label.setAttribute('value', '"'+defaultValue+'"');
+  label.setAttribute('color', 'white');
+  label.setAttribute('align', 'center');
+  label.setAttribute('position', {x: 0, y: -1, z: 0});
+  label.setAttribute('side', 'double');
+
+  goLive(activity);
+}
+
+
+function createBody()
+{
+  let activity = createTo('body');
+
+  //this is the label inside the geometry (activity descriptor)
+  var text = document.createElement('a-text');
+  activity.appendChild(text);
+  text.setAttribute('value', 'body');
+  text.setAttribute('color', 'white');
+  text.setAttribute('align', 'center');
+  text.setAttribute('side', 'double');
+
+  //defaults
+  let defaultValue = "hello world";
+
+  //label to display the value set for the activity
+  let label = document.createElement('a-text');
+  text.appendChild(label);
+  label.setAttribute('value', '"'+defaultValue+'"');
+  label.setAttribute('color', 'white');
+  label.setAttribute('align', 'center');
+  label.setAttribute('position', {x: 0, y: -.7, z: 0});
+  label.setAttribute('side', 'double');
+
+  goLive(activity);
+}
 
       // function directCreate()
       function createDirect(givenPos, activities, scale, staticLink, parent)//, sources)

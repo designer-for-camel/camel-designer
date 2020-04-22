@@ -43,15 +43,21 @@
 
       <!-- Categories -->
       <p class="producer">from</p>
+      <p class="setter">set</p>
       <p class="consumer">to</p>
 
       <!-- Camel Components & composites -->
       <p class="producer timer"><button class="button"  onclick="createTimer()">timer</button></p>
       <p class="producer direct-s"><button class="button"  onclick="createDirectStart()">direct</button></p>
-      <p class="consumer log"><button class="button" disabled onclick="createLog()">log</button></p>
-      <p class="consumer direct"><button style="font-size:16px" class="button" disabled onclick="createDirect()">call to</br>direct</button></p>
-      <p class="consumer choice"><button class="button" disabled onclick="createChoice()">choice</button></p>
-      <p class="consumer multicast"><button class="button" disabled onclick="createMulticast()">fork</button></p>
+ 
+          <p class="setter prop"><button style="font-size:20px;" class="button" disabled onclick="createProperty()">property</button></p>
+          <p class="setter header"><button class="button" disabled onclick="createHeader()">header</button></p>
+          <p class="setter body"><button class="button" disabled onclick="createBody()">body</button></p>
+
+              <p class="consumer log"><button class="button" disabled onclick="createLog()">log</button></p>
+              <p class="consumer direct"><button style="font-size:16px" class="button" disabled onclick="createDirect()">call to</br>direct</button></p>
+              <p class="consumer choice"><button class="button" disabled onclick="createChoice()">choice</button></p>
+              <p class="consumer multicast"><button class="button" disabled onclick="createMulticast()">fork</button></p>
 
       <!-- Configuration Panel -->
       <p class="activityconfig" id="introconfig" style="visibility: visible;"><br/>
@@ -60,7 +66,7 @@
 
       <p class="activityconfig" id="loginput"><br/>
         <label>Log message:</label>
-        <input type="text" size="50" oninput="submitLogConfig()">
+        <input type="text" size="50" oninput="submitLogConfig();syncEditor();">
         <button class="delete" type="submit" onclick="deleteConfigActivity()">delete</button>
       </p>
 
@@ -84,6 +90,30 @@
         <button type="submit" name="uname" value="uname" onclick="//nothing for now">ok</button>
       </p>
 
+      <p class="activityconfig" id="name-value-pair"><br/>
+        <label>Name:</label></br>
+        <input type="text" size="50" oninput="submitConfigNameValuePair()"></br>
+        </br>
+        <label>expression language:</label>
+        <select>
+          <option>simple</option>
+          <option>constant</option>
+        </select>
+        <br/>
+        <input type="text" size="50" oninput="submitConfigNameValuePair()">
+        <button class="delete" type="submit" onclick="deleteConfigActivity()">delete</button>
+      </p>
+
+      <p class="activityconfig" id="set-body"><br/>
+        <label>expression language:</label>
+        <select>
+          <option>simple</option>
+          <option>constant</option>
+        </select>
+        <br/>
+        <input type="text" size="50" oninput="submitConfigBody()">
+        <button class="delete" type="submit" onclick="deleteConfigActivity()">delete</button>
+      </p>
 
     <!-- Spacial scene (A-Frame elements) -->
     <a-scene myoutline cursor="rayOrigin:mouse" raycaster="objects: .clickable, .testcollidable">
