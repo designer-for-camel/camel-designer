@@ -1,3 +1,18 @@
+//Returns the activity (visible) Route
+function vscodePostMessage(command, payload)
+{
+  //when it runs in VSCode
+  if ( top !== self && !syncStartUpEnabled)
+  { // we are in the iframe
+    vscode.postMessage({
+        command: command,
+        payload: payload
+    })
+  }
+  //return document.getElementById(routes[0]);
+}
+
+
 
 //Returns the activity (visible) Route
 function getActiveRoute()
@@ -167,8 +182,12 @@ function getPositionInScene(activity)
 {
   if(isBoxed(activity))
   {
-    let posBox   = activity.parentNode.components.position.attrValue;
-    let posInBox = activity.components.position.attrValue;
+    //was
+    //let posBox   = activity.parentNode.components.position.attrValue;
+    let posBox   = activity.parentNode.object3D.position;
+    //was
+    //let posInBox = activity.components.position.attrValue;
+    let posInBox = activity.object3D.position;
 
     let position = { x: posBox.x+posInBox.x,
                      y: posBox.y+posInBox.y,
@@ -177,6 +196,25 @@ function getPositionInScene(activity)
     return position;
   }
 
-  return activity.components.position.attrValue;
+  //was
+  //return activity.components.position.attrValue;
+  return activity.object3D.position;
 }
 
+//updates an Activity ID with a new one
+//the function also updates ID references from other entities
+function updateActivityId(activity, newId)
+{
+  //order of updates is important:
+  //first, we update the link reference with the new ID
+  let link = getBackwardsLink(activity);
+
+  //check if link exists
+  //FROM elements do not have a preceding link
+  if(link){
+    link.setAttribute('destination', newId);
+  }
+
+  //then we update the activity ID
+  activity.setAttribute('id', newId);
+}

@@ -7,6 +7,9 @@ function createFrom(processorType)
   var from = document.createElement('a-sphere');
 
 
+
+  //Needed since A-FRAME v1.0.0
+  from.setAttribute('class', 'clickable');
   // from.setAttribute('class', 'clickable');
 
   from.setAttribute(elementName,'');
@@ -48,8 +51,10 @@ function createFrom(processorType)
   return from;
 }
 
-function createTimer()
+function createTimer(definition)
 {
+  console.log("timer date now: "+Date.now());
+  
   let timer = createFrom("timer");
 
   //create clock hands
@@ -89,15 +94,24 @@ function createTimer()
   timer.appendChild(hours);
 
   goLive(timer);
+
+  if(definition)
+  {
+    updateActivityId(timer, definition.getAttribute('id'));
+  }
 }
 
 
-function createDirectStart()
+function createDirectStart(definition)
 {
   let direct = createFrom("direct");
 
   goLive(direct);
 
+  if(definition)
+  {
+    updateActivityId(direct, definition.getAttribute('id'));
+  }
   // callDirectEnabled = true;
 }
 
@@ -229,11 +243,23 @@ function createTo(processorType, scale)
 
 
 
-function createLog()
+function createLog(definition)
 {
+  console.log("log date now: "+Date.now());
+
   let log = createTo('log');
 
   goLive(log);
+
+  if(definition)
+  {
+    // console.log("has definition: "+definition);
+    // console.dir(definition);
+    //log.setAttribute('id', definition.getAttribute('id'));
+    updateActivityId(log, definition.getAttribute('id'));
+
+    log.getElementsByTagName("a-text")[0].firstChild.setAttribute('value', '"'+definition.getAttribute('message')+'"');
+  }
 
 }
 
@@ -310,6 +336,21 @@ function createBody()
 
   goLive(activity);
 }
+
+      // function directCreate()
+      function createDirectFromDefinition(definition)
+      {
+        let activity = createDirect();
+
+        // console.log("has definition: "+definition);
+        // console.dir(definition);
+        updateActivityId(activity, definition.getAttribute('id'));
+        //was
+        //activity.getElementsByTagName("a-text")[0].firstChild.setAttribute('value', definition.getAttribute('uri').substring(7));
+        //activity.getElementsByTagName("a-text")[1].setAttribute('value', definition.getAttribute('uri').substring(7));
+        activity.children.routeLabel.setAttribute("value", definition.getAttribute('uri').substring(7));
+        
+      }
 
       // function directCreate()
       function createDirect(givenPos, activities, scale, staticLink, parent)//, sources)
@@ -394,7 +435,7 @@ function goLive(activity, givenPos, sources, scale, staticLink, parent, handleRe
   //otherwise
   goLiveTo(activity, givenPos, sources, staticLink, parent, handleRewires);
   switchConfigPaneByActivity(activity);
-
+  
   syncEditor();
 }
 
@@ -403,7 +444,7 @@ function syncEditor()
 {
   //only when it runs in VSCode
   if ( top !== self ) { // we are in the iframe
-    if(syncEditorEnabled) {
+    if(syncEditorEnabled && !syncStartUpEnabled) {
       getCamelSource();
     }
   }
@@ -420,7 +461,10 @@ function goLiveFrom(from)
 
   //Hack to position new FROM activities vertically
   var fromPos = {x: startActivityPos, y: 0-numFroms, z: 0};
-  from.setAttribute('position', fromPos);
+  //from.setAttribute('position', fromPos);
+  from.object3D.position.set(fromPos.x, fromPos.y, fromPos.z);
+
+
 
   //when first FROM activity is created no links exist
   //FROM button is disabled until first TO gets created and links exist
@@ -489,7 +533,7 @@ function goLiveTo(to, givenPos, sources, staticLink, parent, handleRewires)
 
   //it seems setting attribute does ops async and may unsettle fast code execution
   //we use both settings (3D object and attribute) which seems works
-  to.setAttribute('position', position);
+  //to.setAttribute('position', position);
   to.object3D.position.set(position.x, position.y, position.z);
 
 
@@ -625,7 +669,12 @@ if(boxed)
         box.setAttribute('transparent', true)
         // box.setAttribute('position', {x: 2, y: 1, z: -0.5})
         // box.setAttribute('position', getNextSequencePosition(scene, 1, true))
-        box.setAttribute('position', getNextSequencePosition(scene, 1, false))
+        
+        //was
+        //box.setAttribute('position', getNextSequencePosition(scene, 1, false))
+
+        boxPosition = getNextSequencePosition(scene, 1, false);
+        box.object3D.position.set(boxPosition.x, boxPosition.y, boxPosition.z);
         // box.setAttribute('position', {x: parseInt(scene.getAttribute("nextPos"))+1, y: 0, z: 0,})
 
         box.setAttribute('height', numActivities)
@@ -970,8 +1019,10 @@ function attachSourceToLink(source, link)
 // dstPos.y += 2; 
 
   //obtain source position
-  let srcPos = source.components.position.attrValue;;
-
+  //was
+  //let srcPos = source.components.position.attrValue;
+  let srcPos = source.object3D.position;
+  
   //we update the link 'source' reference to use the new given source
   link.setAttribute('source', source.id);
   link.setAttribute('srcPos', srcPos);

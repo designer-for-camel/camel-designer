@@ -1,5 +1,6 @@
       //Switch to stream edit updates
       var syncEditorEnabled = true;
+      var syncStartUpEnabled = false;
       
       //Camera default position in axis
       var cameraY = 0;
@@ -51,6 +52,13 @@
                   // setCameraFocus(activity);
                   //setConfigSelector(activity);
                   switchConfigPaneByActivity(activity);
+                  break;
+              case 'importCamelDefinition':
+                  console.log("got source code: "+ message.source);
+                  syncStartUpEnabled = true;
+                  loadSourceCode(message.source);
+                  syncStartUpEnabled = false;
+                  //syncEditor();
                   break;
           }
         });
@@ -176,6 +184,20 @@
 
         // initCameraFocus();
         // addDebugGrid();
+        importSourceCode();
+      }
+
+      //intended to be invoked to VS-code at start-up time
+      function importSourceCode()
+      {
+        //was
+        //when it runs in VSCode
+        // if ( top !== self ) { // we are in the iframe
+        //   vscode.postMessage({
+        //       command: 'importCamelDefinition'
+        //   })
+        // }
+        vscodePostMessage('importCamelDefinition');
       }
 
       function resetCameraToDefault()
@@ -190,11 +212,14 @@
         // camera.setAttribute("position", "0 "+cameraY+" "+cameraZ);
       }
 
-      function newRoute()
+      function newRoute(routeId)
       {
         initPanes();
 
-        var routeId = "route"+(++routeNum);
+        //was
+        //var routeId = "route"+(++routeNum);
+        routeNum++;
+        routeId = routeId || "route"+routeNum;
 
         var scene = document.querySelector('a-scene');
         var newRoute = document.createElement('a-entity');
@@ -302,6 +327,9 @@
 
         document.getElementById(routes[0]).setAttribute('visible', false)
         document.getElementById(routes[0]).setAttribute('class', 'not-clickable')
+        document.getElementById(routes[0]).setAttribute('position','0 100 0');
+
+        //document.getElementById(routes[0]).classList.toggle('clickable');
 
               // console.log("index of: "+ routes.indexOf(routeId));
               // console.log("index of route[0]: "+ routes.indexOf(routes[0]));
@@ -316,6 +344,9 @@
 
         document.getElementById(routes[0]).setAttribute('visible', true)
         document.getElementById(routes[0]).setAttribute('class', 'clickable')
+        document.getElementById(routes[0]).setAttribute('position','0 000 0');
+
+
 
 // showAll()
         document.getElementsByTagName("routenav")[1].innerHTML = routes[0];
@@ -349,11 +380,17 @@
 
           //we change position of camera from low Y-coordinate to high Y-coordinate
           //this will give the impression target Route will come from bottom when focus is set
-          camera.setAttribute("position", {
-              x: camera.components.position.data.x,
-              y: 10, 
-              z: camera.components.position.data.z
-          });
+          //was
+          // camera.setAttribute("position", {
+          //     x: camera.components.position.data.x,
+          //     y: 10, 
+          //     z: camera.components.position.data.z
+          // });
+          camera.object3D.position.set(
+            camera.object3D.position.x,
+            10, 
+            camera.object3D.position.z
+          );
 
           //switch route
           nextRoute(getActivityRoute(activity).id);
@@ -361,9 +398,9 @@
 
         //we give impression current Route disappears upwards by giving camera low Y-coordinate
         let target = {
-            x: camera.components.position.data.x,
+            x: camera.object3D.position.x,
             y: -10, 
-            z: camera.components.position.data.z}
+            z: camera.object3D.position.z}
 
         //animation starts from this moment
         camera.setAttribute('animation', {property: 'position', dur: '500', to: target, loop: false});
@@ -419,7 +456,7 @@
 
       // TODO clean this, and give function a good name
       //THIS IS LABEL of DIRECT activity
-      function updateLabel(label, activity)
+      function updateConfigDirect(label, activity)
       {
         activity = activity || configObj;
 
@@ -496,13 +533,16 @@ reloadRoutes(list)
 
           if(lastInGroup)
           {
-            let parentPos = refActivity.parentNode.getAttribute('position');
+            let parentPos = refActivity.parentNode.object3D.position;
             refPos = {x: parentPos.x+1, y: parentPos.y, z:0}
           }
           else
           {
             // refPos = document.getElementById(scene.getAttribute("lastCreated")).getAttribute('position');
-            refPos = refActivity.getAttribute('position');
+            
+            //was
+            //refPos = refActivity.getAttribute('position');
+            refPos = refActivity.object3D.position;
           }
 
 
@@ -641,7 +681,7 @@ var nextPos = refPos.x+2+shiftX;
           if(   !strict
               && activity.getAttribute('processor-type') == "direct")
           {
-              return;
+              //return;
           }
 
           var camera = document.getElementById("main-camera");
@@ -918,8 +958,8 @@ var nextPos = refPos.x+2+shiftX;
                   {
                     event1X = event.clientX;
                     event1Y = event.clientY;
-                    movingObjX = movingObj.getAttribute('position').x;
-                    movingObjY = movingObj.getAttribute('position').y;
+                    movingObjX = movingObj.object3D.position.x;
+                    movingObjY = movingObj.object3D.position.y;
                   }
         
                   //map mouse to screen movement
@@ -927,7 +967,7 @@ var nextPos = refPos.x+2+shiftX;
                   var vectorY = ((event1Y-event.clientY)/80)  + movingObjY;
                 
                   //update activity position
-                  movingObj.setAttribute('position', {x: vectorX, y: vectorY, z: movingObj.getAttribute('position').z});
+                  movingObj.setAttribute('position', {x: vectorX, y: vectorY, z: movingObj.object3D.position.z});
 
                   //obtain links to other activities
                   var links = JSON.parse(movingObj.getAttribute("links"));
@@ -992,14 +1032,20 @@ var nextPos = refPos.x+2+shiftX;
                       //resolution of src position
                       if(srcNotInGroup)
                       {
-                        srcPos = src.getAttribute("position");
+                        //was
+                        //srcPos = src.getAttribute("position");
+                        srcPos = src.object3D.position;
                       }
                       else
                       {
-                        srcPos = src.parentNode.getAttribute("position");
+                        //was
+                        //srcPos = src.parentNode.getAttribute("position");
+                        srcPos = src.parentNode.object3D.position;
 
                         srcPos = {
-                            x: srcPos.x+src.getAttribute('position').x,
+                            //was
+                            //x: srcPos.x+src.getAttribute('position').x,
+                            x: srcPos.x+src.object3D.position.x,
                             y: srcPos.y,//+dst.parentNode.getAttribute('position').y,
                             z: srcPos.z }
                       }
@@ -1007,14 +1053,20 @@ var nextPos = refPos.x+2+shiftX;
                       //resolution of dst position
                       if(dstNotInGroup)
                       {
-                        dstPos = dst.getAttribute("position");
+                        //was
+                        //dstPos = dst.getAttribute("position");
+                        dstPos = dst.object3D.position;
                       }
                       else
                       {
-                        dstPos = dst.parentNode.getAttribute("position");
+                        //was
+                        //dstPos = dst.parentNode.getAttribute("position");
+                        dstPos = dst.parentNode.object3D.position;
 
                         dstPos = {
-                            x: dstPos.x+dst.getAttribute('position').x,
+                            //was
+                            //x: dstPos.x+dst.getAttribute('position').x,
+                            x: dstPos.x+dst.object3D.position.x,
                             y: dstPos.y,//+dst.parentNode.getAttribute('position').y,
                             z: dstPos.z }
                       }
@@ -1079,6 +1131,12 @@ var nextPos = refPos.x+2+shiftX;
               }
               else if(this.getAttribute('processor-type') == "direct")
               {
+                //this code is not intended for FROM elements
+                if(this.hasAttribute('start'))
+                {
+                  return;
+                }
+
                 //don't jump if activity not configured yet
                 let isConfigured = (configObj.querySelector("#routeLabel").getAttribute('value').length > 0)
 
@@ -1108,27 +1166,50 @@ var nextPos = refPos.x+2+shiftX;
                     // resetCameraToDefault();
                   });
 
-                //   let target = this.getAttribute('position').object3D.position;
-                  let target = this.components.position.data;
+                //let target = this.getAttribute('position').object3D.position;
+                //was
+                //let target = this.components.position.data;
+                //let target = this.object3D.position;
+                
+                //somehow, if you pass directly 'object3D.position' the animation breaks Three.js
+                //so we create the structure manually with x/y/z
+                let target = {
+                  x: this.object3D.position.x,
+                  y: this.object3D.position.y, 
+                  z: this.object3D.position.z
+                }
+
+                //let target = this.getAttribute('position');
                     console.log("target: "+target);
                     console.log("target.x: "+target.x);
-                    console.log("target.value: "+target.value);
+                    //console.log("target.value: "+target.value);
 
                 //   let campos = camera.getAttribute('position');
 
                   //if activity is encapsulated in group we need to add parent/child coordinates
                   if(isBoxed(this))
                   {
+                    //was
+                    // target = {
+                    //     x: target.x+this.parentNode.getAttribute('position').x,
+                    //     y: target.y+this.parentNode.getAttribute('position').y, 
+                    //     z: target.z}
                     target = {
-                        x: target.x+this.parentNode.getAttribute('position').x,
-                        y: target.y+this.parentNode.getAttribute('position').y, 
-                        z: target.z}
+                      x: target.x+this.parentNode.object3D.position.x,
+                      y: target.y+this.parentNode.object3D.position.y, 
+                      z: target.z
+                    }
                   }
-
                   //animation starts from this moment
                 //   var tcamera = document.getElementById("main-camera");
                 // target = {x: -3, y: 0, z: 0};
+                  
+                  //let testfrom = {x: -3, y: -7, z: 0};
+                  //let testto = {x: target.x, y: target.y, z: target.z};
+                  //camera.setAttribute('animation', {property: 'position', dur: '1500', to: target, loop: false});
                   camera.setAttribute('animation', {property: 'position', dur: '1500', to: target, loop: false});
+
+
                 //   camera.setAttribute('animation', {property: 'position', dur: '1500', from: {x: 0, y: 0, z: 7}, to: target, loop: false});
                 
                 //   var camera = document.getElementById("main-camera");
@@ -1191,7 +1272,16 @@ var nextPos = refPos.x+2+shiftX;
                     
                          //var parent = this.getAttribute('parent');
                     //var parent = this.parentElement;
-                         movingObj.setAttribute('position', {x: evt.detail.intersection.point.x, y: evt.detail.intersection.point.y, z: evt.detail.intersection.point.z});
+                         
+                        //was
+                        //movingObj.setAttribute('position', {x: evt.detail.intersection.point.x, y: evt.detail.intersection.point.y, z: evt.detail.intersection.point.z});
+ 
+                        movingObj.object3D.position.set(
+                            evt.detail.intersection.point.x,
+                            evt.detail.intersection.point.y,
+                            evt.detail.intersection.point.z
+                        )
+
                     movingObj = null;
                     moving = false;
                   });
@@ -1259,7 +1349,7 @@ var nextPos = refPos.x+2+shiftX;
               break;
           case 'direct':
               if(!activity.hasAttribute('start')){ //filter out start activity
-                updateLabel(null,activity);
+                updateConfigDirect(null,activity);
                 newConfigPane = "newDirect";
               }
               break;

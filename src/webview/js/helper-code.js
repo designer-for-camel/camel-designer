@@ -12,6 +12,7 @@ var text, parser, xmlDoc;
 // xmlDoc.getElementsByTagName("title")[0].childNodes[0].nodeValue;
 
 
+//loads source code from File System
 function importSource()
 {
 
@@ -28,7 +29,7 @@ function importSource()
             reader.onload = function() {
                 console.log(reader.result);
 
-simulateRouteImport(reader.result);
+                loadSourceCode(reader.result);
             };
 
             reader.readAsText(file);    
@@ -40,8 +41,11 @@ simulateRouteImport(reader.result);
     fileInput.click();
 }
 
-
-function simulateRouteImport(camelContextImport)
+//Parses the source code and generates the graph
+//When source code is loaded, a batch of creation activities is triggered
+//This would cause a sequence of code updates sent to VSCode we want to avoid.
+//To stop sending messages to VSCode, COMMS was disabled prior to calling this function
+function loadSourceCode(camelContextImport)
 {
     let delay = 0;
 
@@ -51,31 +55,86 @@ function simulateRouteImport(camelContextImport)
     var xmlDoc = new DOMParser().parseFromString(camelContextImport, 'application/xml');
     // var xmlDoc = new DOMParser().parseFromString(testxml, 'application/xml');
 
-    var iteratorFrom = xmlDoc.evaluate('//*[local-name()="from"]', xmlDoc, null, XPathResult.ANY_TYPE, null);
-    var iteratorTo = xmlDoc.evaluate('//*[local-name()="route"]/*[local-name() !="from"]', xmlDoc, null, XPathResult.ANY_TYPE, null);
+    var iteratorRoute = xmlDoc.evaluate('//*[local-name()="route"]', xmlDoc, null, XPathResult.ANY_TYPE, null);
 
-    var from = iteratorFrom.iterateNext();
-    var to = iteratorTo.iterateNext();
+
+    //var iteratorFrom = xmlDoc.evaluate('//*[local-name()="from"]', xmlDoc, null, XPathResult.ANY_TYPE, null);
+    var iteratorTo; //= xmlDoc.evaluate('//*[local-name()="route"]/*[local-name() !="from"]', xmlDoc, null, XPathResult.ANY_TYPE, null);
+
+    var route = iteratorRoute.iterateNext();
+    //var from = iteratorFrom.iterateNext();
+    var to;// = iteratorTo.iterateNext();
+    var current;
+    var xmlTag;
 
     // while(thisNode)
     {
-        setTimeout(createTimer, delay++);
+        //setTimeout(createTimer, delay++);
+        // createTimer();
+        //createDirectStart();
     }
 
-    while(to)
+    while(route)
     {
-        delay=+100;
-        createActivity(to.tagName, delay);
-        // alert(to.tagName)
+        //if this is not the very first route
+        if(route.previousElementSibling != null)
+        {
+            //then we need to create a new route in the scene
+            newRoute(route.id);
+        }
+
+        //obtain FROM element
+        let type = route.getElementsByTagName("from")[0].attributes.uri.value.split(":")[0];
+        //let id = route.getElementsByTagName("from")[0].attributes.id.value;
+        switch(type) {
+            case 'timer':
+                createTimer(route.getElementsByTagName("from")[0]);
+                break;            
+            case 'direct':
+                createDirectStart(route.getElementsByTagName("from")[0]);
+                break;
+        }
+
+        //iteratorTo = //*[local-name()="route" and @id="route1"]/*[local-name() !="from"]
+        iteratorTo = xmlDoc.evaluate('//*[local-name()="route" and @id="'+route.id+'"]/*[local-name() !="from"]', xmlDoc, null, XPathResult.ANY_TYPE, null);
+
+        //get first element
         to = iteratorTo.iterateNext();
 
+        while(to)
+        {
+            //because all creation actions are asynchronous, 
+            //we need to space them apart with a gap of time
+            delay=+100;
 
+            //The XML tag identifies the activity, e.g. <log> is a Log activity
+            xmlTag = to.tagName;
+            current = to;
 
+            //was
+            // createActivity(to.tagName, delay);
+            // // alert(to.tagName)
+            // to = iteratorTo.iterateNext();
 
+            //we iterate beforehand to determine if node IS last
+            to = iteratorTo.iterateNext();
+            if(to)
+            {
+                //if not last we proceed normally
+                createActivity(xmlTag, delay, current, false);
+            }
+            else{
+                //if IS last, we flag it.
+                //the purpose is to enable communications with VSCode when done.
+                //otherwise VSCode keeps getting code updates
+                createActivity(xmlTag, delay, current, true);
+            }
 
+            // if(to.tag)
+            // setTimeout(createTimer, delay++);
+        }
 
-        // if(to.tag)
-        // setTimeout(createTimer, delay++);
+        route = iteratorRoute.iterateNext();
     }
 
     // newRoute();
@@ -88,23 +147,81 @@ function simulateRouteImport(camelContextImport)
     // createLog();
 }
 
-function createActivity(type, delay) {
+//Creates an activity based on the XML tag (type)
+//it delays the creation activity because all creation actions are asynchronous
+//if it is the last action, we need to flag it.
+function createActivity(type, delay, definition,lastAction) {
 
     switch(type) {
         case 'log':
-            setTimeout(createLog, delay);
+            //setTimeout(createLog, delay);
+            createActivityDelayed(createLog, delay, definition,lastAction);
             break;
-        case 'direct':
-            setTimeout(createDirect, delay);
+        case 'to':
+            //setTimeout(createDirect, delay);
+            createActivityDelayed(createDirectFromDefinition, delay, definition, lastAction);
             break;
         case 'choice':
-            setTimeout(createChoice, delay);
+            //setTimeout(createChoice, delay);
+            createActivityDelayed(createChoice, delay, definition, lastAction);
             break;
         case 'multicast':
-            setTimeout(createMulticast, delay);            
+            //setTimeout(createMulticast, delay);            
+            createActivityDelayed(createMulticast, delay, definition, lastAction);            
+            break;
+        case 'setProperty':          
+            createActivityDelayed(createProperty, delay, definition, lastAction);            
+            break;
+        case 'setHeader':    
+            createActivityDelayed(createHeader, delay, definition, lastAction);            
+            break;
+        case 'setBody':           
+            createActivityDelayed(createBody, delay, lastAction);            
             break;
         default:
             //code block
+    }
+}
+
+
+//Creates an activity using its creator function (creator)
+//it delays the creation activity because all creation actions are asynchronous
+//if it is the last action, we need to wait for completion and open coms with VSCode
+function createActivityDelayed(creator, delay, definition, lastAction)
+{
+    //experiment
+    creator(definition);
+    return;
+
+    lastAction = lastAction || false;
+    //tet creationPromise
+
+    if(!lastAction)
+    {
+        setTimeout(creator(definition), delay);
+    }
+    else
+    {
+        let creationPromise = new Promise((resolve, reject) => {
+            // We call resolve(...) when what we were doing asynchronously was successful, and reject(...) when it failed.
+            // In this example, we use setTimeout(...) to simulate async code. 
+            // In reality, you will probably be using something like XHR or an HTML5 API.
+            setTimeout( function() {
+                            creator(definition)
+                            resolve("Success!")  // Yay! Everything went well!
+                        },
+                        delay) 
+        })
+
+        creationPromise
+            .then(function(value) {
+                    console.log("last 'create' action completed");
+                    syncStartUpEnabled = false;
+                  })
+            .catch(function() {
+                    console.log("last 'create' action completed");
+                    syncStartUpEnabled = false;
+                  });
     }
 }
 
@@ -161,12 +278,15 @@ function getCamelSource()
 
     renderCamelRoutes(mycode);
 
+    
     //when it runs in VSCode
     if ( top !== self ) { // we are in the iframe
-        vscode.postMessage({
-            command: 'insert',
-            text: prettifyXml(mycode.text)
-        })
+        //was
+        // vscode.postMessage({
+        //     command: 'insert',
+        //     text: prettifyXml(mycode.text)
+        // })
+        vscodePostMessage('insert', mycode.text);
     }
     //when it runs in a browser
     else { // not an iframe

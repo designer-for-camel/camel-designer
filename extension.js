@@ -91,7 +91,7 @@ function activate(context) {
                   var textRange = new vscode.Range(firstLine.range.start, lastLine.range.end);
 
                   //Content replaced with Designer update
-                  edit.replace(textRange, message.text);
+                  edit.replace(textRange, message.payload);
 
                   //we clear selection
                   let pos0 = new vscode.Position(0, 0);
@@ -103,7 +103,24 @@ function activate(context) {
 
             case 'alert':
               console.log('alert message handler');
-              vscode.window.showErrorMessage(message.text);
+              vscode.window.showErrorMessage(message.payload);
+              return;
+
+            case 'importCamelDefinition':
+              console.log("got 'importCamelDefinition request'");
+
+              if(te.document.getText().trim().length == 0)
+              {
+                //abort import process if content is empty
+                return;
+              }
+
+              //PENDING
+              //Here we should implement some validation to confirm the code is a valid Camel definition
+
+              //we capture the editor's content and send it to the designer
+              currentPanel.webview.postMessage({ command: 'importCamelDefinition' , source: te.document.getText()});
+
               return;
           }
         },
@@ -214,7 +231,7 @@ function activate(context) {
       }
       // Send a message to our webview.
       // You can send any JSON serializable data.
-      currentPanel.webview.postMessage({ command: 'refactor' });
+      currentPanel.webview.postMessage({ command: 'importCamelDefinition' });
   }));
   context.subscriptions.push(disposable);
   console.log('trace3');

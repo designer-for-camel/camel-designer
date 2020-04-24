@@ -16,7 +16,14 @@
       <to uri="direct:route1" id="direct-8"/>
       <to uri="direct:route1" id="direct-9"/>
     </multicast>
-    <log message="demo trace 11" id="log-11"/>
+    <log message="my demo trace 11" id="log-11"/>
+    <to uri="direct:myroute1" id="mydirect-1"/>
+  </route>
+
+  <route id="route-id2">
+    <from uri="direct:demo" id="direct-1"/>
+    <log message="demo trace 2" id="log-22"/>
+    <log message="demo trace 3" id="log-23"/>
   </route>
 
 </camelContext>
