@@ -57,7 +57,7 @@
 		"xpath": "0.0.27"
 	},
 	"repository": {
-	  "type": "git",
-	  "url": "https://github.com/brunoNetId/camel-designer.git"
+		"type": "git",
+		"url": "https://github.com/brunoNetId/camel-designer.git"
 	}
 }
