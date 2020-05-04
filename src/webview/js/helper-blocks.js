@@ -1,5 +1,11 @@
 function createFrom(processorType)
 {
+  //if no routes exist we create the first one.
+  // if(routes.length == 0)
+  // {
+  //   newRoute();
+  // }
+
   // give name/id
   var elementName = processorType+"-"+(++logId);
  
@@ -12,7 +18,7 @@ function createFrom(processorType)
   from.setAttribute('class', 'clickable');
   // from.setAttribute('class', 'clickable');
 
-  from.setAttribute(elementName,'');
+  //from.setAttribute(elementName,'');
   from.setAttribute('id', elementName);
   from.setAttribute('start', '');
   from.setAttribute('processor-type', processorType);
@@ -261,16 +267,33 @@ function createLog(definition)
     log.getElementsByTagName("a-text")[0].firstChild.setAttribute('value', '"'+definition.getAttribute('message')+'"');
   }
 
+  //test
+  //vscodePostMessage('atlasmap-start')
+
 }
 
-function createProperty()
+//creates a setProperty activity
+function createProperty(definition)
 {
-  createNameValuePair('property');
+  var property = createNameValuePair('property');
+
+  if(definition)
+  {
+    property.getElementsByTagName("a-text")[0].firstChild.setAttribute('value', definition.getAttribute('propertyName')+':');
+    property.getElementsByTagName("a-text")[0].lastChild.setAttribute('value', '"'+definition.firstElementChild.textContent+'"');
+  }
 }
 
-function createHeader()
+//creates a setHeader activity
+function createHeader(definition)
 {
-  createNameValuePair('header');
+  var header = createNameValuePair('header');
+
+  if(definition)
+  {
+    header.getElementsByTagName("a-text")[0].firstChild.setAttribute('value', definition.getAttribute('headerName')+':');
+    header.getElementsByTagName("a-text")[0].lastChild.setAttribute('value', '"'+definition.firstElementChild.textContent+'"');
+  }
 }
 
 function createNameValuePair(setterType)
@@ -307,10 +330,63 @@ function createNameValuePair(setterType)
   label.setAttribute('side', 'double');
 
   goLive(activity);
+
+  return activity;
 }
 
+//creates an Unknown activity
+function createUnknown(definition)
+{
+  var activity;
 
-function createBody()
+  if(definition.tagName == 'from')
+  {
+    activity = createFrom('unknown');
+    activity.firstChild.setAttribute('value','');
+  }
+  else{
+    activity = createTo('unknown');
+  }
+
+  activity.setAttribute('color', '#FF5733');
+  activity.setAttribute('opacity', .5)
+
+  var text = document.createElement('a-text');
+  activity.appendChild(text);
+  text.setAttribute('value', '?');
+  text.setAttribute('color', 'white');
+  text.setAttribute('align', 'center');
+  text.setAttribute('side', 'double');
+  // text.setAttribute('scale', {x: 2, y: 2, z: 2});
+
+  //defaults
+  let defaultCode = definition.outerHTML.replace(' xmlns="http://camel.apache.org/schema/spring"','');
+
+  //label for field name
+  let label = document.createElement('a-text');
+  text.appendChild(label);
+  label.setAttribute('value', defaultCode);
+  label.setAttribute('color', 'grey');
+  label.setAttribute('align', 'center');
+  label.setAttribute('position', {x: 0, y: -1.2, z: 0});
+  label.setAttribute('side', 'double');
+  label.setAttribute('font','sourcecodepro')
+
+  goLive(activity);
+
+  return activity;
+
+
+  // var header = createNameValuePair('header');
+
+  // if(definition)
+  // {
+  //   header.getElementsByTagName("a-text")[0].firstChild.setAttribute('value', definition.getAttribute('headerName')+':');
+  //   header.getElementsByTagName("a-text")[0].lastChild.setAttribute('value', '"'+definition.firstElementChild.textContent+'"');
+  // }
+}
+
+function createBody(definition)
 {
   let activity = createTo('body');
 
@@ -325,6 +401,11 @@ function createBody()
   //defaults
   let defaultValue = "hello world";
 
+  if(definition)
+  {
+    defaultValue = definition.firstElementChild.textContent;
+  }
+
   //label to display the value set for the activity
   let label = document.createElement('a-text');
   text.appendChild(label);
@@ -338,34 +419,36 @@ function createBody()
 }
 
       // function directCreate()
-      function createDirectFromDefinition(definition)
+      function createDirect(definition)
       {
-        let activity = createDirect();
+        let activity = createDirectActivity();
 
-        // console.log("has definition: "+definition);
-        // console.dir(definition);
-        updateActivityId(activity, definition.getAttribute('id'));
-        //was
-        //activity.getElementsByTagName("a-text")[0].firstChild.setAttribute('value', definition.getAttribute('uri').substring(7));
-        //activity.getElementsByTagName("a-text")[1].setAttribute('value', definition.getAttribute('uri').substring(7));
-        activity.children.routeLabel.setAttribute("value", definition.getAttribute('uri').substring(7));
-        
+        //add to scene (and other stuff)
+        goLive(activity);
+
+
+        if(definition)
+        {
+          updateActivityId(activity, definition.getAttribute('id'));
+          activity.children.routeLabel.setAttribute("value", definition.getAttribute('uri').substring(7));
+        }
       }
 
-      // function directCreate()
-      function createDirect(givenPos, activities, scale, staticLink, parent)//, sources)
+      function createDirectActivity(scale)
+      //function createDirect(givenPos, activities, scale, staticLink, parent)//, sources)
       {
           // sources = sources || null;   
 
           //create activity
-          if(givenPos != null)
+          //if(givenPos != null)
           {  
             // configObj = createTo("direct", givenPos, activities, scale, staticLink, parent);
-            configObj = createTo("direct", scale);//, sources);
+            //configObj = createTo("direct", scale);//, sources);
           }
-          else 
+          //else 
           {  
             // configObj = createTo("direct", null, activities, scale, staticLink, parent);
+            //configObj = createTo("direct", scale);
             configObj = createTo("direct", scale);
           }
           //obtain dialog
@@ -411,7 +494,7 @@ reloadRoutes(list)
       //    directConfig();
 
         // goLiveTo(configObj);
-        goLive(configObj, givenPos, activities, scale, staticLink, parent);
+        //goLive(configObj, givenPos, activities, scale, staticLink, parent);
 
         return configObj;
       }
@@ -747,13 +830,28 @@ let sourceFwdLink = detachForwardLink(source)
 
         for(let i=1; i<=numActivities; i++)
         {
-          activities.push(createDirect(
-                getNextParallelPosition(scene,i,numActivities,0, boxed),
-                [rootActivity],
-                scale, 
-                // null, 
-                boxed,
-                box)); //parent entity
+          let activity = createDirectActivity(scale);
+          //activity.setAttribute('scale', scale);
+            
+          goLive(
+              activity,
+              getNextParallelPosition(scene,i,numActivities,0, boxed),
+              [rootActivity],
+              scale, 
+              // null, 
+              boxed,
+              box); //parent entity
+            
+          activities.push(activity);
+            
+
+          // activities.push(createDirect(
+                // getNextParallelPosition(scene,i,numActivities,0, boxed),
+                // [rootActivity],
+                // scale, 
+                // // null, 
+                // boxed,
+                // box)); //parent entity
 
           //force connections to root activity except last iteration
           //(so that sub-sequent activities connect to closing activity)

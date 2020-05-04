@@ -1,5 +1,23 @@
 <camelContext xmlns="http://camel.apache.org/schema/spring" id="camel">
 
+  <!-- <rest path="/customer" id="api-customer">
+    <get uri="/contact-customer-login" id="get-contact">
+      <to uri="direct:pending"/>
+    </get>
+    <post id="POST">
+      <to uri="direct:pending"/>
+    </post>
+  </rest>
+
+  <rest path="/country" id="api-country">
+    <get uri="/code" id="get-code">
+      <to uri="direct:pending"/>
+    </get>
+    <post id="POST">
+      <to uri="direct:pending"/>
+    </post>
+  </rest>
+
   <route id="route1">
     <from uri="timer:demo" id="timer-1"/>
     <log message="demo trace 2" id="log-2"/>
@@ -24,6 +42,92 @@
     <from uri="direct:demo" id="direct-1"/>
     <log message="demo trace 2" id="log-22"/>
     <log message="demo trace 3" id="log-23"/>
-  </route>
+  </route> -->
+
+
+  <!-- <route id="route-f15cb719-4287-456b-a327-b7d6bdde70c2">
+    <from id="from-25444a4c-8645-4773-9007-cb620e4a375b" uri="direct:addDocument"/>
+
+    <log message="got request" />
+
+    <setHeader headerName="CamelFileName">
+        <simple>${body.get('docName')}.pdf</simple>
+    </setHeader>
+
+
+    <setProperty propertyName="prop1">
+      <simple>value1</simple>
+    </setProperty>
+
+    <setBody>
+        <simple>${body.get('docContent')}</simple>
+    </setBody>
+
+    <to uri="pdf:create"/>
+
+    <to uri="ftp://ftpupload.net:21//htdocs/demo-fuse?passiveMode=true&amp;password=auZFRv8RAoC&amp;username=epiz_24054571"/>
+
+    <marshal>
+      <custom ref="gson"/>
+    </marshal>
+
+    <setBody>
+        <simple>done</simple>
+    </setBody>
+
+</route>
+
+<route id="route-id2">
+  <from uri="kafka:demo" id="kafka-1"/>
+  <log message="demo trace 2" id="log-22"/>
+  <log message="demo trace 3" id="log-23"/>
+</route> -->
+
+  <!-- <route id="route-f15cb719-4287-456b-a327-b7d6bdde70c2">
+    <from id="from-25444a4c-8645-4773-9007-cb620e4a375b" uri="direct:addDocument"/>
+    <log message="demo trace 3" id="log-100"/>
+    <setBody>
+        <simple>done</simple>
+    </setBody>
+  </route> -->
+
+
+<!-- <route>
+  <from uri="timer:demo" id="test1"/>
+  <log message="demo trace 3" id="test2"/>
+</route>
+
+
+<route id="route-id4">
+  <from uri="timer:demo"/>
+  <log message="demo trace 3" id="test4"/>
+</route>
+
+<route id="route-id5">
+  <from uri="direct:demo"/>
+  <log message="demo trace 3"/>
+</route>
+
+<route>
+  <from uri="direct:demo" id="my-direct-id"/>
+  <log message="demo trace 3"/>
+</route> -->
+
+<!-- <route>
+  <from uri="quartz:foo?cron={{myCron}}"/>
+  <bean ref="myBean" method="hello"/>
+  <log message="${body}"/>
+  <bean ref="myBean" method="bye"/>
+  <log message="${body}"/>
+</route> -->
+
+<route id="route2">
+  <from uri="direct:route2" id="direct-7"/>
+  <setBody id="body-8">
+      <simple>hello world</simple>
+  </setBody>
+  <to uri="direct:route1" id="direct-9"/>
+</route>
+
 
 </camelContext>

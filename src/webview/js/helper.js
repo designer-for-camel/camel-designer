@@ -205,6 +205,12 @@ function getPositionInScene(activity)
 //the function also updates ID references from other entities
 function updateActivityId(activity, newId)
 {
+  //when activities are created from source-code, they might not have an id
+  if(newId == null)
+  {
+    return;
+  }
+
   //order of updates is important:
   //first, we update the link reference with the new ID
   let link = getBackwardsLink(activity);
@@ -217,4 +223,16 @@ function updateActivityId(activity, newId)
 
   //then we update the activity ID
   activity.setAttribute('id', newId);
+}
+
+//Updates the ID of the given Route to the new ID
+function updateRouteId(route, newId)
+{
+  for(i=0; i<routes.length; i++)
+  {
+    if(routes[i] == route.id)
+      routes[i] = newId;
+  }
+
+  route.id = newId;
 }

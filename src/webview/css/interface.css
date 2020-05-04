@@ -75,6 +75,17 @@ routenav {
     width:100px;
 } 
 
+.bRest {
+    top: 12px;  
+    left: 630px;
+    width:100px;
+} 
+.soap {
+    top: 12px;  
+    left: 735px;
+    width:100px;
+} 
+
 /*      camel {
 font-size: 24pt;
 text-align: center; 
@@ -112,10 +123,14 @@ p {
 }  
 
 .consumer {
-    /* left: 125px; */
     left: 230px;
     opacity: .2;
-} 
+}
+
+.rest {
+    left: 335px;
+    opacity: .2;
+}
 
 /* FROM activities */
 .direct-s {
@@ -143,26 +158,37 @@ p {
 
         /* TO activities */
         .log {
-            /* left: 125px; */
             top: 70px;
         } 
 
         .direct {
-            /* left: 125px; */
-            /*top: 120px;*/
             top: 109px;
         } 
 
         .choice {
-            /*width: 220px;*/
-            /* left: 125px; */
             top: 172px;  
         } 
 
         .multicast {
-            /* left: 125px; */
             top: 220px;  
-        } 
+        }
+
+            /* REST activities */
+            .group {
+                top: 70px;
+            } 
+
+            .get {
+                top: 117px;
+            } 
+
+            .post {
+                top: 165px;  
+            } 
+
+            .put {
+                top: 213px;  
+            }
 
 .activityconfig {
     font-size: 12pt;

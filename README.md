@@ -1,26 +1,37 @@
-# *Apache Camel* visual designer
+# *Apache Camel* Visual Designer
 
-Implement *Apache Camel* routes using a visual designer. It synchronises the editor on-the-fly generating XML source code containing the *CamelContext* and all the routes graphically defined.
+Implement *Apache Camel* integrations using a visual designer. It synchronises the editor on-the-fly generating XML source code containing the *CamelContext* definition translated from the graphical flows.
 
 > **EARLY PROTOTYPE**: \
 Please bear in mind this *VSCode* extension is in 'early-prototype' phase and is yet not functional. It helps playing with ideas on how the initiative can progress.
 
 
-![feature X](https://github.com/brunoNetId/camel-designer/blob/master/docs/images/readme/vs-extension.gif)
+![Overview](https://github.com/designer-for-camel/camel-designer/blob/master/docs/images/readme/vs-extension.gif)
 
 
-## Features
+## Feature highlights
 
 * Easy visual design of processing flows
 * Organise activities with drag & drop
-* Create multiple routes (process flows)
-* Use the text editor to navigate:
+* REST definitions
+* Click in the text editor to navigate:
   - switch between routes
   - select activities to configure
-* Connect flows using the 'direct' activity
-* Configuration panel for activities
-* Create parallel flows (fork)
-* Create *Choice* flows
+* Configuration panels per activity
+* Predefined sets (*Choice* / *Parallel*)
+* Open Camel XML files and render visually.
+
+### REST definitions
+
+The Designer includes a REST designer where you an define groups of REST methods. As you create new REST elements, the tool translates into Camel REST DSL in the text editor.
+
+![REST](https://github.com/designer-for-camel/camel-designer/blob/master/docs/images/readme/vs-extension-rest.gif)
+
+### Navigation
+
+From the text editor, click or use the arrow keys to navigate to the region of interest, and the Camel Designer will visually display the definition corresponding to the block of code selected.
+
+![Navigation](https://github.com/designer-for-camel/camel-designer/blob/master/docs/images/readme/vs-extension-navigation.gif)
 
 
 ## Using the extension
@@ -48,31 +59,23 @@ To start using the extension and generate your Camel definitions:
 
 - Current 'Drag & Drop' in Designer view lacks precision, it's not using a-frame/three.js native mechanisms.
   Needs to be replaced with native one.
-- Current XML rendering for Camel routes is too complicated, navigating via 3D objects.
-  applying an XSLT transform on the HTML nodes might do the trick and vastly simplifying the task. 
+- Current XML rendering for Camel routes uses 3D objects to navigate.
+  Applying an XSLT transform on the HTML nodes might improve the process to rendering the source code. 
 
 ## List of future candidate features
 
-- Ability to open in Designer view saved XML definitions.
-- create wire tap activity
 - create Transform activity (entity with box and triangle alternating)
 - option to create 2/3/4 ways in choices and forks
 - align VR/mouse controllers
 - option on/off to move/work
 - navigation buttons (e.g. left/right with slide animations effect) 
-- (started) import Camel XML files to 3D models
 
 ## Known Issues
 
 - Code synchronisation between editor and designer is to be completed. Changes on designer will reflect on the editor but changes in the editor will not reflect on the designer view.
-- Designer panel gets lost and reset if panel is hidden.
 - add/delete activities mid-flow not always possible, review needed.
-- add choice in mid step not clean, to reproduce: from(),log1(),log2(), from log1 do choice()
 - adding steps from start not working
-- (fixed?) mouse drag-n-drop not great, has jumps, please make smooth
-- (fixed?) sometimes positions are not in sync, is there anything possible to do to fix?
-- (fixed?) nextPos sometimes jumps to far ahead.
-- (fixed?) choices are not created with symetric shape and distances 
+- Only limited Camel blocks are supported, more will be implemented. For now, unsupported blocks will show red and a question mark. 
 
 </br>
 
@@ -87,6 +90,7 @@ The focus of this release has been to integrate the Browser based Designer with 
 The following list describes the work done on the graphical Designer:
 - use "call to: route" on direct calls
 - export 3D models to Camel XML files
+- import Camel XML files into 3D models
 - add/delete activities mid-flow
 - conditions on choices
 - follow head of route with camera
@@ -95,11 +99,12 @@ The following list describes the work done on the graphical Designer:
 - circle activity under configuration
 - choice paths
 - parallel paths
-- pre-head buttons with category labels (from/to), and replace with timer/log
+- REST definitions
+- Support to accommodate unimplemented Camel patterns.
 
 ### 1.0.0
 
-Not there yet... one day.
+Not there yet... keep watching this space.
 
 ---
 

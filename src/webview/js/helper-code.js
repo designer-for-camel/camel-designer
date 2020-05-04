@@ -49,43 +49,36 @@ function loadSourceCode(camelContextImport)
 {
     let delay = 0;
 
-    // let testxml = '<root><route><from>something</from><to>else</to></route></root>'
-    let testxml = '<root>\n<route>\n<from/>\n<to/>\n</route>\n</root>'
-
     var xmlDoc = new DOMParser().parseFromString(camelContextImport, 'application/xml');
-    // var xmlDoc = new DOMParser().parseFromString(testxml, 'application/xml');
 
+    //REST definitionss
+    createRestDefinitions(xmlDoc);
+
+    //defined routes in source
     var iteratorRoute = xmlDoc.evaluate('//*[local-name()="route"]', xmlDoc, null, XPathResult.ANY_TYPE, null);
-
-
-    //var iteratorFrom = xmlDoc.evaluate('//*[local-name()="from"]', xmlDoc, null, XPathResult.ANY_TYPE, null);
-    var iteratorTo; //= xmlDoc.evaluate('//*[local-name()="route"]/*[local-name() !="from"]', xmlDoc, null, XPathResult.ANY_TYPE, null);
-
     var route = iteratorRoute.iterateNext();
-    //var from = iteratorFrom.iterateNext();
-    var to;// = iteratorTo.iterateNext();
-    var current;
-    var xmlTag;
 
-    // while(thisNode)
+    //if it has an ID, we update the default route ID
+    if(route.id)
     {
-        //setTimeout(createTimer, delay++);
-        // createTimer();
-        //createDirectStart();
+        updateRouteId(getSelectedRoute(), route.id);
     }
 
     while(route)
     {
         //if this is not the very first route
-        if(route.previousElementSibling != null)
+        if(route.previousElementSibling != null && route.previousElementSibling.tagName == 'route')
         {
             //then we need to create a new route in the scene
             newRoute(route.id);
         }
 
-        //obtain FROM element
-        let type = route.getElementsByTagName("from")[0].attributes.uri.value.split(":")[0];
-        //let id = route.getElementsByTagName("from")[0].attributes.id.value;
+        //obtain FROM definition
+        let definition = route.getElementsByTagName("from")[0];
+
+        //obtain FROM component
+        let type = definition.attributes.uri.value.split(":")[0];
+
         switch(type) {
             case 'timer':
                 createTimer(route.getElementsByTagName("from")[0]);
@@ -93,58 +86,70 @@ function loadSourceCode(camelContextImport)
             case 'direct':
                 createDirectStart(route.getElementsByTagName("from")[0]);
                 break;
+            default:
+                //if none of the above, then it's unknown or unsupported yet.
+                createUnknown(definition);
+                break;
         }
 
-        //iteratorTo = //*[local-name()="route" and @id="route1"]/*[local-name() !="from"]
-        iteratorTo = xmlDoc.evaluate('//*[local-name()="route" and @id="'+route.id+'"]/*[local-name() !="from"]', xmlDoc, null, XPathResult.ANY_TYPE, null);
+        //obtain all the route processors to iterate
+        let processors = route.children;
 
-        //get first element
-        to = iteratorTo.iterateNext();
-
-        while(to)
+        //iteration starts after FROM (i=1)
+        for(i=1; i<processors.length;i++)
         {
             //because all creation actions are asynchronous, 
             //we need to space them apart with a gap of time
             delay=+100;
 
             //The XML tag identifies the activity, e.g. <log> is a Log activity
-            xmlTag = to.tagName;
-            current = to;
+            let xmlTag = processors[i].tagName;
 
-            //was
-            // createActivity(to.tagName, delay);
-            // // alert(to.tagName)
-            // to = iteratorTo.iterateNext();
+            //if IS last processor, we flag it.
+            //the purpose is to enable communications with VSCode when done.
+            //otherwise VSCode keeps getting code updates
+            let isLastProcessor = (i<processors.length)
 
-            //we iterate beforehand to determine if node IS last
-            to = iteratorTo.iterateNext();
-            if(to)
-            {
-                //if not last we proceed normally
-                createActivity(xmlTag, delay, current, false);
-            }
-            else{
-                //if IS last, we flag it.
-                //the purpose is to enable communications with VSCode when done.
-                //otherwise VSCode keeps getting code updates
-                createActivity(xmlTag, delay, current, true);
-            }
-
-            // if(to.tag)
-            // setTimeout(createTimer, delay++);
+            //create activity with flag
+            createActivity(xmlTag, delay, processors[i], isLastProcessor);
         }
 
         route = iteratorRoute.iterateNext();
     }
+}
 
-    // newRoute();
-    // createTimer();
+//Creates REST definitions
+function createRestDefinitions(xmlDoc) {
+    var iteratorRest = xmlDoc.evaluate('//*[local-name()="rest"]', xmlDoc, null, XPathResult.ANY_TYPE, null);
 
-    // setTimeout(createLog, 100)
-    // setTimeout(createChoice, 200)
-    // setTimeout(createDirect, 300)
-    // setTimeout(createLog, 400)
-    // createLog();
+    var rest = iteratorRest.iterateNext();
+
+    while(rest)
+    {
+        //if this is not the very first route
+        //if(rest.previousElementSibling != null)
+        {
+            //then we need to create a new route in the scene
+            createRestGroup({
+                id: rest.id, 
+                path: rest.getAttribute('path')
+            });
+        }
+
+        let methods = rest.children;
+
+        for(i=0; i<methods.length;i++)
+        {
+
+            createRestMethod({
+                method: methods[i].tagName,
+                id: methods[i].id, 
+                uri: methods[i].getAttribute('uri')
+            });            
+        }
+
+        rest = iteratorRest.iterateNext();
+    }
 }
 
 //Creates an activity based on the XML tag (type)
@@ -152,14 +157,19 @@ function loadSourceCode(camelContextImport)
 //if it is the last action, we need to flag it.
 function createActivity(type, delay, definition,lastAction) {
 
+    //when XML tag is 'to', we need to identify the Camel component
+    if(type == 'to'){
+        type = definition.attributes.uri.value.split(":")[0];
+    }
+
     switch(type) {
         case 'log':
             //setTimeout(createLog, delay);
             createActivityDelayed(createLog, delay, definition,lastAction);
             break;
-        case 'to':
+        case 'direct':
             //setTimeout(createDirect, delay);
-            createActivityDelayed(createDirectFromDefinition, delay, definition, lastAction);
+            createActivityDelayed(createDirect, delay, definition, lastAction);
             break;
         case 'choice':
             //setTimeout(createChoice, delay);
@@ -169,16 +179,19 @@ function createActivity(type, delay, definition,lastAction) {
             //setTimeout(createMulticast, delay);            
             createActivityDelayed(createMulticast, delay, definition, lastAction);            
             break;
-        case 'setProperty':          
+        case 'setProperty':
             createActivityDelayed(createProperty, delay, definition, lastAction);            
             break;
-        case 'setHeader':    
+        case 'setHeader':
             createActivityDelayed(createHeader, delay, definition, lastAction);            
             break;
-        case 'setBody':           
-            createActivityDelayed(createBody, delay, lastAction);            
+        case 'setBody':
+            createActivityDelayed(createBody, delay, definition, lastAction);            
             break;
         default:
+            //if none of the above, then it's unknown or unsupported yet.
+            createActivityDelayed(createUnknown, delay, definition, lastAction);            
+            break;
             //code block
     }
 }
@@ -193,6 +206,8 @@ function createActivityDelayed(creator, delay, definition, lastAction)
     creator(definition);
     return;
 
+//FROM HERE, TO BE DEPRECATED
+    
     lastAction = lastAction || false;
     //tet creationPromise
 
@@ -276,7 +291,7 @@ function getCamelSource()
 
     let mycode = {text:"", tab:""};
 
-    renderCamelRoutes(mycode);
+    renderCamelContext(mycode);
 
     
     //when it runs in VSCode
@@ -304,30 +319,94 @@ function getCamelSource()
 
 
 
+function renderCamelContext(mycode) {
+
+    mycode.text +=  '<camelContext id="camel" xmlns="http://camel.apache.org/schema/spring">\n\n'
+    mycode.tab += '  '
+
+    renderCamelRestDsl(mycode);
+    renderCamelRoutes(mycode);
+
+    mycode.tab = mycode.tab.slice(0, -2);
+    mycode.text +=  '</camelContext>\n\n'
+}
+
+
+
+function renderCamelRestDsl(mycode) {
+
+    var iterator = document.evaluate('//a-box[@rest-dsl]', document, null, XPathResult.ANY_TYPE, null);
+    var thisNode = iterator.iterateNext();
+
+    let restConfiguration = false;
+
+    while (thisNode) {
+
+        //only once
+        if(!restConfiguration)
+        {
+            mycode.text +=  mycode.tab+'<restConfiguration component="servlet" apiContextPath="/openapi.json"/>\n\n';
+            // mycode.text +=  mycode.tab+'<rest path="/" id="'+thisNode.id+'">\n';
+            // mycode.tab+= '  '
+            restConfiguration = true;
+        }
+
+        mycode.text +=  mycode.tab+'<rest path="'+thisNode.getAttribute("path")+'" id="'+thisNode.id+'">\n';
+        mycode.tab+= '  '
+
+        //obtains all Methods
+        let methods = getRestMethods(thisNode);
+
+        //loop over methods
+        methods.forEach(
+            function renderCamelRestDslMethod(value) {
+                let uri = value.getAttribute("uri");
+                if(uri)
+                    mycode.text += mycode.tab+'<'+value.getAttribute("method")+' uri="'+uri+'" id="'+value.id+'">\n'
+                else
+                    mycode.text += mycode.tab+'<'+value.getAttribute("method")+' id="'+value.id+'">\n'
+                mycode.tab += '  '
+                // renderMethod(thisNode.id, mycode);
+                let direct = getRestMethodDirectActivity(value);
+                //mycode.text +=  mycode.tab+'<to uri="direct:'+'pending(hardcoded in helper-code line 460)'+'"/>\n'
+                mycode.text += mycode.tab+'<to uri="direct:'+direct.querySelector("#routeLabel").getAttribute('value')+'" id="'+direct.id+'"/>\n'
+
+
+                mycode.tab = mycode.tab.slice(0, -2);
+                mycode.text +=  mycode.tab+'</'+value.getAttribute("method")+'>\n'
+            }
+        )
+        
+        mycode.tab = mycode.tab.slice(0, -2);
+        mycode.text +=  mycode.tab+'</rest>\n\n'
+        thisNode = iterator.iterateNext();
+    }
+
+    // if(restConfiguration)
+    // {
+    //     mycode.text +=  mycode.tab+'</rest>\n\n'
+    // }
+}
+
+
 function renderCamelRoutes(mycode) {
 
     var iterator = document.evaluate('//a-entity[@route]', document, null, XPathResult.ANY_TYPE, null);
-
     var thisNode = iterator.iterateNext();
 
-        mycode.text +=  '<camelContext id="camel" xmlns="http://camel.apache.org/schema/spring">\n\n'
-         mycode.tab += '  '
-    while (thisNode) {
-
+    while (thisNode && thisNode.children.length > 0) {
 
         mycode.text +=  mycode.tab+'<route id="'+thisNode.id+'">\n'
                                         mycode.tab += '  '
-                                        // mycode.tab += '<p>'
                                         renderRoute(thisNode.id, mycode);
                                         mycode.tab = mycode.tab.slice(0, -2);
         mycode.text +=  mycode.tab+'</route>\n\n'
         thisNode = iterator.iterateNext();
     }
 
-        mycode.tab = mycode.tab.slice(0, -2);
-        mycode.text +=  '</camelContext>\n\n'
     // alert(mycode.text)
 }
+
 
 function renderRoute(routeId, mycode) {
 
@@ -344,14 +423,34 @@ let start = thisNode;
 
         let type = thisNode.getAttribute('processor-type');
 
-        if(type == 'direct' )
-        {
-            mycode.text += mycode.tab+'<from uri="direct:'+routeId+'" id="'+thisNode.id+'"/>\n'
+        // if(type == 'direct' )
+        // {
+        //     mycode.text += mycode.tab+'<from uri="direct:'+routeId+'" id="'+thisNode.id+'"/>\n'
+        // }
+        // else
+        // {
+        //     mycode.text += mycode.tab+'<from uri="timer:demo" id="'+thisNode.id+'"/>\n'
+        // }
+
+        switch(type) {
+            case 'direct':
+                mycode.text += mycode.tab+'<from uri="direct:'+routeId+'" id="'+thisNode.id+'"/>\n'
+                break;
+            case 'timer':
+                mycode.text += mycode.tab+'<from uri="timer:demo" id="'+thisNode.id+'"/>\n'
+                break;
+            default:
+                mycode.text += mycode.tab+thisNode.getElementsByTagName('a-text')[1].firstChild.getAttribute('value')+'\n'
+                break;
+                //code block
         }
-        else
-        {
-            mycode.text += mycode.tab+'<from uri="timer:demo" id="'+thisNode.id+'"/>\n'
-        }
+
+
+
+
+
+
+
         thisNode = iterator.iterateNext();
     }
 
@@ -432,6 +531,9 @@ function renderRouteActivity(activity, mycode, iterator) {
         case 'multicast-end':
             mycode.tab = mycode.tab.slice(0, -2);
             mycode.text += mycode.tab+'</multicast>\n'
+            break;
+        case 'unknown':
+            mycode.text += mycode.tab+activity.getElementsByTagName('a-text')[0].firstChild.getAttribute('value')+'\n'
             break;
         default:
             //code block

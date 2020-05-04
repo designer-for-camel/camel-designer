@@ -8,6 +8,7 @@
 
       // var routes = ["route1", "route2"];
       var routes = ["route1"];
+      // var routes = [];
       var routeNum = 1;
 
       var startActivityPos = -5;
@@ -49,6 +50,19 @@
               case 'setFocus':
                   console.log("got focus command"+ message.id);
                   let activity = document.getElementById(message.id);
+
+                  //let isRest = activity.getAttribute("processor-type").startsWith("rest");
+                  let isRest = isRestElement(activity);
+
+                  //if(tag == "rest" || tag == "get" || tag == "post" || tag == "put" || tag == "delete")
+                  if(isRest) {
+                    viewRestDefinitions();
+                    selectRestActivity(activity);
+                    break;
+                  }
+                  else {
+                    viewRouteDefinitions();
+                  }
                   // setCameraFocus(activity);
                   //setConfigSelector(activity);
                   switchConfigPaneByActivity(activity);
@@ -121,6 +135,37 @@
             element[i].firstChild.disabled = !enabled;
           }
       
+      }
+
+      function enableRestButtons(enabled)
+      {
+          let opacity;
+
+          if(enabled)
+          {
+            opacity = .5;
+          }
+          else
+          {
+            opacity = .2;
+          }
+
+          let restIsEmpty = (document.getElementById('rest-definitions').children.length == 0)
+
+          //toggles buttons ON/OFF
+          var element = document.getElementsByClassName("rest");
+          for(let i=0; i<element.length; i++) {
+            
+            //Mechanism to keep REST methods disable until a REST group has been created.
+            //(i=0 is the label, i=1 is the group button, i>1 are the methood buttons)
+            if(restIsEmpty && i>1)
+            {
+              break;
+            }
+
+            element[i].style.opacity = opacity;
+            element[i].firstChild.disabled = !enabled && !restIsEmpty;
+          }
       }
 
       function enableCallDirect(enabled)
@@ -221,7 +266,8 @@
         routeNum++;
         routeId = routeId || "route"+routeNum;
 
-        var scene = document.querySelector('a-scene');
+        // var scene = document.querySelector('a-scene');
+        var scene = document.getElementById('route-definitions');
         var newRoute = document.createElement('a-entity');
         newRoute.setAttribute('class','not-clickable');
         newRoute.setAttribute('id', routeId);
@@ -238,7 +284,7 @@
 
       function initPanes()
       {
-          enableToButtons(true);
+          //enableToButtons(true);
           enableToButtons(false);
           // var element = document.getElementById("newDirect");
           // var routeSelected = element.getElementsByTagName("input")[0].value;
@@ -252,6 +298,59 @@
           switchConfigPane("introconfig");
 
           document.getElementsByTagName("routenav")[1].innerHTML = routes[0];
+      }
+
+      function viewRestDefinitions()
+      {
+          enableFromButtons(false);
+          enableToButtons(false);
+          enableRestButtons(true);
+
+          document.getElementById(routes[0]).setAttribute('visible', false)
+          document.getElementById(routes[0]).setAttribute('class', 'not-clickable')
+          document.getElementById(routes[0]).setAttribute('position','0 100 0');
+
+
+          document.getElementById('rest-definitions').setAttribute('visible', true)
+          document.getElementById('rest-definitions').setAttribute('class', 'clickable')
+          document.getElementById('rest-definitions').setAttribute('position','0 0 0');
+
+          switchConfigPane("introconfig");
+
+          setCameraFocus(getSelectedRestGroup());
+          //document.getElementsByTagName("routenav")[1].innerHTML = routes[0];
+      }
+
+      //obtains the current Route being worked on
+      function getSelectedRoute()
+      {
+        return document.getElementById(routes[0]);
+      }
+
+      //returns true if the route has no activities
+      function isRouteEmpty(route)
+      {
+        return (route.children.length == 0);
+      }
+
+      //Switch to the Route Designer view
+      function viewRouteDefinitions()
+      {
+          enableFromButtons(true);
+          // enableToButtons(true);
+          enableToButtons(!isRouteEmpty(getSelectedRoute()));
+          enableRestButtons(false);
+
+          document.getElementById(routes[0]).setAttribute('visible', true)
+          document.getElementById(routes[0]).setAttribute('class', 'clickable')
+          document.getElementById(routes[0]).setAttribute('position','0 000 0');
+
+
+          document.getElementById('rest-definitions').setAttribute('visible', false)
+          document.getElementById('rest-definitions').setAttribute('class', 'not-clickable')
+          document.getElementById('rest-definitions').setAttribute('position','0 100 0');
+          //switchConfigPane("introconfig");
+          //document.getElementsByTagName("routenav")[1].innerHTML = routes[0];
       }
 
       //Updates the activity with the configuration settings
@@ -313,6 +412,7 @@
 
       function nextRoute(routeId)
       {
+        //viewRouteDefinitions();
         //if not given, we rotate the list from the end (so that it starts from first)
         routeId = routeId || routes[routes.length-1];
 
@@ -362,6 +462,8 @@
         
         //was
         //setCameraFocus(document.getElementById(defaultActivity), true);
+        viewRouteDefinitions();
+
       }
 
       function triggerRouteSwitch(activity)
@@ -675,6 +777,12 @@ var nextPos = refPos.x+2+shiftX;
 
       function setCameraFocus(activity, strict)
       {
+        //if nowhere to go, no point to continue
+        if(activity == null)
+        {
+          return;
+        }
+
           strict = strict || false;
 
           // temporary hack, ignore focus on DIRECT as it conflicts with Jump-to animation
@@ -969,6 +1077,13 @@ var nextPos = refPos.x+2+shiftX;
                   //update activity position
                   movingObj.setAttribute('position', {x: vectorX, y: vectorY, z: movingObj.object3D.position.z});
 
+                  //no special handling for REST components, just select it
+                  if(movingObj.getAttribute('processor-type') == "rest-group")
+                  {
+                    // selectRestGroup(movingObj);
+                    return;
+                  }
+
                   //obtain links to other activities
                   var links = JSON.parse(movingObj.getAttribute("links"));
 
@@ -1093,15 +1208,24 @@ var nextPos = refPos.x+2+shiftX;
             
             //we use click event to highlight activity clicked
             this.el.addEventListener('click', function(evt){
-                  
-              //we ignore choice-start for now on this prototype
-              //this for now prevents a problem with adding new activities from it
-              // if(this.getAttribute('processor-type') == 'choice-start')
-              // {
-              //   return;
-              // }
+                 
+              //no further handling for REST groups, we just select the group and return
+              if(this.getAttribute('processor-type') == "rest-group")
+              {
+                //this situation can be tricky
+                //click events on REST may be chained
+                //if you click on a method, 2 events are fired, 1 for the method, and 1 for the group
+                //we only select the REST group if it's not a chained event
+                if(event.srcElement.getAttribute('processor-type') != "rest-group")
+                {
+                  //if the source event is not the group itself, then we ignore
+                  return;
+                }
+                
+                selectRestGroup(this);
+                return;
+              }
 
-              // console.log(evt.detail.intersection.point);
 
               var now = Date.now();
               let notGroup = this.nodeName.toLowerCase() != "a-box";
@@ -1125,11 +1249,13 @@ var nextPos = refPos.x+2+shiftX;
               // console.log("this.nodeName");
               // console.log(this.nodeName);
 
-              if(this.getAttribute('processor-type') == "log")
-              {
-                switchConfigPaneByActivity(this);
-              }
-              else if(this.getAttribute('processor-type') == "direct")
+              //is this condition needed?
+              //if(this.getAttribute('processor-type') == "log")
+              //{
+              //  switchConfigPaneByActivity(this);
+              //}
+              //else 
+              if(this.getAttribute('processor-type') == "direct")
               {
                 //this code is not intended for FROM elements
                 if(this.hasAttribute('start'))
@@ -1307,13 +1433,26 @@ var nextPos = refPos.x+2+shiftX;
       
       function switchConfigPane(newConfigPane)
       {
-        document.getElementById(currentConfigPane).style.visibility = "hidden";
+        let pane = document.getElementById(currentConfigPane);
+        pane.style.visibility = "hidden";
+
         currentConfigPane = newConfigPane;
-        document.getElementById(currentConfigPane).style.visibility = "visible";
+
+        pane = document.getElementById(currentConfigPane);
+        pane.style.visibility = "visible";
+
+        return pane;
       }
 
       function switchConfigPaneByActivity(activity)
       {
+        //REST elements have their own switch (to better manage different Designer views)
+        if(isRestElement(activity))
+        {
+          selectRestActivity(activity);
+          return;
+        }
+
         setConfigSelector(activity);
 
         if(activity == null)

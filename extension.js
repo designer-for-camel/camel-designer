@@ -106,6 +106,21 @@ function activate(context) {
               vscode.window.showErrorMessage(message.payload);
               return;
 
+            case 'atlasmap-start':
+              console.log('starting AtlasMap');
+              vscode.window.showErrorMessage(message.payload);
+              //vscode.commands.executeCommand("atlasmap.start");
+              // let test = vscode.commands.executeCommand("editor.action.webvieweditor.selectAll");
+
+              // test
+              // .then(function(value) {
+              //         console.log("last 'create' action completed");
+              //         syncStartUpEnabled = false;
+              //       })
+
+              console.log(vscode.window.visibleTextEditors);
+              return;
+
             case 'importCamelDefinition':
               console.log("got 'importCamelDefinition request'");
 
