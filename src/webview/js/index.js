@@ -983,6 +983,44 @@ var nextPos = refPos.x+2+shiftX;
         return testline;
       }
 
+      //Redraws the link
+      //The link includes information about the start/end activities
+      function redrawLink(link)
+      {
+        var source      = document.getElementById(link.getAttribute('source'));
+        var destination = document.getElementById(link.getAttribute('destination'));
+
+        var srcShiftX = 0;
+        var dstShiftX = 0;
+
+        if(isBoxed(source))
+        {
+          source = source.parentNode;
+          srcShiftX += 1;
+        }
+
+        if(isBoxed(destination))
+        {
+          destination = destination.parentNode;
+          dstShiftX -= 1;
+        }
+
+        sourcePos = {
+          x: source.object3D.position.x+srcShiftX,
+          y: source.object3D.position.y,
+          z: source.object3D.position.z
+        }
+
+        destPos = {
+          x: destination.object3D.position.x+dstShiftX,
+          y: destination.object3D.position.y,
+          z: destination.object3D.position.z
+        }
+
+        resetLink(link, sourcePos, destPos);
+      }
+
+      //Redraws the link, given the new start/end positions
       function resetLink(cilinder, srcPos, dstPos)
       {
 

@@ -619,8 +619,18 @@ function goLiveTo(to, givenPos, sources, staticLink, parent, handleRewires)
   //to.setAttribute('position', position);
   to.object3D.position.set(position.x, position.y, position.z);
 
-
-  parent.appendChild(to);
+  //in this casa 'staticLing=true' means the activity is in a box
+  //therefore we can't use insertActivity, which adds activities to a common parent
+  if(staticLink)
+  {
+    parent.appendChild(to);
+  }
+  else
+  {
+    //otherwise we use insertActivity to maintain order of DOM elements.
+    insertActivity(to);
+  }
+  //parent.appendChild(to);
 
   // switchConfigPaneByActivity(to);
 
@@ -687,7 +697,10 @@ function goLiveTo(to, givenPos, sources, staticLink, parent, handleRewires)
         let posInScene = getPositionInScene(to);
                             
 
-      link = createLink(item, to, srcPos, posInScene, staticLink, handleRewires);
+      //for multicast-start the link should not be static
+      link = createLink(item, to, srcPos, posInScene, false, handleRewires);
+      //was
+      //link = createLink(item, to, srcPos, posInScene, staticLink, handleRewires);
 
     }
     else
@@ -746,19 +759,12 @@ if(boxed)
         //Needed since A-FRAME v1.0.0
         box.setAttribute('class', 'clickable');
 
-        // rootActivity.appendChild(box);
         box.setAttribute('id', "multicast-box")
         box.setAttribute('opacity', .1)
         box.setAttribute('transparent', true)
-        // box.setAttribute('position', {x: 2, y: 1, z: -0.5})
-        // box.setAttribute('position', getNextSequencePosition(scene, 1, true))
-        
-        //was
-        //box.setAttribute('position', getNextSequencePosition(scene, 1, false))
 
         boxPosition = getNextSequencePosition(scene, 1, false);
         box.object3D.position.set(boxPosition.x, boxPosition.y, boxPosition.z);
-        // box.setAttribute('position', {x: parseInt(scene.getAttribute("nextPos"))+1, y: 0, z: 0,})
 
         box.setAttribute('height', numActivities)
         box.setAttribute('width', 2)
@@ -774,8 +780,8 @@ if(boxed)
         text.setAttribute('position', {x: -.85, y: -numActivities/2-.3, z: 0});
         text.setAttribute('side', 'double');
 
-
-        scene.appendChild(box);
+        insertActivity(box);
+        //scene.appendChild(box);
 }
 
       //get reference of activity to attach to.
@@ -811,7 +817,7 @@ let sourceFwdLink = detachForwardLink(source)
                 // null,  //sources to connect the activity, here null (automatic)
                 [source],  //sources to connect the activity, here null (automatic)
                 scale,
-                null, //staticLink. Null in this case defaults to not-static.
+                boxed,//null, //staticLink. Null in this case defaults to not-static.
                 box)//,
                 // handleRewires); //we disable rewiring of links, for groups we handle manually.
                 //false); //we disable rewiring of links, for groups we handle manually.
@@ -831,6 +837,8 @@ let sourceFwdLink = detachForwardLink(source)
         for(let i=1; i<=numActivities; i++)
         {
           let activity = createDirectActivity(scale);
+          activity.setAttribute('group', true);
+          activity.setAttribute('group-branch',i);
           //activity.setAttribute('scale', scale);
             
           goLive(
@@ -1070,7 +1078,7 @@ function handleForwardLinks(src, dst, srcPos, dstPos)
   if(link)
   {
     // temp hack to move upwards new activity
-    dstPos.y += 2; 
+    //dstPos.y += 2; 
 
     //re-attach the link to the given destination
     attachSourceToLink(dst, link)

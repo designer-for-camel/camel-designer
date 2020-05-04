@@ -321,33 +321,13 @@ function attachDirect(restMethod, yPos)
   let elementName = 'rest-direct';
   let scale = {x: .8, y: .8, z: .8};
 
-  // //activity creation
-  // var activity = document.createElement('a-sphere');
-  // activity.setAttribute(elementName,'');
-  // activity.setAttribute('id', elementName);
-  // activity.setAttribute('material', {color: '#ACF5F5', transparent: true, opacity: 0.5});
-  // activity.setAttribute('radius', .5);
-  // activity.setAttribute('position', {x: 2, y: yPos, z: 0});
-  // // activity.setAttribute('pulse', '');
-
-  // //Needed since A-FRAME v1.0.0
-  // activity.setAttribute('class', 'clickable');
-
-  // //add label
-  // var text = document.createElement('a-text');
-  // text.setAttribute('value', 'direct');
-  // text.setAttribute('align', 'center');
-  // text.setAttribute('color', '#f49b42');
-  // text.setAttribute('side', 'double');
-  // activity.appendChild(text);
-
-
+  //create activity
   let activity = createDirectActivity(scale);
-  activity.querySelector("#routeLabel").setAttribute('position', {x: 0, y: -.5, z: 0});
-  //activity.getElementById('routeLabel').setAttribute('position', {x: 0, y: -.6, z: 0});
-  
 
-  // let activity = createDirectActivity()
+  //reposition label (to fit better)
+  activity.querySelector("#routeLabel").setAttribute('position', {x: 0, y: -.5, z: 0});
+  
+  //set relative position
   activity.setAttribute('position', {x: 2, y: yPos, z: 0});
 
 

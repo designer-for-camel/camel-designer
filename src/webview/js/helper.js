@@ -12,7 +12,89 @@ function vscodePostMessage(command, payload)
   //return document.getElementById(routes[0]);
 }
 
+//Adds the activity to the scene in ordered manner
+//if the newElement is not added last and will sit in between 2 activities
+//then we need to open space by shifting all right sided activities further away
+function insertActivity(newElement)
+{
+  //default shiftX
+  var shiftX = 2;
 
+  //obtain the activity the new element needs to follow
+  var refActivity = getActiveActivity();
+
+  //obtain parent
+  var parent = refActivity.parentNode;
+   
+  //if it's boxed, then its parent should be the reference
+  if(isBoxed(refActivity))
+  {
+    refActivity = refActivity.parentNode
+    parent = refActivity.parentNode;
+  }
+
+  //insert after reference
+  parent.insertBefore(newElement, refActivity.nextSibling);
+
+  //if multicast (a box)
+  if(newElement.localName == 'a-box')
+  {
+    //boxes require more space
+    shiftX = 4;
+  }
+
+  //handling for Choice groups
+  if(newElement.getAttribute('processor-type') == 'choice-end')
+  {
+    //hack to count a total shift of 6
+    //choice-start counts 2
+    //choice-end   counts 4 
+    shiftX = 4;
+  }
+
+  //This iteration performs right sided activities shifting
+  var next = newElement.nextSibling;
+  while(next)
+  {
+    if(next.localName != 'a-cylinder')
+    {
+      //this is a hack and will need revision
+      //Choice group inner activities are tagged as 'group'
+      //we decide to ignore shifting for inner activities
+      //however start and end group activities count 2 loops
+      //and 2 shifts is just what we need
+      if(newElement.getAttribute('group') != "true")
+      {
+        shiftActivityPosition(next, shiftX);
+      }
+      
+    }
+    next = next.nextSibling;
+  }
+
+  //This iteration performs redraws for the links, since all positions have changed
+  next = newElement.nextSibling;
+  while(next)
+  {
+    if(next.localName == 'a-cylinder')
+    {
+      redrawLink(next);
+    }
+    next = next.nextSibling;
+  }
+}
+
+//Shifts an activity's position
+function shiftActivityPosition(activity, shiftX)
+{
+  var shiftX = shiftX || 2;
+
+  activity.object3D.position.set(
+      activity.object3D.position.x+shiftX,
+      activity.object3D.position.y,
+      activity.object3D.position.z
+  );
+}
 
 //Returns the activity (visible) Route
 function getActiveRoute()
