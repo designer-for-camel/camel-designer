@@ -5,8 +5,7 @@ Implement [*Apache Camel*](https://camel.apache.org/) integrations using a visua
 > **EARLY PROTOTYPE**: \
 Please bear in mind this *VSCode* extension is in 'early-prototype' phase and is yet not functional. It helps playing with ideas on how the initiative can progress.
 
-
-![Overview](https://github.com/designer-for-camel/camel-designer/blob/master/docs/images/readme/vs-extension.gif)
+![Overview](docs/images/readme/vs-extension.gif)
 
 
 ## Feature highlights
@@ -25,13 +24,13 @@ Please bear in mind this *VSCode* extension is in 'early-prototype' phase and is
 
 The Designer includes a REST designer where you an define groups of REST methods. As you create new REST elements, the tool translates into Camel REST DSL in the text editor.
 
-![REST](https://github.com/designer-for-camel/camel-designer/blob/master/docs/images/readme/vs-extension-rest.gif)
+![REST](docs/images/readme/vs-extension-rest.gif)
 
 ### Navigation
 
 From the text editor, click or use the arrow keys to navigate to the region of interest, and the Camel Designer will visually display the definition corresponding to the block of code selected.
 
-![Navigation](https://github.com/designer-for-camel/camel-designer/blob/master/docs/images/readme/vs-extension-navigation.gif)
+![Navigation](docs/images/readme/vs-extension-navigation.gif)
 
 
 ## Using the extension
@@ -64,8 +63,10 @@ To start using the extension and generate your Camel definitions:
 
 ## List of future candidate features
 
-- create Transform activity (entity with box and triangle alternating)
+- create Transform activity (idea: box and triangle morphing)
 - option to create 2/3/4 ways in choices and forks
+- possibility to add comments
+- keep positional state of diagram
 - align VR/mouse controllers
 - option on/off to move/work
 - navigation buttons (e.g. left/right with slide animations effect) 
