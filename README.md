@@ -88,18 +88,16 @@ To start using the extension and generate your Camel definitions:
 The focus of this release has been to integrate the Browser based Designer with VSCode as an webview extension.
 
 The following list describes the work done on the graphical Designer:
-- use "call to: route" on direct calls
-- export 3D models to Camel XML files
-- import Camel XML files into 3D models
+- Definition of REST Apis
+- Definition of Camel routes
+- 3D models rendered in Camel XML files
+- Camel XML definitions rendered into 3D models
 - add/delete activities mid-flow
-- conditions on choices
-- follow head of route with camera
-- information Arrow on Direct activities
-- multiple FROMs
-- circle activity under configuration
+- Flow navigation from text editor
+- Double click on Direct activities opens targeted Route
+- Configurable activities
 - choice paths
 - parallel paths
-- REST definitions
 - Support to accommodate unimplemented Camel patterns.
 
 ### 1.0.0
