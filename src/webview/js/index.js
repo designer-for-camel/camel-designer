@@ -840,7 +840,8 @@ var nextPos = refPos.x+2+shiftX;
         arrow.setAttribute('side', 'double');
 
         //hint label
-        var text = document.createElement('a-text');
+        // var text = document.createElement('a-text');
+        var text = createText();
         activity.appendChild(text);
         text.setAttribute('value', "double-click \n to open route");
         text.setAttribute('color', 'grey');
@@ -905,7 +906,8 @@ var nextPos = refPos.x+2+shiftX;
           cylinder.setAttribute('class', 'clickable');
 
           //choice labels
-          let text = document.createElement('a-text');
+          // let text = document.createElement('a-text');
+          let text = createText();
           cylinder.appendChild(text);
           text.setAttribute('value', "when");
           text.setAttribute('position', {x: 0.32, y: 0.3, z: 0});
@@ -913,7 +915,8 @@ var nextPos = refPos.x+2+shiftX;
           text.setAttribute('side', 'double');
 
           let label = "dummy = 'true'";
-          text = document.createElement('a-text');
+          // text = document.createElement('a-text');
+          text = createText();
           cylinder.appendChild(text);
           text.setAttribute('value', label);
           text.setAttribute('rotation', {x: 0, y: 0, z: -90});

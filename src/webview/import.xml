@@ -121,7 +121,7 @@
   <log message="${body}"/>
 </route> -->
 
-<route id="route2">
+<route id="my-route-id">
   <from uri="direct:route2" id="direct-7"/>
   <setBody id="body-8">
       <simple>hello world</simple>

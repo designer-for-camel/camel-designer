@@ -78,7 +78,8 @@ function createRestGroupBox(definition)
     box.setAttribute('pulse', '')
 
 
-    var text = document.createElement('a-text');
+    // var text = document.createElement('a-text');
+    var text = createText();
     container.appendChild(text);
     text.setAttribute('color', 'grey');
     // text.setAttribute('position', {x: -.85, y: (-numActivities/2-.3)-, z: 0});
@@ -285,14 +286,16 @@ function createRestMethod(definition)
   activity.setAttribute('class', 'clickable');
 
   //Create labels
-  var text = document.createElement('a-text');
+  // var text = document.createElement('a-text');
+  var text = createText();
   text.setAttribute('value', definition.method.toUpperCase());
   text.setAttribute('align', 'center');
   text.setAttribute('color', '#f49b42');
   text.setAttribute('side', 'double');
   text.setAttribute('position', '0 .25 0');
   activity.appendChild(text);
-    text = document.createElement('a-text');
+    // text = document.createElement('a-text');
+    text = createText();
     text.setAttribute('value', uri);
     text.setAttribute('align', 'center');
     text.setAttribute('color', '#f49b42');

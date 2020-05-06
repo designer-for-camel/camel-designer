@@ -505,6 +505,8 @@ function renderRouteActivity(activity, mycode, iterator) {
             //ignore, it's handled by renderChoice
             break;
         case 'multicast-start':
+            // ading the ID for now is problematic, needs to be reviewed first
+            // mycode.text += mycode.tab+'<multicast strategyRef="demoStrategy" id="'+activity.parentNode.id+'">\n'
             mycode.text += mycode.tab+'<multicast strategyRef="demoStrategy">\n'
             mycode.tab  += '  '
             // mycode.tab  += '<p>'

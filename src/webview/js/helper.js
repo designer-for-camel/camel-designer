@@ -318,3 +318,17 @@ function updateRouteId(route, newId)
 
   route.id = newId;
 }
+
+//A-Frame loads by default fonts from the internet
+//Because the extension needs to work off-line,
+//local fonts need to be loaded from source.
+//This function creates a test entity with the given font
+function createText(font)
+{
+  //A-Frame's default font
+  font = font || fontRoboto;
+
+  var text = document.createElement('a-text');
+  text.setAttribute('font', font);
+  return text;
+}

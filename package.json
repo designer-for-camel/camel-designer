@@ -2,11 +2,11 @@
 	"name": "camel-designer",
 	"displayName": "camel-designer",
 	"description": "A visual designer to model Camel routes",
-	"version": "0.0.1",
+	"version": "0.1.0",
 	"publisher": "brunoNetId",
 	"license": "Apache-2.0",
 	"preview": true,
-	"icon": "src/media/designer-icon.jpg",
+	"icon": "src/media/camel-icon.png",
 	"engines": {
 		"vscode": "^1.44.0"
 	},
@@ -49,10 +49,12 @@
 		"glob": "^7.1.4",
 		"mocha": "^6.1.4",
 		"typescript": "^3.3.1",
-		"vscode-test": "^1.0.2"
+		"vscode-test": "^1.0.2",
+		"aframe": "^1.0.4"
 	},
 	"dependencies": {
 		"@types/vscode": "^1.44.0",
+		"aframe": "^1.0.4",
 		"xmldom": "^0.3.0",
 		"xpath": "0.0.27"
 	},

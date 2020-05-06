@@ -1,6 +1,6 @@
 # *Apache Camel* Visual Designer
 
-Implement *Apache Camel* integrations using a visual designer. It synchronises the editor on-the-fly generating XML source code containing the *CamelContext* definition translated from the graphical flows.
+Implement [*Apache Camel*](https://camel.apache.org/) integrations using a visual designer (powered by [*A-Frame*](https://aframe.io)). The visual tool synchronises the text editor *on-the-fly* generating XML source code containing the *CamelContext* definition translated from the graphical flows.
 
 > **EARLY PROTOTYPE**: \
 Please bear in mind this *VSCode* extension is in 'early-prototype' phase and is yet not functional. It helps playing with ideas on how the initiative can progress.
@@ -83,7 +83,7 @@ To start using the extension and generate your Camel definitions:
 
 ## Release Notes
 
-### 0.0.1
+### 0.1.0
 
 The focus of this release has been to integrate the Browser based Designer with VSCode as an webview extension.
 

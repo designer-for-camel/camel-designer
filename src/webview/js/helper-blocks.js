@@ -41,7 +41,9 @@ function createFrom(processorType)
                                   dur: '500',
                                   to: '1.0 1.0 1.0'});
 
-  var text = document.createElement('a-text');
+  // var text = document.createElement('a-text');
+  var text = createText();
+
   from.appendChild(text);
   // text.setAttribute('value', 'Timer');
   text.setAttribute('value', processorType);
@@ -220,7 +222,8 @@ function createTo(processorType, scale)
             }
             else if (processorType == "log")
             {
-              var text = document.createElement('a-text');
+              // var text = document.createElement('a-text');
+              var text = createText();
               to.appendChild(text);
               text.setAttribute('value', toID);
               text.setAttribute('color', 'white');
@@ -230,7 +233,8 @@ function createTo(processorType, scale)
 
               let defaultMessage = "demo trace "+logId;
 
-              let label = document.createElement('a-text');
+              // let label = document.createElement('a-text');
+              var label = createText();
               // to.firstChild.appendChild(label);
               text.appendChild(label);
               // to.appendChild(label);
@@ -300,7 +304,8 @@ function createNameValuePair(setterType)
 {
   let activity = createTo(setterType);
 
-  var text = document.createElement('a-text');
+  // var text = document.createElement('a-text');
+  var text = createText();
   activity.appendChild(text);
   text.setAttribute('value', setterType);
   text.setAttribute('color', 'white');
@@ -312,7 +317,8 @@ function createNameValuePair(setterType)
   let defaultValue = "dummy";
 
   //label for field name
-  let label = document.createElement('a-text');
+  // let label = document.createElement('a-text');
+  var label = createText();
   text.appendChild(label);
   label.setAttribute('value', defaultName+':');
   label.setAttribute('color', 'grey');
@@ -321,7 +327,8 @@ function createNameValuePair(setterType)
   label.setAttribute('side', 'double');
 
   //label for field value
-  label = document.createElement('a-text');
+  // label = document.createElement('a-text');
+  label = createText();
   text.appendChild(label);
   label.setAttribute('value', '"'+defaultValue+'"');
   label.setAttribute('color', 'white');
@@ -351,7 +358,8 @@ function createUnknown(definition)
   activity.setAttribute('color', '#FF5733');
   activity.setAttribute('opacity', .5)
 
-  var text = document.createElement('a-text');
+  // var text = document.createElement('a-text');
+  var text = createText();
   activity.appendChild(text);
   text.setAttribute('value', '?');
   text.setAttribute('color', 'white');
@@ -363,14 +371,15 @@ function createUnknown(definition)
   let defaultCode = definition.outerHTML.replace(' xmlns="http://camel.apache.org/schema/spring"','');
 
   //label for field name
-  let label = document.createElement('a-text');
+  // let label = document.createElement('a-text');
+  var label = createText(fontSourceCodePro);
   text.appendChild(label);
   label.setAttribute('value', defaultCode);
   label.setAttribute('color', 'grey');
   label.setAttribute('align', 'center');
   label.setAttribute('position', {x: 0, y: -1.2, z: 0});
   label.setAttribute('side', 'double');
-  label.setAttribute('font','sourcecodepro')
+  // label.setAttribute('font','sourcecodepro')
 
   goLive(activity);
 
@@ -391,7 +400,8 @@ function createBody(definition)
   let activity = createTo('body');
 
   //this is the label inside the geometry (activity descriptor)
-  var text = document.createElement('a-text');
+  // var text = document.createElement('a-text');
+  var text = createText();
   activity.appendChild(text);
   text.setAttribute('value', 'body');
   text.setAttribute('color', 'white');
@@ -407,7 +417,8 @@ function createBody(definition)
   }
 
   //label to display the value set for the activity
-  let label = document.createElement('a-text');
+  // let label = document.createElement('a-text');
+  let label = createText();
   text.appendChild(label);
   label.setAttribute('value', '"'+defaultValue+'"');
   label.setAttribute('color', 'white');
@@ -473,7 +484,8 @@ reloadRoutes(list)
           }
 
 
-          var text = document.createElement('a-text');
+          // var text = document.createElement('a-text');
+          var text = createText();
           configObj.appendChild(text);
         //}
 
@@ -758,8 +770,8 @@ if(boxed)
 
         //Needed since A-FRAME v1.0.0
         box.setAttribute('class', 'clickable');
-
-        box.setAttribute('id', "multicast-box")
+        var groupId = "multicast-box-"+(++logId);
+        box.setAttribute('id', groupId)
         box.setAttribute('opacity', .1)
         box.setAttribute('transparent', true)
 
@@ -773,7 +785,8 @@ if(boxed)
         box.setAttribute('pulse', '')
 
 
-        var text = document.createElement('a-text');
+        // var text = document.createElement('a-text');
+        var text = createText();
         box.appendChild(text);
         text.setAttribute('value', "parallel  execution\n(camel multicast)");
         text.setAttribute('color', 'grey');
@@ -893,14 +906,16 @@ else
         //closeActivity.setAttribute('position', {x: 1, y: 0, z: 0})//.y = 0;
 
 
-        var text = document.createElement('a-text');
+        // var text = document.createElement('a-text');
+        var text = createText();
         rootActivity.appendChild(text);
         text.setAttribute('value', labelStart);
         text.setAttribute('color', 'white');
         text.setAttribute('position', {x: -.06*(labelStart.length), y: 0, z: 0}); //centers lable based on length
         text.setAttribute('side', 'double');
 
-        text = document.createElement('a-text');
+        // text = document.createElement('a-text');
+        text = createText();
         closeActivity.appendChild(text);
         text.setAttribute('value', labelEnd);
         text.setAttribute('color', 'white');

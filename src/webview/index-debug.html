@@ -18,14 +18,16 @@
     <script src="js/helper.js"></script>
 
     <!-- a-frame dependencies -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script> -->
     <script src="https://aframe.io/releases/1.0.4/aframe.min.js"></script>
-    <script src="https://unpkg.com/aframe-outline@%5E1.1.0/build/aframe-outline.min.js"></script>
+    <!-- <script src="https://unpkg.com/aframe-outline@%5E1.1.0/build/aframe-outline.min.js"></script> -->
 
+    <!-- Fonts to work with off-line -->
     <script>
-      //the code of index.js was here
-      //now we load from the source file so that debugging is easier using "index-debug.html" from a browser
+      var fontRoboto        = "roboto";
+      var fontSourceCodePro = "sourcecodepro";
     </script>
+
     <script src="js/index.js"></script>
 
 
@@ -148,7 +150,7 @@
       </p>
 
     <!-- Spacial scene (A-Frame elements) -->
-    <a-scene myoutline cursor="rayOrigin:mouse" raycaster="objects: .clickable, .testcollidable">
+    <a-scene myoutline cursor="rayOrigin:mouse" raycaster="objects: .clickable, .testcollidable" vr-mode-ui="enabled: false">
 
       <a-assets>
 

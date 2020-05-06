@@ -44,7 +44,8 @@ function activate(context) {
         {
             retainContextWhenHidden: true,
             enableScripts: true,
-            localResourceRoots: [vscode.Uri.file(path.join(context.extensionPath, 'src', 'webview')).with({ scheme: 'vscode-resource' })]
+            // localResourceRoots: [vscode.Uri.file(path.join(context.extensionPath, 'src', 'webview')).with({ scheme: 'vscode-resource' })]
+            localResourceRoots: [vscode.Uri.file(path.join(context.extensionPath)).with({ scheme: 'vscode-resource' })]
         });
 
       //Path to local source HTML (index.html)
@@ -259,7 +260,8 @@ function getWebviewContent(context) {
   const indexHtml = indexPath.with({ scheme: 'vscode-resource' });
 
   //These are needed to replace paths in the HTML content using 'eval'
-  const srcPath = vscode.Uri.file(path.join(context.extensionPath, 'src', 'webview'));
+  // const srcPath = vscode.Uri.file(path.join(context.extensionPath, 'src', 'webview'));
+  const srcPath = vscode.Uri.file(path.join(context.extensionPath));
   const srcPathScheme = srcPath.with({ scheme: 'vscode-resource' });
 
   //We run 'eval' as a workaround to apply variable substitutions to set file paths
