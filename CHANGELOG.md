@@ -15,3 +15,7 @@
 - choice paths
 - parallel paths
 - Support to accommodate unimplemented Camel patterns.
+
+## 0.1.1
+
+- supressed 'showDesigner' from command palette
