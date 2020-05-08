@@ -101,6 +101,10 @@ The following list describes the work done on the graphical Designer:
 - parallel paths
 - Support to accommodate unimplemented Camel patterns.
 
+### 0.1.1
+
+- supressed 'showDesigner' from command palette
+
 ### 1.0.0
 
 Not there yet... keep watching this space.
