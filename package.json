@@ -35,6 +35,12 @@
 					"command": "extension.showDesigner",
 					"group": "navigation"
 				}
+			],
+			"commandPalette": [
+				{
+					"command": "extension.showDesigner",
+					"when": "false"
+				}
 			]
 		}
 	},
