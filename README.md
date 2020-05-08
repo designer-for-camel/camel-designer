@@ -105,6 +105,10 @@ The following list describes the work done on the graphical Designer:
 
 - supressed 'showDesigner' from command palette
 
+### 0.1.2
+
+- added search tags
+
 ### 1.0.0
 
 Not there yet... keep watching this space.
