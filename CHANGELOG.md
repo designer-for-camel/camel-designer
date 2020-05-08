@@ -19,3 +19,7 @@
 ## 0.1.1
 
 - supressed 'showDesigner' from command palette
+
+## 0.1.2
+
+- added search tags
