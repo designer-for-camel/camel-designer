@@ -109,9 +109,10 @@ The following list describes the work done on the graphical Designer:
 
 - added search tags
 
-### 1.0.0
+### 0.2.0
 
-Not there yet... keep watching this space.
+- Activity positions now persisted in JSON metadata file (same file name with suffix ".metadata")
+- Processing of `<choice>` element has been rewritten, allowing nested nodes and multiple branches
 
 ---
 

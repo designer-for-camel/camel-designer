@@ -13,6 +13,9 @@ const fs = require("fs");
               var title = xpath.select("//title/text()", doc).toString()
               console.log(title)
 
+//metadata related to the source code generated
+var metadata;
+
 //Camel XML editor (textEditor)
 var te;
 
@@ -92,7 +95,9 @@ function activate(context) {
                   var textRange = new vscode.Range(firstLine.range.start, lastLine.range.end);
 
                   //Content replaced with Designer update
-                  edit.replace(textRange, message.payload);
+                  edit.replace(textRange, message.payload.code);
+
+                  metadata = message.payload.metadata;
 
                   //we clear selection
                   let pos0 = new vscode.Position(0, 0);
@@ -100,6 +105,11 @@ function activate(context) {
                 });
               });
 
+              return;
+
+            case 'metadata':
+              console.log('synching metadata');
+              metadata = message.payload.metadata;
               return;
 
             case 'alert':
@@ -133,9 +143,20 @@ function activate(context) {
 
               //PENDING
               //Here we should implement some validation to confirm the code is a valid Camel definition
+              var metadataFile = te.document.fileName+".metadata";
+              
+              //if metadata file exists we load it
+              try {
+                if (fs.existsSync(metadataFile)) {
+                  metadata = fs.readFileSync(metadataFile, 'utf8')
+                  console.log(metadata)
+                }
+              } catch (err) {
+                console.error(err)
+              }
 
               //we capture the editor's content and send it to the designer
-              currentPanel.webview.postMessage({ command: 'importCamelDefinition' , source: te.document.getText()});
+              currentPanel.webview.postMessage({ command: 'importCamelDefinition' , source: te.document.getText(), metadata: metadata});
 
               return;
           }
@@ -233,6 +254,20 @@ function activate(context) {
             // {
             //   e.textEditor.
             // }
+          })
+
+          vscode.workspace.onDidSaveTextDocument((e) => {
+            console.log("document was saved");          
+            // console.log("TEST textChange: "+e.document.fileName);
+            // console.log(`changed: ${JSON.stringify(e)}`);
+
+            if(metadata)
+            {
+              fs.writeFile(e.fileName+'.metadata', metadata, function (err) {
+                if (err) return console.log(err);
+                //console.log('Hello World > helloworld.txt');
+              });
+            }
           })
 
 

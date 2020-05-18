@@ -1,13 +1,50 @@
+//Obtains a unique ID that guarantees is not already in use.
+function getUniqueID(baseUid)
+{
+  baseUid = baseUid || "step";
+
+  var newUid;
+  if(baseUid.startsWith('choice-'))
+  {
+    //example: 'choice-start' => 'choice-1-start'
+    // newUid = "choice-"+ (++uidCounter) + baseUid.split('choice')[1];
+
+    //example: 'choice-start' => 'choice-1'
+    newUid = "choice-"+ (++uidCounter);
+  }
+  else if(baseUid.startsWith('multicast-'))
+  {
+    //example: 'multicast-start' => 'multicast-1'
+    newUid = "multicast-"+ (++uidCounter);
+  }
+  else
+  {
+    newUid = baseUid + "-" + (++uidCounter);
+  }
+
+
+  //check if the ID is already in use
+  var activity = document.getElementById(newUid);
+
+  //if used, then we discard it, increase the counter and try again
+  while(activity)
+  {
+    //new id
+    newUid = baseUid + "-" + (++uidCounter);
+
+    //check again
+    activity = document.getElementById(newUid);
+  }
+
+  return newUid;
+}
+
 function createFrom(processorType)
 {
-  //if no routes exist we create the first one.
-  // if(routes.length == 0)
-  // {
-  //   newRoute();
-  // }
-
   // give name/id
-  var elementName = processorType+"-"+(++logId);
+  var uid = getUniqueID(processorType);
+  //was
+  //var elementName = processorType+"-"+(++logId);
  
   //activity creation
   var from = document.createElement('a-sphere');
@@ -19,7 +56,9 @@ function createFrom(processorType)
   // from.setAttribute('class', 'clickable');
 
   //from.setAttribute(elementName,'');
-  from.setAttribute('id', elementName);
+  from.setAttribute('id', uid);
+  //was
+  //from.setAttribute('id', elementName);
   from.setAttribute('start', '');
   from.setAttribute('processor-type', processorType);
   from.setAttribute('material', {color: '#52F40C', transparent: true, opacity: 0.5});
@@ -124,156 +163,125 @@ function createDirectStart(definition)
 }
 
       
-// function createTo(processorType, givenPos, sources, scale, staticLink, parent)
-function createTo(processorType, scale)
+//creates Activity
+//metadata may include the definition (from source)
+function createActivity(metadata)
 {
-    scale = scale || {x: 1, y: 1, z: 1}
+  var scale         = {x: 1, y: 1, z: 1}
+  var processorType;
 
-    enableFromButtons(true);
-
-    var toID = processorType+"-"+(++logId);
-  
-    var opacity = 0.5;
-
-    if(processorType == "direct")
-    {
-      opacity = 0.2;
+  //definition takes precedence
+  if(metadata.definition)
+  {
+    //when XML tag is 'to', we need to identify the Camel component
+    if(metadata.definition.tagName == 'to'){
+      processorType = metadata.definition.attributes.uri.value.split(":")[0];
     }
+    else{
+      processorType = metadata.definition.tagName
 
-
-// //Solution for Creating Entities.
-// var scene = document.getElementById(routes[0]);
-// var nextPos = parseInt(scene.getAttribute("nextPos"));
-
-// //obtain reference to attach (wire) to
-// sources = sources || [ getActiveActivity() ];
-
-
-
-            var to = document.createElement('a-sphere');
-
-            configObj = to;
-
-
-// var position;
-
-// if(givenPos != null)
-// {
-//   position = givenPos;
-// }
-// else
-// {
-//   position = getNextSequencePosition(scene);
-// }
-
-            // scene.setAttribute("nextPos", nextPos+stepPos);
-
-            //Needed since A-FRAME v1.0.0
-            to.setAttribute('class', 'clickable');
-
-            to.setAttribute('processor-type', processorType);
-            to.setAttribute('id',toID);
-
-        //is this necessary?    
-        to.setAttribute(toID.toLowerCase(),'');
-
-            to.setAttribute('material', {color: '#ACF5F5', transparent: true, opacity: opacity});
-
-// //it seems setting attribute does ops async and may unsettle fast code execution
-// //we use both settings (3D object and attribute) which seems works
-// to.setAttribute('position', position);
-// to.object3D.position.set(position.x, position.y, position.z);
-
-        
-            var animatedScale = {x: scale.x+.1, y: scale.y+.1, z: scale.z+.1};
-
-            to.setAttribute('radius', .5);
-            to.setAttribute('scale', scale);
-
-
-            to.setAttribute('pulse', '');
-            to.setAttribute('animation', {  startEvents:'mouseenter',
-                                            pauseEvents:'mouseleave',
-                                            property: 'scale',
-                                            dir: 'alternate',
-                                            dur: '500',
-                                            to: animatedScale,
-                                            loop: 5});
-            to.setAttribute('animation__2',{
-                                            startEvents:'mouseleave',
-                                            property: 'scale',
-                                            dur: '500',
-                                            to: scale});
-
-
-            if(processorType == "direct")
-            {
-              var disc = document.createElement('a-ring');
-              to.appendChild(disc);
-              disc.setAttribute('side', 'double');
-              disc.setAttribute('src', '#routeThumbnail');
-              disc.setAttribute('radius-inner', 0.00001);
-              disc.setAttribute('radius-outer', 0.5);
-
-              if(hintDirectPending)
-              {
-                createDirectHint(to);
-              }
-            }
-            else if (processorType == "log")
-            {
-              // var text = document.createElement('a-text');
-              var text = createText();
-              to.appendChild(text);
-              text.setAttribute('value', toID);
-              text.setAttribute('color', 'white');
-              // text.setAttribute('position', {x: -0.3, y: 0, z: 0});
-              text.setAttribute('align', 'center');
-              text.setAttribute('side', 'double');
-
-              let defaultMessage = "demo trace "+logId;
-
-              // let label = document.createElement('a-text');
-              var label = createText();
-              // to.firstChild.appendChild(label);
-              text.appendChild(label);
-              // to.appendChild(label);
-              label.setAttribute('value', '"'+defaultMessage+'"');
-              label.setAttribute('color', 'white');
-              label.setAttribute('align', 'center');
-              // label.setAttribute('position', {x: -.035*(defaultMessage.length), y: -.7, z: 0});
-              label.setAttribute('position', {x: 0, y: -.7, z: 0});
-              label.setAttribute('side', 'double');
-            }
-
-          // goLiveTo(to);
-
-          return to;
+      //choice special handling
+      if(processorType == 'choice'){
+        processorType = metadata.type
       }
+    }
+  }
+  else
+  {
+    //if no definition, the type is required to be in the metadata
+    processorType = metadata.type
+
+    //if a scale is given, we take it, otherwise we use default
+    scale = metadata.scale || scale
+  }
+  
+
+  //enableFromButtons(true);
+
+  //create activity
+  var newActivity = document.createElement('a-sphere');
+
+  //order here is important:
+  // 1) first set the default (on-creation) ID
+  newActivity.setAttribute('id', getUniqueID(processorType));
+
+  // 2) if one is given, we update
+  if(metadata.definition && metadata.definition.id)
+  {
+    //the new ID might not be valid, this call handles it with care
+    updateActivityId(newActivity, metadata.definition.id);
+  }
+
+  configObj = newActivity;
+
+  //Needed since A-FRAME v1.0.0
+  newActivity.setAttribute('class', 'clickable');
+  newActivity.setAttribute('processor-type', processorType);
+
+  //is this necessary?    
+  //newActivity.setAttribute(newActivity.id.toLowerCase(),'');
+
+  newActivity.setAttribute('material', {color: '#ACF5F5', transparent: true, opacity: 0.5});
+
+
+  var animatedScale = {x: scale.x+.1, y: scale.y+.1, z: scale.z+.1};
+
+  newActivity.setAttribute('radius', .5);
+  newActivity.setAttribute('scale', scale);
+  newActivity.setAttribute('pulse', '');
+  newActivity.setAttribute('animation', {  startEvents:'mouseenter',
+                                  pauseEvents:'mouseleave',
+                                  property: 'scale',
+                                  dir: 'alternate',
+                                  dur: '500',
+                                  to: animatedScale,
+                                  loop: 5});
+
+  newActivity.setAttribute('animation__2',{
+                                  startEvents:'mouseleave',
+                                  property: 'scale',
+                                  dur: '500',
+                                  to: scale});
+  return newActivity;
+}
 
 
 
 function createLog(definition)
 {
-  console.log("log date now: "+Date.now());
+  let log = createActivity({type: 'log', definition: definition});
 
-  let log = createTo('log');
+  // Activity label
+  var text = createText();
+  log.appendChild(text);
+  text.setAttribute('value', log.id);
+  text.setAttribute('color', 'white');
+  text.setAttribute('align', 'center');
+  text.setAttribute('side', 'double');
+
+  let defaultMessage = "demo trace "+log.id;
+
+  // label with LOG value
+  var label = createText();
+  text.appendChild(label);
+  label.setAttribute('value', '"'+defaultMessage+'"');
+  label.setAttribute('color', 'white');
+  label.setAttribute('align', 'center');
+  label.setAttribute('position', {x: 0, y: -.7, z: 0});
+  label.setAttribute('side', 'double');
 
   goLive(log);
 
   if(definition)
   {
-    // console.log("has definition: "+definition);
-    // console.dir(definition);
-    //log.setAttribute('id', definition.getAttribute('id'));
-    updateActivityId(log, definition.getAttribute('id'));
-
+    //update message shown in label
     log.getElementsByTagName("a-text")[0].firstChild.setAttribute('value', '"'+definition.getAttribute('message')+'"');
   }
 
   //test
   //vscodePostMessage('atlasmap-start')
 
+  return log
 }
 
 //creates a setProperty activity
@@ -283,9 +291,14 @@ function createProperty(definition)
 
   if(definition)
   {
-    property.getElementsByTagName("a-text")[0].firstChild.setAttribute('value', definition.getAttribute('propertyName')+':');
+    //apply definition ID
+    updateActivityId(property, definition.getAttribute('id'));
+
+    property.getElementsByTagName("a-text")[0].firstChild.setAttribute('value', definition.getAttribute(CAMEL_ATTRIBUTE_PROPERTY_NAME)+':');
     property.getElementsByTagName("a-text")[0].lastChild.setAttribute('value', '"'+definition.firstElementChild.textContent+'"');
   }
+
+  return property
 }
 
 //creates a setHeader activity
@@ -295,14 +308,20 @@ function createHeader(definition)
 
   if(definition)
   {
-    header.getElementsByTagName("a-text")[0].firstChild.setAttribute('value', definition.getAttribute('headerName')+':');
+    //apply definition ID
+    updateActivityId(header, definition.getAttribute('id'));
+
+    header.getElementsByTagName("a-text")[0].firstChild.setAttribute('value', definition.getAttribute(CAMEL_ATTRIBUTE_HEADER_NAME)+':');
     header.getElementsByTagName("a-text")[0].lastChild.setAttribute('value', '"'+definition.firstElementChild.textContent+'"');
   }
+
+  return header
 }
 
 function createNameValuePair(setterType)
 {
-  let activity = createTo(setterType);
+  //let activity = createTo(setterType);
+  let activity = createActivity({type: setterType});
 
   // var text = document.createElement('a-text');
   var text = createText();
@@ -352,8 +371,9 @@ function createUnknown(definition)
     activity.firstChild.setAttribute('value','');
   }
   else{
-    activity = createTo('unknown');
-  }
+    //activity = createTo('unknown');
+    activity = createActivity({type: 'unknown'});
+}
 
   activity.setAttribute('color', '#FF5733');
   activity.setAttribute('opacity', .5)
@@ -384,20 +404,12 @@ function createUnknown(definition)
   goLive(activity);
 
   return activity;
-
-
-  // var header = createNameValuePair('header');
-
-  // if(definition)
-  // {
-  //   header.getElementsByTagName("a-text")[0].firstChild.setAttribute('value', definition.getAttribute('headerName')+':');
-  //   header.getElementsByTagName("a-text")[0].lastChild.setAttribute('value', '"'+definition.firstElementChild.textContent+'"');
-  // }
 }
 
 function createBody(definition)
 {
-  let activity = createTo('body');
+  //let activity = createTo('body');
+  let activity = createActivity({type: 'body'});
 
   //this is the label inside the geometry (activity descriptor)
   // var text = document.createElement('a-text');
@@ -413,6 +425,7 @@ function createBody(definition)
 
   if(definition)
   {
+    updateActivityId(activity, definition.getAttribute('id'));
     defaultValue = definition.firstElementChild.textContent;
   }
 
@@ -427,91 +440,114 @@ function createBody(definition)
   label.setAttribute('side', 'double');
 
   goLive(activity);
+
+  return activity
 }
 
-      // function directCreate()
-      function createDirect(definition)
-      {
-        let activity = createDirectActivity();
-
-        //add to scene (and other stuff)
-        goLive(activity);
 
 
-        if(definition)
-        {
-          updateActivityId(activity, definition.getAttribute('id'));
-          activity.children.routeLabel.setAttribute("value", definition.getAttribute('uri').substring(7));
-        }
-      }
+// function directCreate()
+function createDirect(metadata)
+{
+  let activity = createDirectActivity(metadata);
 
-      function createDirectActivity(scale)
-      //function createDirect(givenPos, activities, scale, staticLink, parent)//, sources)
-      {
-          // sources = sources || null;   
-
-          //create activity
-          //if(givenPos != null)
-          {  
-            // configObj = createTo("direct", givenPos, activities, scale, staticLink, parent);
-            //configObj = createTo("direct", scale);//, sources);
-          }
-          //else 
-          {  
-            // configObj = createTo("direct", null, activities, scale, staticLink, parent);
-            //configObj = createTo("direct", scale);
-            configObj = createTo("direct", scale);
-          }
-          //obtain dialog
-          var element = document.getElementById("newDirect");
-
-          //make visible
-          // element.style.visibility = "visible";
-
-          //obtain list
-          // var list = element.getElementsByTagName("datalist")[0];
-          var list = element.getElementsByTagName("select")[0];
-
-reloadRoutes(list)
-
-          if(routes.length > 1)
-          {
-            list.value = routes[1];
-          }
-          else
-          {
-            list.value = routes[0];
-          }
+  //add to scene (and other stuff)
+  goLive(activity);
 
 
-          // var text = document.createElement('a-text');
-          var text = createText();
-          configObj.appendChild(text);
-        //}
+  if(metadata)
+  {
+    //updates the target route it points to
+    activity.children.routeLabel.setAttribute("value", metadata.definition.getAttribute('uri').substring(7));
+  }
 
-        //display new value
-        text.setAttribute('id', 'routeLabel');
-        text.setAttribute('value', list.value);
-        text.setAttribute('color', 'white');
-        text.setAttribute('align', 'center');
-        // text.setAttribute('position', {x: -.035*(list.value.length), y: -.7, z: 0});
-        text.setAttribute('position', {x: 0, y: -.7, z: 0});
-        text.setAttribute('side', 'double');
-
-          // element.getElementsByTagName("input")[0].focus();
-          // element.getElementsByTagName("input")[0].click();
-
-          // var event = new MouseEvent('mousedown');
-// element.getElementsByTagName("input")[0].dispatchEvent(event);
-      //    directConfig();
-
-        // goLiveTo(configObj);
-        //goLive(configObj, givenPos, activities, scale, staticLink, parent);
-
-        return configObj;
-      }
+  return activity
+}
 
 
+//Creates a Direct activity
+function createDirectActivity(metadata)
+// function createDirect(metadata)
+{
+  let params = {};
+  params.type = 'direct'
+
+  // if(metadata && metadata.scale)
+  // {
+  //   if(metadata.scale){
+  //     params.scale = metadata.scale;
+  //   }
+  //   if(metadata.definition){
+  //     params.definition = metadata.definition
+  //   }
+  // }
+
+  if(metadata && metadata.scale){
+    params.scale = metadata.scale;
+  }
+  if(metadata && metadata.definition){
+    params.definition = metadata.definition
+  }
+
+
+
+  //create activity
+  //let activity = createActivity({type: 'direct', scale: metadata.scale, definition: metadata.definition});
+  let activity = createActivity(params);
+
+  //lower opacity
+  activity.setAttribute('opacity', 0.2);
+  
+  //obtain dialog
+  var element = document.getElementById("newDirect");
+
+  //obtain list
+  var list = element.getElementsByTagName("select")[0];
+
+  reloadRoutes(list)
+
+  if(routes.length > 1)
+  {
+    list.value = routes[1];
+  }
+  else
+  {
+    list.value = routes[0];
+  }
+
+  // label to display Route it points to
+  var text = createText();
+  activity.appendChild(text);
+  text.setAttribute('id', 'routeLabel');
+  text.setAttribute('value', list.value);
+  text.setAttribute('color', 'white');
+  text.setAttribute('align', 'center');
+  text.setAttribute('position', {x: 0, y: -.7, z: 0});
+  text.setAttribute('side', 'double');
+
+  //set Image showing a route
+  var disc = document.createElement('a-ring');
+  activity.appendChild(disc);
+  disc.setAttribute('side', 'double');
+  disc.setAttribute('src', '#routeThumbnail');
+  disc.setAttribute('radius-inner', 0.00001);
+  disc.setAttribute('radius-outer', 0.5);
+
+  if(hintDirectPending)
+  {
+    createDirectHint(activity);
+  }
+
+  // goLive(activity);
+
+  // if(metadata && metadata.definition)
+  // {
+  //   //updates the target route it points to
+  //   activity.children.routeLabel.setAttribute("value", metadata.definition.getAttribute('uri').substring(7));
+  // }
+
+  return activity;
+}
 
 
 // Includes the activities into the scene
@@ -545,46 +581,32 @@ function syncEditor()
   }
 }
 
+//Updates VSCode editor with the changes
+function syncMetadata()
+{
+  //only when it runs in VSCode
+  if ( top !== self ) { // we are in the iframe
+    if(syncEditorEnabled && !syncStartUpEnabled) {
+      
+      vscodePostMessage('metadata', {
+        metadata: getMetadata()
+      });
+
+    }
+  }
+}
 
 function goLiveFrom(from)
 {
+  //get Scene where activities will be added
   var scene = document.getElementById(routes[0]);
 
-  //get all FROM activities (using XPATH expression)
-  var fromList = scene.querySelectorAll("a-sphere[start]");
-  var numFroms = fromList.length;
-
-  //Hack to position new FROM activities vertically
-  var fromPos = {x: startActivityPos, y: 0-numFroms, z: 0};
-  //from.setAttribute('position', fromPos);
+  //default START position
+  var fromPos = {x: startActivityPos, y: 0, z: 0};
   from.object3D.position.set(fromPos.x, fromPos.y, fromPos.z);
 
-
-
-  //when first FROM activity is created no links exist
-  //FROM button is disabled until first TO gets created and links exist
-  //this prevents a confusing scenario and buggy behaviour
-  if(numFroms == 0)
-  {
-    enableFromButtons(false);
-  }
-
-  // Multiple start activities are allowed
-  // First TO element needs to connect to all FROMs
-  if(numFroms != 0)
-  {
-    // var srcPos = document.querySelector('#activity').getAttribute('position');
-    // console.log("test pos 1: "+position.x);
-    // var srcPos = lastCreated.getAttribute('position');
-    var preFrom = fromList[fromList.length-1];
-    var linkIds = JSON.parse(preFrom.getAttribute("links"));
-    var link = scene.querySelector("#"+linkIds[0]);
-    var toId = link.getAttribute('destination');
-    var to = scene.querySelector("#"+toId);
-    var toPos = to.getAttribute('position');
-
-    scene.appendChild(createLink(from, to, fromPos, toPos));//, srcPos, position));
-  }
+  //once created, no more STARTs are permitted (as for Camel 3)
+  enableFromButtons(false);
 
   scene.setAttribute("lastCreated", from.id);
   scene.appendChild(from);
@@ -592,15 +614,8 @@ function goLiveFrom(from)
 }
 
 
-// function createTo(processorType, givenPos, sources, scale, staticLink, parent)
-// function goLiveTo(to)
 function goLiveTo(to, givenPos, sources, staticLink, parent, handleRewires)
 {
-  // parent.appendChild(to);
-
-  // switchConfigPaneByActivity(to);
-
-
   let processorType = to.getAttribute('processor-type');
 
   //Solution for Creating Entities.
@@ -625,14 +640,48 @@ function goLiveTo(to, givenPos, sources, staticLink, parent, handleRewires)
     position = getNextSequencePosition(scene);
   }
 
+            // if(staticLink)
+            // {
+            //   parent.appendChild(to);
+            // }
+            // else
+            // {
+            //   //otherwise we use insertActivity to maintain order of DOM elements.
+            //   insertActivity(to);
+            // }
 
   //it seems setting attribute does ops async and may unsettle fast code execution
   //we use both settings (3D object and attribute) which seems works
   //to.setAttribute('position', position);
   to.object3D.position.set(position.x, position.y, position.z);
 
-  //in this casa 'staticLing=true' means the activity is in a box
-  //therefore we can't use insertActivity, which adds activities to a common parent
+
+  // forEach
+  sources.forEach(item => {
+
+    var link;
+
+    if(processorType == 'multicast-start')
+    {
+      //for multicast-start the link should not be static
+      link = createLink(item, to, false, handleRewires);
+    }
+    else
+    {
+      link = createLink(item, to, staticLink, handleRewires);
+    }
+
+    if(parent == null || processorType == "multicast-start")
+    {
+      scene.appendChild(link);
+    }
+    else
+    {
+      parent.appendChild(link);
+    }
+  }); // END FOR
+
+
   if(staticLink)
   {
     parent.appendChild(to);
@@ -642,99 +691,6 @@ function goLiveTo(to, givenPos, sources, staticLink, parent, handleRewires)
     //otherwise we use insertActivity to maintain order of DOM elements.
     insertActivity(to);
   }
-  //parent.appendChild(to);
-
-  // switchConfigPaneByActivity(to);
-
-  // forEach
-  sources.forEach(item => {
-
-// console.log("creating link for: "+to.id)
-// console.log("source: "+item.id)
-
-      var srcPos = item.getAttribute('position');
-      // var srcPos = {x: item.object3D.position.x,
-      //               y: item.object3D.position.y, 
-      //               z: item.object3D.position.z }
-      // item.object3D.position;
-
-      // hack/HACK for issue/problem with async position settings
-      // at the time of creating links, it seems there on-the-fly positions still unset/refreshed
-      // this causes the source position to contain a misleading coordinate that gets updated too late
-      // to solve this we hardcode to known value 
-      if(item.getAttribute("processor-type") == "multicast-start")
-      {
-        srcPos = {x: -1,y: 0, z: 0}
-
-          // posParent = item.parentNode.getAttribute('position');
-
-          //   srcPos = { x: posParent.x-1,
-          //              y: posParent.y, 
-          //              z: 0};
-
-
-      }
-
-      // if(processorType == "multicast-end")
-      // if(item.getAttribute("processor-type") == "multicast-end")
-      // if(parent == null && item.getAttribute("processor-type") == "multicast-end")
-      if(item.getAttribute("processor-type") == "multicast-end")
-      {
-        // if(parent != null)
-          // position = {x: 1,y: 0, z: 0}
-          let posParent = item.parentNode.getAttribute('position');
-
-            srcPos = { x: posParent.x+1,
-                       y: posParent.y, 
-                       z: 0};
-      }
-
-    // console.log("srcPos")
-    // console.log(srcPos)
-    // console.log("position")
-    // console.log(position)
-
-    var link;
-
-    if(processorType == 'multicast-start')
-    {
-        // // let posParent = parent.getAttribute('position');
-        // let posParent = parent.components.position.attrValue;
-
-
-        // let boxStartPos = { x: posParent.x-1,
-        //                     y: posParent.y, 
-        //                     z: 0};
-
-        let posInScene = getPositionInScene(to);
-                            
-
-      //for multicast-start the link should not be static
-      link = createLink(item, to, srcPos, posInScene, false, handleRewires);
-      //was
-      //link = createLink(item, to, srcPos, posInScene, staticLink, handleRewires);
-
-    }
-    else
-    {
-      // var link = createLink(item, to, srcPos, position, staticLink);
-      link = createLink(item, to, srcPos, position, staticLink, handleRewires);
-    }
-
-
-
-      if(parent == null || processorType == "multicast-start")
-      { // || processorType == "multicast-start")
-        scene.appendChild(link);//, srcPos, position));
-      }
-      else
-      {
-        parent.appendChild(link);
-      }
-
-
-  }); // END FOR
-
 
   // parent.appendChild(to);
 
@@ -745,311 +701,535 @@ function goLiveTo(to, givenPos, sources, staticLink, parent, handleRewires)
 
 
 
-      //returns Start activity, or box if 'boxed'
-      function createGroup(groupName, boxed, labelStart, labelEnd)
-      {
-        var numActivities = 2;
-        var activities = [];
-        var scale = {x: .5, y: .5, z: .5};
-
-        if(!boxed)
-        {
-          scale = null;
-        }
-
-        var typeStart = groupName + "-start";
-        var typeEnd   = groupName + "-end";
-
-        var scene = document.getElementById(routes[0]);
-
-        var box = null;
-
-if(boxed)
+//returns Start activity, or box if 'boxed'
+function createMulticastBox(groupName, labelStart, labelEnd)
 {
-        box = document.createElement('a-box')
+  var boxed = true
+  var numActivities = 2;
+  var activities = [];
+  var scale = {x: .5, y: .5, z: .5};
 
-        //Needed since A-FRAME v1.0.0
-        box.setAttribute('class', 'clickable');
-        var groupId = "multicast-box-"+(++logId);
-        box.setAttribute('id', groupId)
-        box.setAttribute('opacity', .1)
-        box.setAttribute('transparent', true)
+  var typeStart = groupName + "-start";
+  var typeEnd   = groupName + "-end";
 
-        boxPosition = getNextSequencePosition(scene, 1, false);
-        box.object3D.position.set(boxPosition.x, boxPosition.y, boxPosition.z);
+  var scene = document.getElementById(routes[0]);
 
-        box.setAttribute('height', numActivities)
-        box.setAttribute('width', 2)
-        box.setAttribute('depth', 0.00001)
-        // box.setAttribute('scale', scale)
-        box.setAttribute('pulse', '')
+  var box = document.createElement('a-box')
+
+  //Needed since A-FRAME v1.0.0
+  box.setAttribute('class', 'clickable');
+  var groupId = getUniqueID("multicast-box");
+  box.setAttribute('id', groupId)
+  box.setAttribute('opacity', .1)
+  box.setAttribute('transparent', true)
+
+  boxPosition = getNextSequencePosition(scene, 1, false);
+  box.object3D.position.set(boxPosition.x, boxPosition.y, boxPosition.z);
+
+  box.setAttribute('height', numActivities)
+  box.setAttribute('width', 2)
+  box.setAttribute('depth', 0.00001)
+  box.setAttribute('pulse', '')
+
+  //box label
+  var text = createText();
+  box.appendChild(text);
+  text.setAttribute('value', "parallel  execution\n(camel multicast)");
+  text.setAttribute('color', 'grey');
+  text.setAttribute('position', {x: -.85, y: -numActivities/2-.3, z: 0});
+  text.setAttribute('side', 'double');
+
+  insertActivity(box);
 
 
-        // var text = document.createElement('a-text');
-        var text = createText();
-        box.appendChild(text);
-        text.setAttribute('value', "parallel  execution\n(camel multicast)");
-        text.setAttribute('color', 'grey');
-        text.setAttribute('position', {x: -.85, y: -numActivities/2-.3, z: 0});
-        text.setAttribute('side', 'double');
+  //get reference of activity to follow.
+  source = getActiveActivity();
 
-        insertActivity(box);
-        //scene.appendChild(box);
+  //we keep referece.
+  let sourceFwdLink = detachForwardLink(source)
+
+  //create root activity  
+  let rootActivity = createActivity({type: typeStart, scale: scale});
+
+
+  let rootId = rootActivity.getAttribute('id');
+
+  let rootPos = {x: -1, y: 0, z: 0};
+
+  // goLive(rootActivity, rootPos, null, scale, boxed, box);
+  goLive( rootActivity,
+          rootPos,
+          [source],  //sources to connect the activity, here null (automatic)
+          scale,
+          boxed,
+          box)
+
+  //loop branches
+  for(let i=1; i<=numActivities; i++)
+  {
+    let activity = createDirectActivity({scale: scale});
+    // let activity = createDirect({scale: scale});
+    activity.setAttribute('group', true);
+    activity.setAttribute('group-branch',i);
+    //activity.setAttribute('scale', scale);
+      
+    goLive(
+        activity,
+        getNextParallelPosition(scene,i,numActivities,0, boxed),
+        [rootActivity],
+        scale, 
+        // null, 
+        boxed,
+        box); //parent entity
+      
+    activities.push(activity);
+
+    //force connections to root activity except last iteration
+    //(so that sub-sequent activities connect to closing activity)
+    if(i != numActivities)
+    {
+        scene.setAttribute("lastCreated", rootActivity.id);
+    }
+  }
+
+  let posClosing = {x: 1, y: 0, z: 0};
+
+
+  //create closing activity
+  var closeActivity = createActivity({type: typeEnd, scale: scale});
+
+  
+  //we make the closing activity to shares ID with starting activity.
+  //the difference between them is the suffix. Example: 'choice-1-start' 'choice-1-end'
+  updateActivityId(closeActivity, rootId.split('start')[0]+"-end");
+
+
+  //labels for Root activity
+  var text = createText();
+  rootActivity.appendChild(text);
+  text.setAttribute('value', labelStart);
+  text.setAttribute('color', 'white');
+  text.setAttribute('position', {x: -.06*(labelStart.length), y: 0, z: 0}); //centers label based on length
+  text.setAttribute('side', 'double');
+
+  //labels for End activity
+  text = createText();
+  closeActivity.appendChild(text);
+  text.setAttribute('value', labelEnd);
+  text.setAttribute('color', 'white');
+  text.setAttribute('position', {x: -.06*(labelEnd.length), y: 0, z: 0}); //centers lable based on length
+  text.setAttribute('side', 'double');
+
+  goLive(closeActivity, posClosing, activities, scale, boxed, box);
+
+
+  //only when a forward link existed, we attach it to the end of the group
+  if(sourceFwdLink)
+  {
+    attachSourceToLink(closeActivity, sourceFwdLink);
+  }
+
+  box.setAttribute('group-start', rootActivity.id);
+  box.setAttribute('group-end',   closeActivity.id);
+
+  //is this necessary?
+  scene.setAttribute('lastCreated', closeActivity.id);
+
+  //somehow the link to the multicast is not accurate, need to redraw
+  //anyone wants to review this?
+  redrawLink(getBackwardsLink(rootActivity))
+
+  return box;
 }
 
-      //get reference of activity to attach to.
-      // sources = [ getActiveActivity() ];
-      source = getActiveActivity();
+//Creates a Multicast group of activities
+function createMulticast(definition)
+{
+  //we're about to create multiple activities, so we stop streaming updates until we're done
+  syncEditorEnabled = false;
 
+  var multicast = createMulticastBox("multicast", "fork", "merge");
 
+  if(definition)
+  {
+    //apply definition ID
+    updateActivityId(multicast, definition.getAttribute('id'));          
+  }
 
-//we keep referece.
-let sourceFwdLink = detachForwardLink(source)
+  //now we're done, we switch back on, and we sync.
+  syncEditorEnabled = true;
+  syncEditor();
 
-      //function createTo(processorType, scale)
-        let rootActivity = createTo( 
-                              typeStart,
-                              scale);
+  //key of multicast closing activity
+  let queryKey = "#"+multicast.getAttribute('group-end')
 
-        let rootPos;
+  //return the closing activity
+  return multicast.querySelectorAll(queryKey)[0]
+}
 
-        if(boxed)
+      // NOW DEPRECATED
+      //========================
+      // function createChoice_v1(definition)
+      // {
+      //   //we're about to create multiple activities, so we stop streaming updates until we're done
+      //   syncEditorEnabled = false;
+
+      //   //create all choice elements (returns start activity)
+      //   let start = createGroup("choice", false, "choice", "end");
+
+      //   //obtain end activity (derived from start id)
+      //   let end   = document.getElementById(start.id.replace('start', 'end'));
+
+      //   if(definition)
+      //   {
+      //     //apply definition ID
+      //     updateActivityId(start, definition.id);    
+      //     updateActivityId(end,   definition.id.replace('start', 'end'));    
+      //   }
+
+      //   //update links to show correct condition labels
+      //   var links = JSON.parse(start.getAttribute("links"));
+      //   let otherwise = document.getElementById(links[links.length-1]);
+      //   labels = otherwise.getElementsByTagName('a-text');
+      //   labels[0].setAttribute('value','otherwise');
+      //   labels[0].setAttribute('position','0 .5 0');
+      //   otherwise.removeChild(labels[1]);
+      //   otherwise.setAttribute('class', 'non-clickable');
+
+      //   //now we're done, we switch back on, and we sync.
+      //   syncEditorEnabled = true;
+      //   syncEditor();
+      // }
+
+      //UNDER CONSTRUCTION
+      //This is an effort to make a better CHOICE creator
+      //the first one is too rigid, and mixed with MULTICAST
+      //This one uses XML as input, and can create inner CHOICES
+      function createChoice(definition)
+      {
+        if(!definition)
         {
-          rootPos = {x: -1, y: 0, z: 0};
+          //default definition if not given
+          definition = new DOMParser().parseFromString('<choice><when><simple>dummy = \'true\'</simple><to uri="direct:route1"/></when><otherwise><to uri="direct:route1"/></otherwise></choice>', 'application/xml').documentElement;
+          
+          //sample with NO otherwise
+          // definition = new DOMParser().parseFromString('<choice><when><simple>dummy = \'true\'</simple><to uri="direct:route1"/></when></choice>', 'application/xml').documentElement;
+          
+          //sample 4 branches
+          // definition = new DOMParser().parseFromString('<choice><when><simple>condition1</simple><to uri="direct:route1"/></when><when><simple>condition2</simple><to uri="direct:route1"/></when><when><simple>condition3</simple><to uri="direct:route1"/></when></choice>', 'application/xml').documentElement;
+          
+          //sample with LOG
+          // definition = new DOMParser().parseFromString('<choice id="myid"><when><simple>dummy = \'true\'</simple><log message="my message"/></when></choice>', 'application/xml').documentElement;
         }
-        else
+
+        //if <otherwise> doesn't exist, we append the default one
+        if(definition.getElementsByTagName('otherwise').length == 0)
         {
-          // rootPos = getNextSequencePosition(scene, 0, true);
-          rootPos = getNextSequencePosition(scene, 0, false);
+          let otherwise = new DOMParser().parseFromString('<otherwise><to uri="direct:route1"/></otherwise>', 'application/xml').documentElement;
+          definition.appendChild(otherwise)
         }
 
+        //we're about to create multiple activities, so we stop streaming updates until we're done
+        syncEditorEnabled = false;
 
-        // goLive(rootActivity, rootPos, null, scale, boxed, box);
-        goLive( rootActivity,
-                rootPos,
-                // null,  //sources to connect the activity, here null (automatic)
-                [source],  //sources to connect the activity, here null (automatic)
-                scale,
-                boxed,//null, //staticLink. Null in this case defaults to not-static.
-                box)//,
-                // handleRewires); //we disable rewiring of links, for groups we handle manually.
-                //false); //we disable rewiring of links, for groups we handle manually.
+        //keep reference of activity that CHOICE has to follow
+        let activityBeforeChoice = getActiveActivity()
+        
+        refPosition = getPositionInScene(activityBeforeChoice)
+
+        // create CHOICE start activity
+        let start = createActivity({type: 'choice-start', definition: definition});
+
+        //We create CHOICE end activity
+        //We need to provide a specific ID for the end activity (with format: "[startId]-end")
+        //Updating the ID from the source definition causes the following error:
+        //  [The document has mutated since the result was returned]
+        //Cloning the object causes the same error.
+        //The workaround is to unmarshal/marshal (passing a whitelist filter of the fields to keep)
+        let definitionUpdate = JSON.parse(JSON.stringify(definition, ["id", "tagName"]))
+
+        // and then update the ID
+        definitionUpdate.id = start.id+"-end"
+
+        //then we can create the end activity with the given ID
+        let end   = createActivity({type: 'choice-end', definition: definitionUpdate});
+
+        //align choice to preceding activity
+        //this is particularly important to maintain flow in Y coordinate 
+        start.object3D.position.set(
+          refPosition.x,
+          refPosition.y,
+          refPosition.z,
+        )
+
+        //align choice to preceding activity
+        end.object3D.position.set(
+          refPosition.x,
+          refPosition.y,
+          refPosition.z,
+        )
+
+        //labels for Root activity
+        var text = createText();
+        start.appendChild(text);
+        text.setAttribute('value', 'choice');
+        text.setAttribute('color', 'white');
+        text.setAttribute('align', 'center');
+        text.setAttribute('side', 'double');
+
+        //labels for End activity
+        text = createText();
+        end.appendChild(text);
+        text.setAttribute('value', 'end');
+        text.setAttribute('color', 'white');
+        text.setAttribute('align', 'center');
+        text.setAttribute('side', 'double');
+
+        //we keep referece.
+        let orphanLink = detachForwardLink(activityBeforeChoice)
+
+        //insert Start
+        insertActivity(start)
+
+        //connect Start to preceding activity
+        linkActivities(activityBeforeChoice, start)
 
 
-        // var scene = rootActivity.parentNode;
+        //collection of branch end activities
+        //they all need to be connected to the choice-end activity
+        //var branchEndActivities = [];
 
+        //obtain all choice branches
+        let choiceNodes = definition.children;
 
-        // box.appendChild(rootActivity);
-        // box.pause();
+        //Y axis where branches need to be positioned
+        let axisY = start.object3D.position.y+choiceNodes.length - 1
 
-        // box.parentNode.setAttribute('raycaster', 'recursive: false');
-        // box.setAttribute('')
-        // box.setAttribute('', 3)
-
-
-        for(let i=1; i<=numActivities; i++)
+        for(let i=0; i < choiceNodes.length; i++)
         {
-          let activity = createDirectActivity(scale);
-          activity.setAttribute('group', true);
-          activity.setAttribute('group-branch',i);
-          //activity.setAttribute('scale', scale);
-            
-          goLive(
-              activity,
-              getNextParallelPosition(scene,i,numActivities,0, boxed),
-              [rootActivity],
-              scale, 
-              // null, 
-              boxed,
-              box); //parent entity
-            
-          activities.push(activity);
-            
+          //obtain steps of the choice branch
+          let steps = Array.from(choiceNodes[i].children)
 
-          // activities.push(createDirect(
-                // getNextParallelPosition(scene,i,numActivities,0, boxed),
-                // [rootActivity],
-                // scale, 
-                // // null, 
-                // boxed,
-                // box)); //parent entity
+          //default value for <otherwise> (no expression)
+          let expression = null;
 
-          //force connections to root activity except last iteration
-          //(so that sub-sequent activities connect to closing activity)
-          if(i != numActivities)
+          if(choiceNodes[i].tagName == 'when')
           {
-              scene.setAttribute("lastCreated", rootActivity.id);
+            //we extract the first element, which is the expression
+            expression = steps.shift();
+          }
+
+          //we process the remaining steps 
+          let last = createChoiceBranch(expression, start, steps, axisY)
+
+          //shift for next iteration
+          axisY-=2
+
+          //keep last
+          //branchEndActivities.push(last)
+
+          linkActivities(last, end)
+
+          //do this only once
+          if(i==0)
+          {
+            //if Choice was injected in between activities
+            //we attach the choice-end to the orphan link
+            if(orphanLink)
+            {
+              attachSourceToLink(end, orphanLink);
+            }
+
+            //insert End Choice
+            insertActivity(end)
           }
         }
 
-let posClosing;
+        setConfigSelector(end)
+        redrawAllLinks()
 
-if(boxed)
-{
-  posClosing = {x: 1, y: 0, z: 0};
-}
-else
-{
-  // posClosing = { x: rootActivity.getAttribute('position').x + 4,
-  posClosing = { x: rootPos.x + 4,
-                 y: rootPos.y, 
-                 z: 0};
+        //now we're done, we switch back on, and we sync.
+        syncEditorEnabled = true;
+        syncEditor();
 
+        //we return the 'end' activity
+        //this is necessary to process nested choices (or an inner choice)
+        return end
+      }
 
-}
+      //Attaches (links) a source activity to a destination activity
+      //Visually the result will be a sphere connected to another sphere via a cylinder
+      function linkActivities(source, destination)
+      {
+        //this is important when source is in a box (e.g. multicast)
+        let sourcePosition = getPositionInScene(source)
 
-
-        var closeActivity = createTo(
-                typeEnd,
-                scale);
-
-        //closeActivity.setAttribute('position', {x: 1, y: 0, z: 0})//.y = 0;
-
-
-        // var text = document.createElement('a-text');
-        var text = createText();
-        rootActivity.appendChild(text);
-        text.setAttribute('value', labelStart);
-        text.setAttribute('color', 'white');
-        text.setAttribute('position', {x: -.06*(labelStart.length), y: 0, z: 0}); //centers lable based on length
-        text.setAttribute('side', 'double');
-
-        // text = document.createElement('a-text');
-        text = createText();
-        closeActivity.appendChild(text);
-        text.setAttribute('value', labelEnd);
-        text.setAttribute('color', 'white');
-        text.setAttribute('position', {x: -.06*(labelEnd.length), y: 0, z: 0}); //centers lable based on length
-        text.setAttribute('side', 'double');
-
-        goLive(closeActivity, posClosing, activities, scale, boxed, box);
-
-
-        //only when a forward link existed, we attach it to the end of the group
-        if(sourceFwdLink)
+        //Automatic repositioning, the destination always after the source
+        if(destination.object3D.position.x <= sourcePosition.x)
         {
-          attachSourceToLink(closeActivity, sourceFwdLink);
+          destination.object3D.position.set(
+                sourcePosition.x + 2,
+                destination.object3D.position.y,
+                destination.object3D.position.z
+              )
         }
 
-        if(boxed)
+        //creates the physical link between the two
+        var newLink = createLink(source , destination);
+
+        //adds link to the scene
+        //source.parentNode.appendChild(newLink);
+        getActivityRoute(source).appendChild(newLink)
+      }
+
+      //Creates a sequence of linked activities (steps)
+      function createChoiceBranch(expression, refStart, steps, axisY)
+      {
+        //collection of activities created:
+        var branch = []
+
+        setConfigSelector(refStart)
+
+        let lastActivity;
+
+        for(let i=0; i<steps.length; i++)
         {
-          box.setAttribute('group-start', rootActivity.id);
-          box.setAttribute('group-end',   closeActivity.id);
+          console.log("step: "+ steps[i].tagName)
+          // if(steps[i].tagName == 'when')
+          // {
+          //   let steps = branch[i].children
+          // }
+          lastActivity = createActivityFromSource(steps[i].tagName, null, steps[i])
+
+          // lastActivity = createDirectActivity();
+
+
+          lastActivity.setAttribute('group', true);
+          // lastActivity.setAttribute('group-branch',i);
+
+
+
+          // lastActivity = createDirect();
+
+          //reposition 1st activity
+          if(i==0)
+          {
+            lastActivity.object3D.position.set(
+              refStart.object3D.position.x+2,
+              axisY,
+              lastActivity.object3D.position.z,
+            )
+          }
+
+          //insertActivity(lastActivity)
+          //linkActivities(refStart, lastActivity)
+          //setConfigSelector(lastActivity)
+
+
+          //add to collection
+          branch.push(lastActivity);
         }
 
-        scene.setAttribute('lastCreated', closeActivity.id);
+        //Add Choice expression
+        createChoiceBranchExpression(expression, branch[0])
+        
+        //return lastActivity;
+        //return last activity created
+        return branch[branch.length-1]
+      }
 
-        if(boxed)
+      function createChoiceBranchExpression(expression, activity)
+      {
+        //obtains the 3D link where the expression needs to be rendered
+        let cylinder = getBackwardsLink(activity)
+
+        //label containing expression
+        let label;
+
+        let text = createText();
+        cylinder.appendChild(text);
+
+        //when
+        if(expression)
         {
-          return box;
+          text.setAttribute('value', "when");
+          text.setAttribute('position', {x: 0.32, y: 0.3, z: 0});
         }
+        //otherwise
         else
         {
-          return rootActivity;
+          text.setAttribute('value', "otherwise");
+          text.setAttribute('position', {x: 0, y: 0.5, z: 0});
+        }
+
+        text.setAttribute('rotation', {x: 0, y: 0, z: -90});
+        text.setAttribute('side', 'double');
+
+        //This part only intended for <when> branches
+        if(expression)
+        {
+          //Needed since A-FRAME v1.0.0
+          cylinder.setAttribute('class', 'clickable');
+
+          //animation to suggest it's editable
+          cylinder.setAttribute('pulse', '');
+          cylinder.setAttribute('animation', {startEvents:'mouseenter',pauseEvents:'mouseleave', property: 'scale', dir: 'alternate', dur: '500', to: '1.1 1.1 1.1', loop: 5});
+          cylinder.setAttribute('animation__2', {startEvents:'mouseleave', property: 'scale', dur: '500', to: '1.0 1.0 1.0'}); 
+
+          //label set to the expression value
+          label = expression.textContent;
+
+          text = createText();
+          cylinder.appendChild(text);
+          text.setAttribute('value', label);
+          text.setAttribute('rotation', {x: 0, y: 0, z: -90});
+          text.setAttribute('side', 'double');
+          text.setAttribute('scale', '.7 .7 .7');
+          text.setAttribute('align', 'center');
         }
       }
-
-      function createMulticast()
-      {
-        //we're about to create multiple activities, so we stop streaming updates until we're done
-        syncEditorEnabled = false;
-
-        createGroup("multicast", true, "fork", "merge");
-
-        //now we're done, we switch back on, and we sync.
-        syncEditorEnabled = true;
-        syncEditor();
-      }
-
-      function createChoice()
-      {
-        //we're about to create multiple activities, so we stop streaming updates until we're done
-        syncEditorEnabled = false;
-
-        let start = createGroup("choice", false, "choice", "end");
-
-        //update links to show correct condition labels
-        var links = JSON.parse(start.getAttribute("links"));
-        let otherwise = document.getElementById(links[links.length-1]);
-        labels = otherwise.getElementsByTagName('a-text');
-        labels[0].setAttribute('value','otherwise');
-        labels[0].setAttribute('position','0 .5 0');
-        otherwise.removeChild(labels[1]);
-        otherwise.setAttribute('class', 'non-clickable');
-
-        //now we're done, we switch back on, and we sync.
-        syncEditorEnabled = true;
-        syncEditor();
-      }
-
-
-
 
       //A link connects 2 ends
       //Its shape will consist on an invisible cylinder with a child visible line
       //This shape allows interaction not possible with the line alone.
-      function createLink(src, dst, srcPos, dstPos, staticLink, handleRewires)
+      function createLink(src, dst, staticLink, handleRewires)
       {
+        srcPos = getPositionInScene(src);
+        dstPos = getPositionInScene(dst);
+
         staticLink = staticLink || false;
 
         //flag to control whether or not 'createLink' takes care of the use case of
         //activities been injected between 2 others. Enabled by default.
         handleRewires = handleRewires || true;
 
-// var radius = .2;
-// // var opacity = 0.2;
-// var opacity = 0;
-
-          console.log("createLink...");
-          printActivityLinks(src);
-          printActivityLinks(dst);
+        console.log("createLink...");
+        printActivityLinks(src);
+        printActivityLinks(dst);
 
         //gather data to compose conditions
         if(handleRewires)
         {
-          handleForwardLinks(src, dst, srcPos, dstPos)
+          //handleForwardLinks(src, dst, srcPos, dstPos)
+          handleForwardLinks(src, dst)
         }
 
-
-        //there seems to be an issue/bug in version 0.8.0 related to 'get position'
-        //for now, we take them as parameters IN
-        // var srcPos = src.getAttribute('position');
-        // var dstPos = dst.getAttribute('position');
-
-        // //helpers
-        // var linkId = ("link-"+src.id+"-"+dst.id).toLowerCase();
-        var linkId = "link-"+(linkCounter++);
-
-// //create shape cylinder
-// var cilinder = document.createElement('a-cylinder');
-
-// //3D properties
-// cilinder.setAttribute('material','opacity: '+opacity);
-// cilinder.setAttribute('radius',radius);
+        //Unique ID
+        var linkId = getUniqueID("link");
 
         var link;
 
         if(staticLink)
         {
-          link = getStaticLink(src, dst, srcPos, dstPos)
+          link = getStaticLink(src, dst)
         }
         else
         {
-          link = getEditableLink(src, dst, srcPos, dstPos)
+          link = createEditableLink(src, dst)
         }
-        // var link = getEditableLink(src, dst, srcPos, dstPos)
-        // var link = getStaticLink(src, dst, srcPos, dstPos)
 
         //ID
-        // cilinder.setAttribute('id', linkId);
         link.setAttribute('id', linkId);
-
-
-// cilinder.setAttribute('pulse', '');
-// cilinder.setAttribute('animation', {startEvents:'mouseenter',pauseEvents:'mouseleave', property: 'scale', dir: 'alternate', dur: '500', to: '1.1 1.1 1.1', loop: 5});
-// cilinder.setAttribute('animation__2', {startEvents:'mouseleave', property: 'scale', dur: '500', to: '1.0 1.0 1.0'});
-
-
 
         //Event listener needs this attribute
         link.setAttribute(linkId, '');
@@ -1058,14 +1238,9 @@ else
         link.setAttribute('source',      src.id);
         link.setAttribute('destination', dst.id);
 
-        //Connected activities coordinates
-        link.setAttribute('srcPos', srcPos);
-        link.setAttribute('dstPos', dstPos);
-
-// //Visible line
-// var testline = document.createElement('a-entity');
-// cilinder.appendChild(testline);
-
+        // //Visible line
+        // var testline = document.createElement('a-entity');
+        // cilinder.appendChild(testline);
 
         addLink(src, linkId);
         addLink(dst, linkId);
@@ -1075,9 +1250,9 @@ else
 
 
 //this function does the following:
-//   A is the 'source'
-//   B is the 'destination'
-//   X is a previous existing activity
+//   A is the.........'source'
+//   B is the (to be) 'destination'
+//   X is the  activity A is currently attached to
 //   L-1 connects A and X 
 //                                  L-1
 //   given these connections:  A ========> X
@@ -1092,9 +1267,6 @@ function handleForwardLinks(src, dst, srcPos, dstPos)
   //if one was detached
   if(link)
   {
-    // temp hack to move upwards new activity
-    //dstPos.y += 2; 
-
     //re-attach the link to the given destination
     attachSourceToLink(dst, link)
   }

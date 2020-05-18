@@ -23,3 +23,8 @@
 ## 0.1.2
 
 - added search tags
+
+## 0.2.0
+
+- Activity positions now persisted in JSON metadata file (same file name with suffix ".metadata")
+- Processing of `<choice>` element has been rewritten, allowing nested nodes and multiple branches

@@ -16,9 +16,10 @@
       //var sceneFlag = false;
       var setGreen = false;
       
-      var logId = 0;
-      var linkCounter = 0;
-      // var newX = -1;
+      //counter to generate new Unique IDs
+      var uidCounter = 0;
+      //deprecated: var logId = 0;
+      //deprecated: var linkCounter = 0;
       
       var moving = false;
       var movingObj = null;
@@ -38,6 +39,25 @@
       // var hintDirectPending = false; 
 
       var flagTestEnabled = false;
+
+
+      //THIS BLOCK OF VARIABLES are meant for Camelv2/Camelv3 handling
+      var CAMEL_ATTRIBUTE_HEADER_NAME;
+      var CAMEL_ATTRIBUTE_PROPERTY_NAME;
+
+      //Sets Camel v2 values
+      function setCamelVersion2()
+      {
+        CAMEL_ATTRIBUTE_HEADER_NAME   = "headerName";
+        CAMEL_ATTRIBUTE_PROPERTY_NAME = "propertyName";
+      }
+
+      //Sets Camel v3 values
+      function setCamelVersion3()
+      {
+        CAMEL_ATTRIBUTE_HEADER_NAME   = "name";
+        CAMEL_ATTRIBUTE_PROPERTY_NAME = "name";
+      }
 
       // var callDirectEnabled = false;
 
@@ -71,6 +91,7 @@
                   console.log("got source code: "+ message.source);
                   syncStartUpEnabled = true;
                   loadSourceCode(message.source);
+                  loadMetadata(message.metadata);
                   syncStartUpEnabled = false;
                   //syncEditor();
                   break;
@@ -222,7 +243,7 @@
       function init()
       {
         tests();
-
+        setCamelVersion3();
         initPanes();
         resetCameraToDefault();
         initCamelGenerator();
@@ -285,6 +306,7 @@
       function initPanes()
       {
           //enableToButtons(true);
+          enableFromButtons(true);
           enableToButtons(false);
           // var element = document.getElementById("newDirect");
           // var routeSelected = element.getElementsByTagName("input")[0].value;
@@ -336,21 +358,24 @@
       //Switch to the Route Designer view
       function viewRouteDefinitions()
       {
-          enableFromButtons(true);
-          // enableToButtons(true);
-          enableToButtons(!isRouteEmpty(getSelectedRoute()));
-          enableRestButtons(false);
+        //only activate FROM buttons if 'start' is missing
+        var activeRoute = getSelectedRoute();
+        var isFromMissing = (0 == activeRoute.querySelectorAll("a-sphere[start]").length);
+        enableFromButtons(isFromMissing);
+        
+        //other buttons
+        enableToButtons(!isRouteEmpty(activeRoute));
+        enableRestButtons(false);
 
-          document.getElementById(routes[0]).setAttribute('visible', true)
-          document.getElementById(routes[0]).setAttribute('class', 'clickable')
-          document.getElementById(routes[0]).setAttribute('position','0 000 0');
+        //show Routes definitions
+        document.getElementById(routes[0]).setAttribute('visible', true)
+        document.getElementById(routes[0]).setAttribute('class', 'clickable')
+        document.getElementById(routes[0]).setAttribute('position','0 000 0');
 
-
-          document.getElementById('rest-definitions').setAttribute('visible', false)
-          document.getElementById('rest-definitions').setAttribute('class', 'not-clickable')
-          document.getElementById('rest-definitions').setAttribute('position','0 100 0');
-          //switchConfigPane("introconfig");
-          //document.getElementsByTagName("routenav")[1].innerHTML = routes[0];
+        //hide REST definitions
+        document.getElementById('rest-definitions').setAttribute('visible', false)
+        document.getElementById('rest-definitions').setAttribute('class', 'not-clickable')
+        document.getElementById('rest-definitions').setAttribute('position','0 100 0');
       }
 
       //Updates the activity with the configuration settings
@@ -733,41 +758,14 @@ var nextPos = refPos.x+2+shiftX;
 
         //Since A-Frame 1.0.0
         //A problem moving the ring forces us te destroy and recreate
-        //if(ring == null)
-        {
-          ring = document.createElement('a-ring');
-          activity.appendChild(ring);
-          ring.setAttribute('id', 'selector');
-          ring.setAttribute('side', 'double');
-          ring.setAttribute('color', 'yellow');
-          // ring.setAttribute('src', '#routeThumbnail');
-          ring.setAttribute('radius-inner', .7);
-          ring.setAttribute('radius-outer', .71);
-          // return ring;
-
-
-        //   ring.parentElement.removeChild(ring);
-          //ring.setAttribute('color', 'yellow');
-        //   ring.setAttribute('visible', true);
-        //   activity.appendChild(ring);
-          //ring.flushToDOM;
-        }
-        //else
-        {
-          //ring = document.createElement('a-ring');
-        //   activity.appendChild(ring);
-        //   ring.setAttribute('id', 'selector');
-        //   ring.setAttribute('side', 'double');
-        //   ring.setAttribute('color', 'yellow');
-        //   ring.setAttribute('radius-inner', .7);
-        //   ring.setAttribute('radius-outer', .71);
-
-        //   ring.parentElement.removeChild(ring);
-          //ring.setAttribute('color', 'yellow');
-        //   ring.setAttribute('visible', true);
-          //activity.appendChild(ring);
-        }
-
+        ring = document.createElement('a-ring');
+        activity.appendChild(ring);
+        ring.setAttribute('id', 'selector');
+        ring.setAttribute('side', 'double');
+        ring.setAttribute('color', 'yellow');
+        ring.setAttribute('radius-inner', .7);
+        ring.setAttribute('radius-outer', .71);
+      
         console.log("ring created on: "+activity.id);
         //console.log("ring id: "+activity.);
 
@@ -884,14 +882,16 @@ var nextPos = refPos.x+2+shiftX;
 
       }
 
-      //A link connects 2 ends
+      //Creates a link and connects 2 ends
       //Its shape will consist on an invisible cylinder with a child visible line
       //This shape allows interaction not possible with the line alone.
-      function getEditableLink(src, dst, srcPos, dstPos)
+      function createEditableLink(src, dst)
       {
+        srcPos = getPositionInScene(src);
+        dstPos = getPositionInScene(dst);
+
         var radius = .2;
         var opacity = 0.2;
-        // var opacity = 0;
 
         //create shape cylinder
         var cylinder = document.createElement('a-cylinder');
@@ -900,38 +900,9 @@ var nextPos = refPos.x+2+shiftX;
         cylinder.setAttribute('material','opacity: '+opacity);
         cylinder.setAttribute('radius',radius);
 
-        if(src.getAttribute('processor-type') == 'choice-start')
-        {
-          //Needed since A-FRAME v1.0.0
-          cylinder.setAttribute('class', 'clickable');
-
-          //choice labels
-          // let text = document.createElement('a-text');
-          let text = createText();
-          cylinder.appendChild(text);
-          text.setAttribute('value', "when");
-          text.setAttribute('position', {x: 0.32, y: 0.3, z: 0});
-          text.setAttribute('rotation', {x: 0, y: 0, z: -90});
-          text.setAttribute('side', 'double');
-
-          let label = "dummy = 'true'";
-          // text = document.createElement('a-text');
-          text = createText();
-          cylinder.appendChild(text);
-          text.setAttribute('value', label);
-          text.setAttribute('rotation', {x: 0, y: 0, z: -90});
-          text.setAttribute('side', 'double');
-          text.setAttribute('scale', '.7 .7 .7');
-          text.setAttribute('align', 'center');
-
-          cylinder.setAttribute('pulse', '');
-          cylinder.setAttribute('animation', {startEvents:'mouseenter',pauseEvents:'mouseleave', property: 'scale', dir: 'alternate', dur: '500', to: '1.1 1.1 1.1', loop: 5});
-          cylinder.setAttribute('animation__2', {startEvents:'mouseleave', property: 'scale', dur: '500', to: '1.0 1.0 1.0'});
-        }
-
         //Visible line
-        var testline = document.createElement('a-entity');
-        cylinder.appendChild(testline);
+        var line = document.createElement('a-entity');
+        cylinder.appendChild(line);
 
         //Calculate Link 3D positioning
         resetLink(cylinder, srcPos, dstPos);
@@ -942,48 +913,41 @@ var nextPos = refPos.x+2+shiftX;
       // A static link connects 2 ends 
       // Its shape is a 3 segments elbow line
       // they are not editable, no activities can be injected
-      function getStaticLink(src, dst, srcPos, dstPos)
+      //function getStaticLink(src, dst, srcPos, dstPos)
+      function getStaticLink(src, dst)
       {
-        var testline = document.createElement('a-entity');
-        src.parentNode.appendChild(testline);
+        srcPos = src.object3D.position;
+        dstPos = dst.object3D.position;
 
-// console.log("getStaticLink")
-// console.log(srcPos)
-// console.log(dstPos)
-// console.log("src x: "+ srcPos.x)
-// console.log("typoof srcPos: "+ (typeof srcPos))
-// console.log("typoof srcPos.x: "+ (typeof srcPos.x))
-
-// console.log("getStaticLink")
-// console.log(srcPos)
-// console.log("src x: "+ srcPos.x)
+        var line = document.createElement('a-entity');
+        src.parentNode.appendChild(line);
 
         if(src.getAttribute('processor-type').startsWith("multicast"))
         {
           // 3 segment elbow lines
-          testline.setAttribute('line__1', {start: {x: srcPos.x+.25,  y: srcPos.y, z: 0}});
-          testline.setAttribute('line__1', {  end: {x: srcPos.x+.5,   y: srcPos.y, z: 0}});
+          line.setAttribute('line__1', {start: {x: srcPos.x+.25,  y: srcPos.y, z: 0}});
+          line.setAttribute('line__1', {  end: {x: srcPos.x+.5,   y: srcPos.y, z: 0}});
 
-          testline.setAttribute('line__2', {start: {x: srcPos.x+.5,   y: srcPos.y, z: 0}});
-          testline.setAttribute('line__2', {  end: {x: srcPos.x+.5,   y: dstPos.y, z: 0}});
+          line.setAttribute('line__2', {start: {x: srcPos.x+.5,   y: srcPos.y, z: 0}});
+          line.setAttribute('line__2', {  end: {x: srcPos.x+.5,   y: dstPos.y, z: 0}});
 
-          testline.setAttribute('line__3', {start: {x: srcPos.x+.5,   y: dstPos.y, z: 0}});
-          testline.setAttribute('line__3', {  end: {x: dstPos.x-.25,  y: dstPos.y, z: 0}});
+          line.setAttribute('line__3', {start: {x: srcPos.x+.5,   y: dstPos.y, z: 0}});
+          line.setAttribute('line__3', {  end: {x: dstPos.x-.25,  y: dstPos.y, z: 0}});
         }
         else if (src.getAttribute('processor-type') == "direct")
         {
           // 3 segment elbow lines
-          testline.setAttribute('line__1', {start: {x: srcPos.x+.25,  y: srcPos.y, z: 0}});
-          testline.setAttribute('line__1', {  end: {x: srcPos.x+.5,   y: srcPos.y, z: 0}});
+          line.setAttribute('line__1', {start: {x: srcPos.x+.25,  y: srcPos.y, z: 0}});
+          line.setAttribute('line__1', {  end: {x: srcPos.x+.5,   y: srcPos.y, z: 0}});
 
-          testline.setAttribute('line__2', {start: {x: srcPos.x+.5,   y: srcPos.y, z: 0}});
-          testline.setAttribute('line__2', {end:   {x: dstPos.x-.5,   y: dstPos.y, z: 0}});
+          line.setAttribute('line__2', {start: {x: srcPos.x+.5,   y: srcPos.y, z: 0}});
+          line.setAttribute('line__2', {end:   {x: dstPos.x-.5,   y: dstPos.y, z: 0}});
 
-          testline.setAttribute('line__3', {start: {x: dstPos.x-.5,   y: dstPos.y, z: 0}});
-          testline.setAttribute('line__3', {end:   {x: dstPos.x-.25,  y: dstPos.y, z: 0}});
+          line.setAttribute('line__3', {start: {x: dstPos.x-.5,   y: dstPos.y, z: 0}});
+          line.setAttribute('line__3', {end:   {x: dstPos.x-.25,  y: dstPos.y, z: 0}});
         }
 
-        return testline;
+        return line;
       }
 
       //Redraws the link
@@ -1062,13 +1026,6 @@ var nextPos = refPos.x+2+shiftX;
             y: srcPos.y+((dstPos.y-srcPos.y)/2),
             z: 0
         });
-
-// console.log("link pos: ")
-// console.log(cilinder.getAttribute('position'))
-
-        //Draw line
-        // cilinder.firstChild.setAttribute('line', {start: {x: 0, y: height/2, z: 0}});
-        // cilinder.firstChild.setAttribute('line', {end: {x: 0, y: -(height/2), z: 0}});
       }
 
       //updates the activity to include the new link ID
@@ -1245,6 +1202,10 @@ var nextPos = refPos.x+2+shiftX;
               document.onmousemove = null;
               movingObj = null;
               movingObjX = null;
+
+              //when moving dragging objects, positions change
+              //so we update metadata info
+              syncMetadata();
             })
             
             //we use click event to highlight activity clicked

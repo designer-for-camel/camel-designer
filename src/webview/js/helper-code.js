@@ -30,6 +30,9 @@ function importSource()
                 console.log(reader.result);
 
                 loadSourceCode(reader.result);
+
+                            //test
+                            loadMetadata();
             };
 
             reader.readAsText(file);    
@@ -56,6 +59,8 @@ function loadSourceCode(camelContextImport)
 
     //defined routes in source
     var iteratorRoute = xmlDoc.evaluate('//*[local-name()="route"]', xmlDoc, null, XPathResult.ANY_TYPE, null);
+    // var iteratorRoute = xmlDoc.evaluate('//*[local-name()="route"]', xmlDoc.cloneNode(true), null, XPathResult.ANY_TYPE, null);
+    
     var route = iteratorRoute.iterateNext();
 
     //if it has an ID, we update the default route ID
@@ -96,7 +101,7 @@ function loadSourceCode(camelContextImport)
         let processors = route.children;
 
         //iteration starts after FROM (i=1)
-        for(i=1; i<processors.length;i++)
+        for(let i=1; i<processors.length;i++)
         {
             //because all creation actions are asynchronous, 
             //we need to space them apart with a gap of time
@@ -111,7 +116,7 @@ function loadSourceCode(camelContextImport)
             let isLastProcessor = (i<processors.length)
 
             //create activity with flag
-            createActivity(xmlTag, delay, processors[i], isLastProcessor);
+            createActivityFromSource(xmlTag, delay, processors[i], isLastProcessor);
         }
 
         route = iteratorRoute.iterateNext();
@@ -138,9 +143,8 @@ function createRestDefinitions(xmlDoc) {
 
         let methods = rest.children;
 
-        for(i=0; i<methods.length;i++)
+        for(let i=0; i<methods.length;i++)
         {
-
             createRestMethod({
                 method: methods[i].tagName,
                 id: methods[i].id, 
@@ -155,7 +159,7 @@ function createRestDefinitions(xmlDoc) {
 //Creates an activity based on the XML tag (type)
 //it delays the creation activity because all creation actions are asynchronous
 //if it is the last action, we need to flag it.
-function createActivity(type, delay, definition,lastAction) {
+function createActivityFromSource(type, delay, definition,lastAction) {
 
     //when XML tag is 'to', we need to identify the Camel component
     if(type == 'to'){
@@ -165,33 +169,33 @@ function createActivity(type, delay, definition,lastAction) {
     switch(type) {
         case 'log':
             //setTimeout(createLog, delay);
-            createActivityDelayed(createLog, delay, definition,lastAction);
-            break;
+            return createActivityDelayed(createLog, delay, definition,lastAction);
+            // break;
         case 'direct':
             //setTimeout(createDirect, delay);
-            createActivityDelayed(createDirect, delay, definition, lastAction);
-            break;
+            return createActivityDelayed(createDirect, delay, {definition: definition}, lastAction);
+            // break;
         case 'choice':
             //setTimeout(createChoice, delay);
-            createActivityDelayed(createChoice, delay, definition, lastAction);
-            break;
+            return createActivityDelayed(createChoice, delay, definition, lastAction);
+            // break;
         case 'multicast':
             //setTimeout(createMulticast, delay);            
-            createActivityDelayed(createMulticast, delay, definition, lastAction);            
-            break;
+            return createActivityDelayed(createMulticast, delay, definition, lastAction);            
+            // break;
         case 'setProperty':
-            createActivityDelayed(createProperty, delay, definition, lastAction);            
-            break;
+            return createActivityDelayed(createProperty, delay, definition, lastAction);            
+            // break;
         case 'setHeader':
-            createActivityDelayed(createHeader, delay, definition, lastAction);            
-            break;
+            return createActivityDelayed(createHeader, delay, definition, lastAction);            
+            // break;
         case 'setBody':
-            createActivityDelayed(createBody, delay, definition, lastAction);            
-            break;
+            return createActivityDelayed(createBody, delay, definition, lastAction);            
+            // break;
         default:
             //if none of the above, then it's unknown or unsupported yet.
-            createActivityDelayed(createUnknown, delay, definition, lastAction);            
-            break;
+            return createActivityDelayed(createUnknown, delay, definition, lastAction);            
+            // break;
             //code block
     }
 }
@@ -203,8 +207,8 @@ function createActivity(type, delay, definition,lastAction) {
 function createActivityDelayed(creator, delay, definition, lastAction)
 {
     //experiment
-    creator(definition);
-    return;
+    return creator(definition);
+    // return;
 
 //FROM HERE, TO BE DEPRECATED
     
@@ -296,23 +300,15 @@ function getCamelSource()
     
     //when it runs in VSCode
     if ( top !== self ) { // we are in the iframe
-        //was
-        // vscode.postMessage({
-        //     command: 'insert',
-        //     text: prettifyXml(mycode.text)
-        // })
-        vscodePostMessage('insert', mycode.text);
+        vscodePostMessage('insert', {
+            code: mycode.text,
+            metadata: getMetadata()
+        });
     }
     //when it runs in a browser
     else { // not an iframe
-    
-        var myWindow = window.open("", "_blank")//, "width=200,height=100");
-        // myWindow.document.write("<code>"+text+"</code>");
-        // myWindow.document.write(encodeXml(mycode.text).replace(new RegExp('\r?\n','g'), '<br />'));
-        // myWindow.document.write(encodeXml(prettifyXml(mycode.text)));
-
+        var myWindow = window.open("", "_blank")
         var myhtml ='<textarea rows="50" cols="100">'+prettifyXml(mycode.text)+'</textarea>'
-
         myWindow.document.write(myhtml);
     }
 }
@@ -480,12 +476,12 @@ function renderRouteActivity(activity, mycode, iterator) {
             mycode.text += mycode.tab+'<log message='+activity.getElementsByTagName('a-text')[0].firstChild.getAttribute('value')+' id="'+activity.id+'"/>\n'
             break;
         case 'property':
-            mycode.text += mycode.tab+'<setProperty name="'+activity.getElementsByTagName('a-text')[0].firstChild.getAttribute('value').slice(0,-1)+'" id="'+activity.id+'">\n'+
+            mycode.text += mycode.tab+'<setProperty '+CAMEL_ATTRIBUTE_PROPERTY_NAME+'="'+activity.getElementsByTagName('a-text')[0].firstChild.getAttribute('value').slice(0,-1)+'" id="'+activity.id+'">\n'+
                            mycode.tab+mycode.tab+'<simple>'+activity.getElementsByTagName('a-text')[0].lastChild.getAttribute('value').slice(1,-1)+'</simple>\n'+
                            mycode.tab+'</setProperty>\n'
             break;
         case 'header':
-            mycode.text += mycode.tab+'<setHeader name="'+activity.getElementsByTagName('a-text')[0].firstChild.getAttribute('value').slice(0,-1)+'" id="'+activity.id+'">\n'+
+            mycode.text += mycode.tab+'<setHeader '+CAMEL_ATTRIBUTE_HEADER_NAME+'="'+activity.getElementsByTagName('a-text')[0].firstChild.getAttribute('value').slice(0,-1)+'" id="'+activity.id+'">\n'+
                            mycode.tab+mycode.tab+'<simple>'+activity.getElementsByTagName('a-text')[0].lastChild.getAttribute('value').slice(1,-1)+'</simple>\n'+
                            mycode.tab+'</setHeader>\n'
             break;
@@ -506,8 +502,8 @@ function renderRouteActivity(activity, mycode, iterator) {
             break;
         case 'multicast-start':
             // ading the ID for now is problematic, needs to be reviewed first
-            // mycode.text += mycode.tab+'<multicast strategyRef="demoStrategy" id="'+activity.parentNode.id+'">\n'
-            mycode.text += mycode.tab+'<multicast strategyRef="demoStrategy">\n'
+            mycode.text += mycode.tab+'<multicast strategyRef="demoStrategy" id="'+activity.parentNode.id+'">\n'
+            // mycode.text += mycode.tab+'<multicast strategyRef="demoStrategy">\n'
             mycode.tab  += '  '
             // mycode.tab  += '<p>'
 
@@ -558,12 +554,12 @@ function renderChoice(choice, mycode, iterator) {
     let alternative;
     let start = choice;
 
-    mycode.text += mycode.tab+'<choice>\n'
+    mycode.text += mycode.tab+'<choice id="'+choice.id+'">\n'
     mycode.tab  += '  '
 
     //Itereta over the paths...
     //... but we jump i=0 as it connects with previous activity
-    for(i=1; i<links.length; i++)
+    for(let i=1; i<links.length; i++)
     {
         link = document.getElementById(links[i]);
 
@@ -644,4 +640,31 @@ function walkRoute(start)
     }
 
     alert("list:\n"+activities);
+}
+
+//Generates Metadata information about the Camel definitions
+//Main purpose is to save/restore state when files are opened/closed 
+function getMetadata()
+{
+    var iterator = document.evaluate('//a-entity[@route]/*[local-name()!="a-cylinder"]', document, null, XPathResult.ANY_TYPE, null);
+    var thisNode = iterator.iterateNext();
+
+    // var metadata = "";
+
+    var activities = [];
+
+    while (thisNode) {
+
+        activities.push({
+            id: thisNode.id,
+            x: thisNode.object3D.position.x,
+            y: thisNode.object3D.position.y
+        })
+
+        //metadata += "id:"+thisNode.id+" x:"+thisNode.object3D.position.x+" y:"+thisNode.object3D.position.y+"\n"
+        thisNode = iterator.iterateNext();
+    }
+
+    //return metadata;
+    return JSON.stringify(activities,null,'\t');
 }

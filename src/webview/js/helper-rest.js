@@ -325,7 +325,8 @@ function attachDirect(restMethod, yPos)
   let scale = {x: .8, y: .8, z: .8};
 
   //create activity
-  let activity = createDirectActivity(scale);
+  let activity = createDirectActivity({scale: scale});
+  // let activity = createDirect({scale: scale});
 
   //reposition label (to fit better)
   activity.querySelector("#routeLabel").setAttribute('position', {x: 0, y: -.5, z: 0});
