@@ -47,7 +47,9 @@
 
       <!-- These are dedicated to Web Services -->
       <routenav class="bRest"><button class="button" onclick="viewRestDefinitions()">REST</button></routenav>
-      <!-- <routenav class="soap"><button class="button" onclick="//pending">SOAP</button></routenav> -->
+      
+      <!-- Experimental -->
+      <!-- <routenav class="soap"><button class="button" onclick="takeScreenshot()">SOAP</button></routenav> -->
 
 
       <!-- Categories -->
@@ -78,6 +80,13 @@
                 <p class="rest post"><button class="button" disabled onclick="createRestMethod({method: 'post'})">POST</button></p>
                 <p class="rest put"><button class="button" disabled onclick="createRestMethod({method: 'put'})">PUT</button></p>
 
+
+
+      <!-- Configuration Panel -->
+      <p class="activityconfig" id="screenshot" style="visibility: visible;"><br/>
+        <!-- <font size="6">Configuration Pane</font> -->
+        <!-- <img id="routeThumbnail-temp2" src="../media/routes-ring.jpg"> -->
+      </p>
 
 
       <!-- Configuration Panel -->
@@ -151,7 +160,7 @@
       </p>
 
     <!-- Spacial scene (A-Frame elements) -->
-    <a-scene myoutline cursor="rayOrigin:mouse" raycaster="objects: .clickable, .testcollidable" vr-mode-ui="enabled: false">
+    <a-scene myoutline cursor="rayOrigin:mouse" raycaster="objects: .clickable, .testcollidable" vr-mode-ui="enabled: false" screenshot="width: 512; height: 256;">
 
       <a-assets>
 

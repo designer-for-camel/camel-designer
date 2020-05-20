@@ -441,6 +441,7 @@ function loadMetadata(metadata)
   redrawAllLinks()
 }
 
+//Redraws all links connecting activities
 function redrawAllLinks()
 {
   //get all links of all routes
@@ -451,4 +452,63 @@ function redrawAllLinks()
   {
     redrawLink(allLinks[i]);
   }
+}
+
+//Auto-Detects Camel settings to use from the source code given
+function autoDetectCamelSettings(source)
+{
+  //Auto-detect Blueprint
+  if(source.includes(CAMEL_NAMESPACE.blueprint))
+  {
+    setCamelNamespaceBlueprint();
+  }
+
+  //Auto-detect Camel version from syntax
+  if(source.includes("propertyName") || source.includes("headerName"))
+  {
+    setCamelVersion2();
+  }
+
+  //Auto-detect Camel envelope wrapping Camel definitions
+  if(source.includes(CAMEL_SOURCE_ENVELOPE.routeContext))
+  {
+    camelSourceEnvelope = CAMEL_SOURCE_ENVELOPE.routeContext
+  }
+  else if(source.includes(CAMEL_SOURCE_ENVELOPE.camelK))
+  {
+    camelSourceEnvelope = CAMEL_SOURCE_ENVELOPE.camelK
+  }
+}
+
+//experimental
+function takeScreenshot()
+{
+  let current = document.getElementById(currentConfigPane);
+  current.style.visibility = "hidden";
+
+
+  let canvas = document.querySelector('a-scene').components.screenshot.getCanvas('perspective');
+
+  // canvas.toDataURL()
+
+  // var img = document.createElement('img');
+
+  // img.setAttribute("width", "100%");
+  // img.setAttribute("height", "100%");
+  // img.src = canvas.toDataURL()
+  // let pane = document.getElementById('screenshot');
+  // pane.appendChild(img)
+  // pane.style.visibility = "visible";
+
+
+  // <a-plane src="#ground" height="100" width="100" rotation="-90 0 0"></a-plane>
+
+  var plane = document.createElement('a-plane');
+  plane.setAttribute('width', 4)
+  plane.setAttribute('height', 2)
+  // activity.appendChild(disc);
+  // disc.setAttribute('side', 'double');
+  plane.setAttribute('src', canvas.toDataURL());
+  getSelectedRoute().appendChild(plane);
+
 }

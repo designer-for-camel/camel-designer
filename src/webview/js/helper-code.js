@@ -208,40 +208,6 @@ function createActivityDelayed(creator, delay, definition, lastAction)
 {
     //experiment
     return creator(definition);
-    // return;
-
-//FROM HERE, TO BE DEPRECATED
-    
-    lastAction = lastAction || false;
-    //tet creationPromise
-
-    if(!lastAction)
-    {
-        setTimeout(creator(definition), delay);
-    }
-    else
-    {
-        let creationPromise = new Promise((resolve, reject) => {
-            // We call resolve(...) when what we were doing asynchronously was successful, and reject(...) when it failed.
-            // In this example, we use setTimeout(...) to simulate async code. 
-            // In reality, you will probably be using something like XHR or an HTML5 API.
-            setTimeout( function() {
-                            creator(definition)
-                            resolve("Success!")  // Yay! Everything went well!
-                        },
-                        delay) 
-        })
-
-        creationPromise
-            .then(function(value) {
-                    console.log("last 'create' action completed");
-                    syncStartUpEnabled = false;
-                  })
-            .catch(function() {
-                    console.log("last 'create' action completed");
-                    syncStartUpEnabled = false;
-                  });
-    }
 }
 
 
@@ -302,7 +268,8 @@ function getCamelSource()
     if ( top !== self ) { // we are in the iframe
         vscodePostMessage('insert', {
             code: mycode.text,
-            metadata: getMetadata()
+            metadata: getMetadata(),
+            envelope: getCamelSourceEnvelope()
         });
     }
     //when it runs in a browser
@@ -317,14 +284,14 @@ function getCamelSource()
 
 function renderCamelContext(mycode) {
 
-    mycode.text +=  '<camelContext id="camel" xmlns="http://camel.apache.org/schema/spring">\n\n'
+    mycode.text +=  '<'+getCamelSourceEnvelope()+' id="camel" '+getCamelNamespace()+'>\n\n'
     mycode.tab += '  '
 
     renderCamelRestDsl(mycode);
     renderCamelRoutes(mycode);
 
     mycode.tab = mycode.tab.slice(0, -2);
-    mycode.text +=  '</camelContext>\n\n'
+    mycode.text +=  '</'+getCamelSourceEnvelope()+'>'
 }
 
 
@@ -476,12 +443,12 @@ function renderRouteActivity(activity, mycode, iterator) {
             mycode.text += mycode.tab+'<log message='+activity.getElementsByTagName('a-text')[0].firstChild.getAttribute('value')+' id="'+activity.id+'"/>\n'
             break;
         case 'property':
-            mycode.text += mycode.tab+'<setProperty '+CAMEL_ATTRIBUTE_PROPERTY_NAME+'="'+activity.getElementsByTagName('a-text')[0].firstChild.getAttribute('value').slice(0,-1)+'" id="'+activity.id+'">\n'+
+            mycode.text += mycode.tab+'<setProperty '+getCamelAttributePropertyName()+'="'+activity.getElementsByTagName('a-text')[0].firstChild.getAttribute('value').slice(0,-1)+'" id="'+activity.id+'">\n'+
                            mycode.tab+mycode.tab+'<simple>'+activity.getElementsByTagName('a-text')[0].lastChild.getAttribute('value').slice(1,-1)+'</simple>\n'+
                            mycode.tab+'</setProperty>\n'
             break;
         case 'header':
-            mycode.text += mycode.tab+'<setHeader '+CAMEL_ATTRIBUTE_HEADER_NAME+'="'+activity.getElementsByTagName('a-text')[0].firstChild.getAttribute('value').slice(0,-1)+'" id="'+activity.id+'">\n'+
+            mycode.text += mycode.tab+'<setHeader '+getCamelAttributeHeaderName()+'="'+activity.getElementsByTagName('a-text')[0].firstChild.getAttribute('value').slice(0,-1)+'" id="'+activity.id+'">\n'+
                            mycode.tab+mycode.tab+'<simple>'+activity.getElementsByTagName('a-text')[0].lastChild.getAttribute('value').slice(1,-1)+'</simple>\n'+
                            mycode.tab+'</setHeader>\n'
             break;

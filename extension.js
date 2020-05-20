@@ -89,13 +89,24 @@ function activate(context) {
                     vscode.languages.setTextDocumentLanguage(e.document, "xml");
                   }
 
+                  //obtain text on Editor
+                  var docText = e.document.getText();
+
+                  //work on the text to replace Camel definitions
+                  //other non Camel elements are left 'as is'
+                  var closingElement = '</'+message.payload.envelope+'>'
+                  var newText = docText.substring(0, docText.indexOf('<'+message.payload.envelope)) +
+                                message.payload.code +
+                                docText.substring(docText.indexOf(closingElement)+closingElement.length, docText.length)
+                                
                   //the full content is selected (to be replaced)
                   var firstLine = e.document.lineAt(0);
                   var lastLine = e.document.lineAt(e.document.lineCount - 1);
                   var textRange = new vscode.Range(firstLine.range.start, lastLine.range.end);
 
                   //Content replaced with Designer update
-                  edit.replace(textRange, message.payload.code);
+                  // edit.replace(textRange, message.payload.code);
+                  edit.replace(textRange, newText);
 
                   metadata = message.payload.metadata;
 

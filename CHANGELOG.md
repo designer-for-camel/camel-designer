@@ -18,7 +18,7 @@
 
 ## 0.1.1
 
-- supressed 'showDesigner' from command palette
+- suppressed 'showDesigner' from command palette
 
 ## 0.1.2
 
@@ -28,3 +28,6 @@
 
 - Activity positions now persisted in JSON metadata file (same file name with suffix ".metadata")
 - Processing of `<choice>` element has been rewritten, allowing nested nodes and multiple branches
+- Default Camel syntax is Camel 3. If imported source is Camel 2, it tries to auto-detect and switch to Camel 2
+- Initial implementation for handling Spring XML and Blueprint XML. 
+- Initial support for `<routeContext>` files and `<routes>` (Camel-K) files

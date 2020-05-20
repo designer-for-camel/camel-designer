@@ -294,7 +294,18 @@ function createProperty(definition)
     //apply definition ID
     updateActivityId(property, definition.getAttribute('id'));
 
-    property.getElementsByTagName("a-text")[0].firstChild.setAttribute('value', definition.getAttribute(CAMEL_ATTRIBUTE_PROPERTY_NAME)+':');
+    //obtain name value
+    var propertyName = definition.getAttribute(getCamelAttributePropertyName())
+
+    //if null, try switching Camel version
+    if(propertyName == null)
+    {
+      console.warn('Could not find setProperty attribute "'+getCamelAttributePropertyName()+'", switching Camel version...')
+      switchCamelVersion()
+      propertyName = definition.getAttribute(getCamelAttributePropertyName())
+    }
+
+    property.getElementsByTagName("a-text")[0].firstChild.setAttribute('value', propertyName+':');
     property.getElementsByTagName("a-text")[0].lastChild.setAttribute('value', '"'+definition.firstElementChild.textContent+'"');
   }
 
@@ -311,7 +322,18 @@ function createHeader(definition)
     //apply definition ID
     updateActivityId(header, definition.getAttribute('id'));
 
-    header.getElementsByTagName("a-text")[0].firstChild.setAttribute('value', definition.getAttribute(CAMEL_ATTRIBUTE_HEADER_NAME)+':');
+    //obtain name value
+    var headerName = definition.getAttribute(getCamelAttributeHeaderName())
+
+    //if null, try switching Camel version
+    if(headerName == null)
+    {
+      console.warn('Could not find setHeader attribute "'+getCamelAttributeHeaderName()+'", switching Camel version...')
+      switchCamelVersion()
+      headerName = definition.getAttribute(getCamelAttributeHeaderName())
+    }
+
+    header.getElementsByTagName("a-text")[0].firstChild.setAttribute('value', headerName+':');
     header.getElementsByTagName("a-text")[0].lastChild.setAttribute('value', '"'+definition.firstElementChild.textContent+'"');
   }
 
@@ -364,34 +386,44 @@ function createNameValuePair(setterType)
 function createUnknown(definition)
 {
   var activity;
+  var tag;
 
   if(definition.tagName == 'from')
   {
     activity = createFrom('unknown');
     activity.firstChild.setAttribute('value','');
+
+    tag = definition.attributes.uri.value.split(":")[0];
   }
-  else{
-    //activity = createTo('unknown');
+  else
+  {
     activity = createActivity({type: 'unknown'});
-}
+
+    if(definition.tagName == 'to')
+    {
+      tag = definition.attributes.uri.value.split(":")[0];
+    }
+    else
+    {
+      tag = definition.tagName;
+    }
+  }
 
   activity.setAttribute('color', '#FF5733');
   activity.setAttribute('opacity', .5)
 
-  // var text = document.createElement('a-text');
   var text = createText();
   activity.appendChild(text);
-  text.setAttribute('value', '?');
+  text.setAttribute('value', tag);
   text.setAttribute('color', 'white');
   text.setAttribute('align', 'center');
   text.setAttribute('side', 'double');
-  // text.setAttribute('scale', {x: 2, y: 2, z: 2});
 
   //defaults
-  let defaultCode = definition.outerHTML.replace(' xmlns="http://camel.apache.org/schema/spring"','');
+  // let defaultCode = definition.outerHTML.replace(' xmlns="'+CAMEL_NAMESPACE+'"','');
+  let defaultCode = definition.outerHTML.replace(' '+getCamelNamespace(),'');
 
   //label for field name
-  // let label = document.createElement('a-text');
   var label = createText(fontSourceCodePro);
   text.appendChild(label);
   label.setAttribute('value', defaultCode);
@@ -399,7 +431,15 @@ function createUnknown(definition)
   label.setAttribute('align', 'center');
   label.setAttribute('position', {x: 0, y: -1.2, z: 0});
   label.setAttribute('side', 'double');
-  // label.setAttribute('font','sourcecodepro')
+
+
+  label = createText();
+  activity.appendChild(label);
+  label.setAttribute('value', '(not supported yet)');
+  label.setAttribute('align', 'center');
+  label.setAttribute('side', 'double');
+  label.setAttribute('position', {x: 0, y: 0.7, z: 0});
+  label.setAttribute('color', 'grey');
 
   goLive(activity);
 

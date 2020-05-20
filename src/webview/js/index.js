@@ -40,23 +40,111 @@
 
       var flagTestEnabled = false;
 
+      //Camel constants
+      const CAMEL2_ATTRIBUTE_HEADER_NAME   = "headerName"
+      const CAMEL2_ATTRIBUTE_PROPERTY_NAME = "propertyName"
+      const CAMEL3_ATTRIBUTE_HEADER_NAME   = "name"
+      const CAMEL3_ATTRIBUTE_PROPERTY_NAME = "name"
+      const CAMEL_RELEASE = {
+        v2: 2,
+        v3: 3
+      };
+      const CAMEL_NAMESPACE = {
+        none:      '',
+        spring:    'xmlns="http://camel.apache.org/schema/spring"',
+        blueprint: 'xmlns="http://camel.apache.org/schema/blueprint"'
+      };
+      const CAMEL_SOURCE_ENVELOPE = {
+        camelContext: "camelContext",
+        routeContext: "routeContext",
+        camelK: "routes"
+      };
 
-      //THIS BLOCK OF VARIABLES are meant for Camelv2/Camelv3 handling
-      var CAMEL_ATTRIBUTE_HEADER_NAME;
-      var CAMEL_ATTRIBUTE_PROPERTY_NAME;
+      //helper variables
+      var camelVersion;
+      var camelNamespace;
+      var camelSourceEnvelope;
 
-      //Sets Camel v2 values
-      function setCamelVersion2()
+      //initialises with default Camel settings
+      function setCamelDefaults()
       {
-        CAMEL_ATTRIBUTE_HEADER_NAME   = "headerName";
-        CAMEL_ATTRIBUTE_PROPERTY_NAME = "propertyName";
+        setCamelVersion3();
+        setCamelNamespaceSpring();
+        camelSourceEnvelope = CAMEL_SOURCE_ENVELOPE.camelContext
       }
 
-      //Sets Camel v3 values
+      function getCamelSourceEnvelope()
+      {
+        return camelSourceEnvelope
+      }
+
+      //returns the attribute name to use of setHeader
+      function getCamelAttributeHeaderName()
+      {
+        if(camelVersion == CAMEL_RELEASE.v2)
+        {
+          return CAMEL2_ATTRIBUTE_HEADER_NAME
+        }
+        
+        return CAMEL3_ATTRIBUTE_HEADER_NAME
+      }
+
+      //returns the attribute name to use of setProperty
+      function getCamelAttributePropertyName()
+      {
+        if(camelVersion == CAMEL_RELEASE.v2)
+        {
+          return CAMEL2_ATTRIBUTE_PROPERTY_NAME
+        }
+        
+        return CAMEL3_ATTRIBUTE_PROPERTY_NAME
+      }
+
+      //Sets Camel v2
+      function setCamelVersion2()
+      {
+        console.info("... now using Camel v2 syntax.")
+        camelVersion = CAMEL_RELEASE.v2
+      }
+
+      //Sets Camel v3
       function setCamelVersion3()
       {
-        CAMEL_ATTRIBUTE_HEADER_NAME   = "name";
-        CAMEL_ATTRIBUTE_PROPERTY_NAME = "name";
+        console.info("... now using Camel v3 syntax.")
+        camelVersion = CAMEL_RELEASE.v3
+      }
+
+      //Switches between Camel versions
+      function switchCamelVersion()
+      {
+        if(camelVersion = CAMEL_RELEASE.v3)
+        {
+          setCamelVersion2()
+        }
+        else
+        {
+          setCamelVersion3()
+        }
+      }
+
+      //sets Blueprint namespace
+      function setCamelNamespaceBlueprint()
+      {
+        console.info("... now using Blueprint XML namespace.")
+        camelNamespace = CAMEL_NAMESPACE.blueprint
+      }
+
+      //sets Spring namespace
+      function setCamelNamespaceSpring()
+      {
+        console.info("... now using Spring XML namespace.")
+        camelNamespace = CAMEL_NAMESPACE.spring
+      }
+
+      //returns namespace in use
+      function getCamelNamespace()
+      {
+        return camelNamespace
       }
 
       // var callDirectEnabled = false;
@@ -88,12 +176,19 @@
                   switchConfigPaneByActivity(activity);
                   break;
               case 'importCamelDefinition':
-                  console.log("got source code: "+ message.source);
+                  //console.log("got source code: "+ message.source);
+
+                  //attempt to detect Camel settings to use
+                  autoDetectCamelSettings(message.source)
+
+                  //While building the Visual elements, TextEditor<=>VisualEditor comms need to stop, 
                   syncStartUpEnabled = true;
                   loadSourceCode(message.source);
                   loadMetadata(message.metadata);
                   syncStartUpEnabled = false;
-                  //syncEditor();
+
+                  //Once finished, we need to sync the changes, (new ID values may have been applied)
+                  syncEditor();
                   break;
           }
         });
@@ -243,7 +338,7 @@
       function init()
       {
         tests();
-        setCamelVersion3();
+        setCamelDefaults();
         initPanes();
         resetCameraToDefault();
         initCamelGenerator();
@@ -256,13 +351,6 @@
       //intended to be invoked to VS-code at start-up time
       function importSourceCode()
       {
-        //was
-        //when it runs in VSCode
-        // if ( top !== self ) { // we are in the iframe
-        //   vscode.postMessage({
-        //       command: 'importCamelDefinition'
-        //   })
-        // }
         vscodePostMessage('importCamelDefinition');
       }
 
