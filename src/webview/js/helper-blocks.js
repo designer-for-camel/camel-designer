@@ -254,7 +254,7 @@ function createLog(definition)
   // Activity label
   var text = createText();
   log.appendChild(text);
-  text.setAttribute('value', log.id);
+  text.setAttribute('value', 'log');
   text.setAttribute('color', 'white');
   text.setAttribute('align', 'center');
   text.setAttribute('side', 'double');
@@ -354,7 +354,8 @@ function createNameValuePair(setterType)
   text.setAttribute('side', 'double');
 
   //defaults
-  let defaultName = "name";
+  // let defaultName = "name";
+  let defaultName = activity.id;
   let defaultValue = "dummy";
 
   //label for field name

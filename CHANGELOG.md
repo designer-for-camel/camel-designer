@@ -31,3 +31,7 @@
 - Default Camel syntax is Camel 3. If imported source is Camel 2, it tries to auto-detect and switch to Camel 2
 - Initial implementation for handling Spring XML and Blueprint XML. 
 - Initial support for `<routeContext>` files and `<routes>` (Camel-K) files
+
+## 0.X.X
+
+- Initial implementation to provide help with expression variables in configuration panels

@@ -1637,6 +1637,9 @@ var nextPos = refPos.x+2+shiftX;
         {
           element.getElementsByTagName("input")[0].value = text.getAttribute('value').slice(1, -1); //gets rid of double quotes at start/end
         }
+
+        //prepare select (with expression variables)
+        populateExpressionVariables(element.getElementsByTagName('vars')[0])
       }
 
       //Sets Configuration Panel with Activity configuration
@@ -1654,10 +1657,13 @@ var nextPos = refPos.x+2+shiftX;
         //replace panel values using activity values
         fieldName.value = textName.getAttribute('value').slice(0, -1); //gets rid of tail character ':'
         fieldValue.value = textValue.getAttribute('value').slice(1, -1); //gets rid of double quotes at start/end
+
+        //prepare select (with expression variables)
+        populateExpressionVariables(element.getElementsByTagName('vars')[0])
       }
 
       //Sets Configuration Panel with Activity configuration
-      function updateConfigBody()//activity)
+      function updateConfigBody()
       {
         //obtains panel elements
         var element = document.getElementById("set-body");
@@ -1668,6 +1674,9 @@ var nextPos = refPos.x+2+shiftX;
 
         //replace panel values using activity values
         configBody.value = text.getAttribute('value').slice(1, -1); //gets rid of start/end double quotes
+
+        //prepare select (with expression variables)
+        populateExpressionVariables(element.getElementsByTagName('vars')[0])
       }
 
       //Sets Configuration Panel with Activity configuration

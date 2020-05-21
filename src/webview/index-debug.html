@@ -17,6 +17,9 @@
     <script src="js/helper-rest.js"></script>
     <script src="js/helper.js"></script>
 
+    <!-- experimental -->
+    <script src="js/incubator.js"></script>
+
     <!-- a-frame dependencies -->
     <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script> -->
     <script src="https://aframe.io/releases/1.0.4/aframe.min.js"></script>
@@ -96,8 +99,9 @@
       </p>
 
       <p class="activityconfig" id="loginput"><br/>
-        <label>Log message:</label>
+        <label>Log message:</label></br>
         <input type="text" size="50" oninput="submitLogConfig()">
+        <vars></vars>
         <button class="delete" type="submit" onclick="deleteConfigActivity()">delete</button>
       </p>
 
@@ -131,6 +135,7 @@
         </select>
         <br/>
         <input type="text" size="50" oninput="submitConfigNameValuePair()">
+        <vars></vars>
         <button class="delete" type="submit" onclick="deleteConfigActivity()">delete</button>
       </p>
 
@@ -142,6 +147,12 @@
         </select>
         <br/>
         <input type="text" size="50" oninput="submitConfigBody()">
+        <vars>
+          <select id="select-vars" onchange="useExpressionVariable(this)">
+            <option>use variable...</option>
+          </select>
+        </vars>
+        
         <button class="delete" type="submit" onclick="deleteConfigActivity()">delete</button>
       </p>
 
