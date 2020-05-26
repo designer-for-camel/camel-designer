@@ -127,8 +127,20 @@ p {
     opacity: .2;
 }
 
-.rest {
+.to {
     left: 335px;
+    /* top: 70px; */
+    opacity: .5;
+}
+
+.kit {
+    left: 440px;
+    /* top: 70px; */
+    opacity: .5;
+}
+
+.rest {
+    left: 545px;
     opacity: .2;
 }
 
@@ -190,6 +202,9 @@ p {
                 top: 213px;  
             }
 
+
+
+
 .activityconfig {
     font-size: 12pt;
     width: 500px;
@@ -203,6 +218,22 @@ p {
     background-color: grey;
     visibility: hidden;
     border-radius: 10px;
+
+    
+        /* font-size: 24pt; */
+        text-align: center; 
+        /* width: 100px; */
+        /* height: 35px; */
+        color: white;
+        opacity: 0.5;
+        /* position: fixed; */
+        /* top: 30px;   */
+        z-index: 1;
+
+        /* margin-top: 0px; */
+        margin: 0px;
+        /* margin-left: 0px; */
+
 }
 
 .delete {

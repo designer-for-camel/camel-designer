@@ -196,7 +196,7 @@
 
       //needs revision
       addPulse('whatever');
-                 
+
 
       function enableToButtons(enabled)
       {
@@ -272,7 +272,7 @@
           var element = document.getElementsByClassName("rest");
           for(let i=0; i<element.length; i++) {
             
-            //Mechanism to keep REST methods disable until a REST group has been created.
+            //Mechanism to keep REST methods disabled until a REST group has been created.
             //(i=0 is the label, i=1 is the group button, i>1 are the methood buttons)
             if(restIsEmpty && i>1)
             {
@@ -280,7 +280,8 @@
             }
 
             element[i].style.opacity = opacity;
-            element[i].firstChild.disabled = !enabled && !restIsEmpty;
+            // element[i].firstChild.disabled = !enabled && !restIsEmpty;
+            element[i].disabled = !enabled && !restIsEmpty;
           }
       }
 
@@ -485,29 +486,29 @@
         //obtain user input
         var element = document.getElementById("name-value-pair");
         var fieldName = element.getElementsByTagName("input")[0].value;
-        var fieldValue = element.getElementsByTagName("input")[1].value;
+        //var fieldValue = element.getElementsByTagName("input")[1].value;
 
         var textName = configObj.getElementsByTagName("a-text")[0].firstChild;
-        var textValue = configObj.getElementsByTagName("a-text")[0].lastChild;
+        //var textValue = configObj.getElementsByTagName("a-text")[0].lastChild;
 
         //display new value
         textName.setAttribute('value', fieldName+':');
-        textValue.setAttribute('value', '"'+fieldValue+'"');
+        //textValue.setAttribute('value', '"'+fieldValue+'"');
       }
 
       //Updates the activity with the configuration settings
-      function submitConfigBody()
-      {
-        //obtain user input
-        var element = document.getElementById("set-body");
-        var body = element.getElementsByTagName("input")[0].value;
+      // function submitConfigBody()
+      // {
+      //   //obtain user input
+      //   var element = document.getElementById("set-body");
+      //   var body = element.getElementsByTagName("input")[0].value;
 
-        //obtain activity label
-        var text = configObj.getElementsByTagName("a-text")[0].firstChild;
+      //   //obtain activity label
+      //   var text = configObj.getElementsByTagName("a-text")[0].firstChild;
 
-        //display new value
-        text.setAttribute('value', '"'+body+'"');
-      }
+      //   //display new value
+      //   text.setAttribute('value', '"'+body+'"');
+      // }
 
       //Updates the activity with the configuration settings
       function submitConfigChoice()
@@ -622,87 +623,65 @@
       }
 
 
-      function reloadRoutes(list)
+      // function reloadRoutes(list)
+      function populateWithDirectStarters(list)
       {
           //clean list
-          while (list.firstChild) {
-            list.removeChild(list.firstChild);
-          }
+          list.options.length = 0;
 
           //populate default option
-          let option;// = document.createElement('option');
-          // option.value = "[new Route]";   
-          // option.innerHTML = item;   
-          // list.appendChild(option);
+          let option;
 
-    // var iterator = document.evaluate('//a-entity[@id="'+routeId+'"]//a-sphere[@start and @processor-type = "direct-s"]', document, null, XPathResult.ANY_TYPE, null);
-    let directs = document.evaluate('//a-sphere[@start and @processor-type = "direct"]', document, null, XPathResult.ANY_TYPE, null);
+          // obtail all 'from direct' activities
+          let directs = document.evaluate('//a-sphere[@start and @processor-type = "direct"]', document, null, XPathResult.ANY_TYPE, null);
 
-    let thisNode = directs.iterateNext();
-    let allDirects = [];
+          //helpers
+          let allDirects = [];
+          let thisNode = directs.iterateNext();
 
           while(thisNode) {
-            allDirects.push(thisNode.parentNode.id);
+            allDirects.push(thisNode.querySelector('.uri').getAttribute('value'));
             thisNode = directs.iterateNext();
           };
 
-          // while(thisNode) {
+          //populate options with directs
           allDirects.forEach(item => {
-
             option = document.createElement('option');
             option.value = item;
             option.innerHTML = item;   
             list.appendChild(option);
-
           });
-
-          // //populate available routes
-          // routes.forEach(item => {
-          //   option = document.createElement('option');
-          //   option.value = item;
-          //   option.innerHTML = item;   
-          //   list.appendChild(option);
-          // });
       }
-
-
-
-
 
       // TODO clean this, and give function a good name
       //THIS IS LABEL of DIRECT activity
       function updateConfigDirect(label, activity)
       {
-        activity = activity || configObj;
+        activity = activity || getActiveActivity();
+        
+        //obtain dialog
+        var element = document.getElementById("newDirect");
 
-console.log("running update: " +label);
-          //obtain dialog
-          var element = document.getElementById("newDirect");
-          // var routeSelected = element.getElementsByTagName("input")[0].value;
-          var list = element.getElementsByTagName("select")[0];
-          // var routeSelected = list.value;
+        //obtain list of options
+        var list = element.getElementsByTagName("select")[0];
 
-reloadRoutes(list)
+        //populate list
+        populateWithDirectStarters(list)
 
 
         if(label == null)
         {
-// console.log("label is null");
-
-          list.value = activity.querySelector("#routeLabel").getAttribute('value');
+          list.value = activity.querySelector(".uri").getAttribute('value');
         }
         else
         {
-// console.log("select value: " + list.value);
-
-          let routeLabel = activity.querySelector("#routeLabel");
+          let routeLabel = activity.querySelector(".uri");
 
           //The route might not have been configured yet
           if(routeLabel){ 
-          list.value = label;
-            activity.querySelector("#routeLabel").setAttribute('value',label); 
+            list.value = label;
+            activity.querySelector(".uri").setAttribute('value',label); 
           }
-
         }
 
         if(list.value.length == 0)
@@ -719,7 +698,6 @@ reloadRoutes(list)
         else
         {
           document.getElementById("hint-direct-config").style.visibility = "hidden";
-
         }
       }
 
@@ -1348,25 +1326,24 @@ var nextPos = refPos.x+2+shiftX;
               if(this.getAttribute('processor-type') == "direct")
               {
                 //this code is not intended for FROM elements
-                if(this.hasAttribute('start'))
-                {
-                  return;
-                }
+                // if(this.hasAttribute('start'))
+                // {
+                //   return;
+                // }
+
+                // let targetUri = configObj.querySelector(".uri").getAttribute('value')
+
 
                 //don't jump if activity not configured yet
-                let isConfigured = (configObj.querySelector("#routeLabel").getAttribute('value').length > 0)
+                // let isConfigured = (configObj.querySelector("#routeLabel").getAttribute('value').length > 0)
+                // let isConfigured = (targetUri.length > 0)
+                let isConfigured = (configObj.querySelector(".uri").getAttribute('value').length > 0)
 
                 if(isDoubleClick && notGroup && isConfigured)
                 {
-                  // var camera = document.getElementsByTagName("a-camera");
                   var camera = document.getElementById("main-camera");
 
-                // configObj = this;
-
-                  // // console.log(this.nodeName);
-                  // // console.log(this.getAttribute('position'));
-
-                  //listens animation end
+                  //listens to animation end
                   camera.addEventListener('animationcomplete', function enterDirect() {
 
                     //delete listener
@@ -1375,69 +1352,57 @@ var nextPos = refPos.x+2+shiftX;
                     //delete animation
                     this.removeAttribute('animation');
 
-                    //switch route
-                    nextRoute(configObj.querySelector("#routeLabel").getAttribute('value'));
-
-                    //reset camera position
-                    // resetCameraToDefault();
+                    //to switch route:
+                    // 1) obtain the target 'uri' the direct activity points to
+                    // 2) find the route that contains the direct (target)
+                    // let targetUri = getActiveActivity().querySelector(".uri").getAttribute('value')
+                    let targetUri = configObj.querySelector(".uri").getAttribute('value')
+                    // let routeId = document.querySelector('[start] > .uri[value="'+targetUri+'"]').parentElement.parentElement.id
+                    let routeId = findRouteIdFromDirectUri(targetUri)
+                    //jump to route
+                    nextRoute(routeId);
                   });
 
-                //let target = this.getAttribute('position').object3D.position;
-                //was
-                //let target = this.components.position.data;
-                //let target = this.object3D.position;
-                
-                //somehow, if you pass directly 'object3D.position' the animation breaks Three.js
-                //so we create the structure manually with x/y/z
-                let target = {
-                  x: this.object3D.position.x,
-                  y: this.object3D.position.y, 
-                  z: this.object3D.position.z
-                }
+                  //somehow, if you pass directly 'object3D.position' the animation breaks Three.js
+                  //so we create the structure manually with x/y/z
+                  let target = {
+                    x: this.object3D.position.x,
+                    y: this.object3D.position.y, 
+                    z: this.object3D.position.z
+                  }
 
-                //let target = this.getAttribute('position');
-                    console.log("target: "+target);
-                    console.log("target.x: "+target.x);
-                    //console.log("target.value: "+target.value);
-
-                //   let campos = camera.getAttribute('position');
+                  //var to reuse
+                  let boxed = isBoxed(this)
 
                   //if activity is encapsulated in group we need to add parent/child coordinates
-                  if(isBoxed(this))
+                  if(boxed || isRestElement(this))
                   {
-                    //was
-                    // target = {
-                    //     x: target.x+this.parentNode.getAttribute('position').x,
-                    //     y: target.y+this.parentNode.getAttribute('position').y, 
-                    //     z: target.z}
+                    let parent;
+
+                    if(boxed)
+                    {
+                      //e.g. multicast boxes
+                      parent = this.parentNode
+                    }
+                    else
+                    {
+                      //e.g. REST directs
+                      parent = this.parentNode.parentNode
+                    }
+
                     target = {
-                      x: target.x+this.parentNode.object3D.position.x,
-                      y: target.y+this.parentNode.object3D.position.y, 
+                      x: target.x+parent.object3D.position.x,
+                      y: target.y+parent.object3D.position.y, 
                       z: target.z
                     }
                   }
+
                   //animation starts from this moment
-                //   var tcamera = document.getElementById("main-camera");
-                // target = {x: -3, y: 0, z: 0};
-                  
-                  //let testfrom = {x: -3, y: -7, z: 0};
-                  //let testto = {x: target.x, y: target.y, z: target.z};
-                  //camera.setAttribute('animation', {property: 'position', dur: '1500', to: target, loop: false});
                   camera.setAttribute('animation', {property: 'position', dur: '1500', to: target, loop: false});
-
-
-                //   camera.setAttribute('animation', {property: 'position', dur: '1500', from: {x: 0, y: 0, z: 7}, to: target, loop: false});
-                
-                //   var camera = document.getElementById("main-camera");
-                //   camera.setAttribute('animation', {property: 'position', dur: '2500', to: {x: 0, y: 0, z: 10}, loop: false});
-                // camera.setAttribute('animation', {property: 'position', dur: '1500', to: {x: -3, y: 0, z: 0}, loop: false});
-          
                 }
                 else//if not double-click
                 {
                   switchConfigPaneByActivity(this);
-
-                  // updateLabel();
                 }
               }
               else if(this.nodeName.toLowerCase() == "a-box")
@@ -1557,11 +1522,11 @@ var nextPos = refPos.x+2+shiftX;
         //prepare conditions to enable/disable buttons
         let isChoice = (type == 'choice-start')
         let isFork   = isBoxed(activity) && (type != "multicast-end");
-        let isFrom   = activity.hasAttribute('start');
+        //let isFrom   = activity.hasAttribute('start');
 
         if(   (isChoice)
            || (isFork)
-           || (isFrom && activity.hasAttribute('links')))
+          )// || (isFrom && activity.hasAttribute('links')))
         {
           enableToButtons(false);
         }
@@ -1639,44 +1604,57 @@ var nextPos = refPos.x+2+shiftX;
         }
 
         //prepare select (with expression variables)
-        populateExpressionVariables(element.getElementsByTagName('vars')[0])
+        populateExpressionVariables(element.getElementsByClassName('expression')[0])
       }
 
       //Sets Configuration Panel with Activity configuration
       function updateConfigNameValuePair()//activity)
       {
+        //obtain worked activity
+        var activity = getActiveActivity()
+
         //obtains panel elements
         var element = document.getElementById("name-value-pair");
+
+        //prepare panel elements
+        loadExpressionConfiguration(element, activity)
+
         var fieldName = element.getElementsByTagName("input")[0];
-        var fieldValue = element.getElementsByTagName("input")[1];
+        var fieldValue = element.getElementsByClassName("expression")[0].getElementsByTagName("input")[0];
 
         //obtain 3D labels
-        var textName = getActiveActivity().getElementsByTagName("a-text")[0].firstChild;
-        var textValue = getActiveActivity().getElementsByTagName("a-text")[0].lastChild;
+        var textName = activity.getElementsByTagName("a-text")[0].firstChild;
 
         //replace panel values using activity values
         fieldName.value = textName.getAttribute('value').slice(0, -1); //gets rid of tail character ':'
-        fieldValue.value = textValue.getAttribute('value').slice(1, -1); //gets rid of double quotes at start/end
+        fieldValue.value = activity.components.expression.getValue()
 
         //prepare select (with expression variables)
-        populateExpressionVariables(element.getElementsByTagName('vars')[0])
+        populateExpressionVariables(element.getElementsByClassName('expression')[0])
       }
 
       //Sets Configuration Panel with Activity configuration
       function updateConfigBody()
       {
+        //obtain worked activity
+        var activity = getActiveActivity()
+
+        if(activity.getAttribute('processor-type') != 'body')
+        {
+          return
+        }
+
         //obtains panel elements
         var element = document.getElementById("set-body");
-        var configBody = element.getElementsByTagName("input")[0];
 
-        //obtain 3D labels
-        var text = getActiveActivity().getElementsByTagName("a-text")[0].firstChild;
+        //prepare panel elements
+        loadExpressionConfiguration(element, activity)
 
-        //replace panel values using activity values
-        configBody.value = text.getAttribute('value').slice(1, -1); //gets rid of start/end double quotes
+        //obtain reference to input
+        var expressionConfig = element.getElementsByClassName("expression")[0].getElementsByTagName("input")[0];
 
-        //prepare select (with expression variables)
-        populateExpressionVariables(element.getElementsByTagName('vars')[0])
+        //replace input value using activity values
+        expressionConfig.value = activity.components.expression.getValue()
       }
 
       //Sets Configuration Panel with Activity configuration

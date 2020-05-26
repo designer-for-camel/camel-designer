@@ -11,19 +11,23 @@
     <!-- external style for buttons interface -->
     <link rel="stylesheet" type="text/css" href="css/interface.css">
 
+    <!-- a-frame dependencies -->
+    <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script> -->
+    <script src="https://aframe.io/releases/1.0.4/aframe.min.js"></script>
+    <!-- <script src="https://unpkg.com/aframe-outline@%5E1.1.0/build/aframe-outline.min.js"></script> -->
+
+
     <!-- local scripts -->
     <script src="js/helper-blocks.js"></script>
     <script src="js/helper-code.js"></script>
     <script src="js/helper-rest.js"></script>
     <script src="js/helper.js"></script>
 
+    <!-- custom aframe components -->
+    <script src="js/components/expression.js"></script>
+
     <!-- experimental -->
     <script src="js/incubator.js"></script>
-
-    <!-- a-frame dependencies -->
-    <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script> -->
-    <script src="https://aframe.io/releases/1.0.4/aframe.min.js"></script>
-    <!-- <script src="https://unpkg.com/aframe-outline@%5E1.1.0/build/aframe-outline.min.js"></script> -->
 
     <!-- Fonts to work with off-line -->
     <script>
@@ -32,8 +36,6 @@
     </script>
 
     <script src="js/index.js"></script>
-
-
 
   </head>
 
@@ -56,119 +58,201 @@
 
 
       <!-- Categories -->
-      <p class="producer">from</p>
-      <p class="setter">set</p>
-      <p class="consumer">to</p>
-      <p class="rest">rest</p>
+      <!-- <p class="producer">from</p> -->
+      <!-- <p class="setter">set</p> -->
+      <!-- <p class="consumer">to</p> -->
+      <!-- <p class="rest">rest</p> -->
+
+      <!-- FROMs -->
+      <p class="producer">
+        <select class="button" onchange="createSelectedFrom(this)">
+          <option>from...</option>
+          <option value="direct">direct</option>
+          <option value="timer">timer</option>
+          <option disabled>file</option>
+          <option disabled>jms</option>
+          <option disabled>kafka</option>
+          <option disabled>http</option>
+          <option disabled>ftp</option>
+          <option disabled>...</option>
+        </select>
+      </p>
+
+          <!-- SETTERs -->
+          <p class="setter">
+            <select class="button" onchange="createSelectedOption(this)">
+              <option>set...</option>
+              <option value="property">property</option>
+              <option value="header">header</option>
+              <option value="body">body</option>
+            </select>
+          </p>
+
+              <!-- EIPs -->
+              <p class="consumer">
+                <select class="button" onchange="createSelectedOption(this)">
+                  <option>eip...</option>
+                  <option value="log"     >log</option>
+                  <option value="direct"  >call to... (direct)</option>
+                  <option value="choice"  >choice</option>
+                  <option value="parallel">parallel (fork)</option>
+                  <option disabled>loop</option>
+                  <option disabled>split</option>
+                  <option disabled>filter</option>
+                  <option disabled>...</option>
+                </select>
+              </p>
+
+                  <!-- TOs -->
+                  <p class="consumer to">
+                    <select class="button" onchange="createSelectedOption(this)">
+                      <option>to...</option>
+                      <option value="direct"  >call to... (direct)</option>
+                      <option disabled>file</option>
+                      <option disabled>jms</option>
+                      <option disabled>kafka</option>
+                      <option disabled>http</option>
+                      <option disabled>ftp</option>
+                      <option disabled>...</option>
+                    </select>
+                  </p>
+
+                      <!-- KIT -->
+                      <p class="consumer kit">
+                        <select class="button" onchange="createPredefinedSet(this)">
+                          <option>kit...</option>
+                          <option value="xpath-json-to-xml">json-to-xml (xpath)</option>
+                          <option value="xpath-xml-to-json">xml-to-json (xpath)</option>
+                          <option value="df-json-to-xml">json-to-xml (dataFormat)</option>
+                          <option value="df-xml-to-json">xml-to-json (dataFormat)</option>
+                        </select>
+                      </p>
+
+                          <!-- REST -->
+                          <p class="rest">
+                            <select class="button" id="select-palette"  onchange="createSelectedOption(this)">
+                              <option>rest...</option>
+                              <option class="rest group" value="rest-group">new group...</option>
+                              <option class="rest get" disabled value="rest-method-get">GET</option>
+                              <option class="rest post" disabled value="rest-method-post">POST</option>
+                              <option class="rest put" disabled value="rest-method-put">PUT</option>
+                              <option disabled>DELETE</option>
+                              <option disabled>PATCH</option>
+                              <option disabled>OPTIONS</option>
+                            </select>
+                          </p>
 
       <!-- Camel Components & composites -->
-      <p class="producer timer"><button class="button"  onclick="createTimer()">timer</button></p>
-      <p class="producer direct-s"><button class="button"  onclick="createDirectStart()">direct</button></p>
+      <!-- <p class="producer timer"><button class="button"  onclick="createTimer()">timer</button></p>
+      <p class="producer direct-s"><button class="button"  onclick="createDirectStart()">direct</button></p> -->
  
           <!-- SETTERs -->
-          <p class="setter prop"><button style="font-size:20px;" class="button" disabled onclick="createProperty()">property</button></p>
+          <!-- <p class="setter prop"><button style="font-size:20px;" class="button" disabled onclick="createProperty()">property</button></p>
           <p class="setter header"><button class="button" disabled onclick="createHeader()">header</button></p>
-          <p class="setter body"><button class="button" disabled onclick="createBody()">body</button></p>
+          <p class="setter body"><button class="button" disabled onclick="createBody()">body</button></p> -->
 
               <!-- TO -->
-              <p class="consumer log"><button class="button" disabled onclick="createLog()">log</button></p>
+              <!-- <p class="consumer log"><button class="button" disabled onclick="createLog()">log</button></p>
               <p class="consumer direct"><button style="font-size:16px" class="button" disabled onclick="createDirect()">call to</br>direct</button></p>
-              <!-- <p class="consumer choice"><button class="button" disabled onclick="createChoice()">choice</button></p> -->
               <p class="consumer choice"><button class="button" disabled onclick="createChoice()">choice</button></p>
-              <p class="consumer multicast"><button class="button" disabled onclick="createMulticast()">fork</button></p>
+              <p class="consumer multicast"><button class="button" disabled onclick="createMulticast()">fork</button></p> -->
 
                 <!-- REST -->
-                <p class="rest group"><button class="button" disabled onclick="createRestGroup()">group</button></p>
+                <!-- <p class="rest group"><button class="button" disabled onclick="createRestGroup()">group</button></p>
                 <p class="rest get"><button class="button" disabled onclick="createRestMethod({method: 'get'})">GET</button></p>
                 <p class="rest post"><button class="button" disabled onclick="createRestMethod({method: 'post'})">POST</button></p>
-                <p class="rest put"><button class="button" disabled onclick="createRestMethod({method: 'put'})">PUT</button></p>
-
+                <p class="rest put"><button class="button" disabled onclick="createRestMethod({method: 'put'})">PUT</button></p> -->
 
 
       <!-- Configuration Panel -->
-      <p class="activityconfig" id="screenshot" style="visibility: visible;"><br/>
+      <div class="activityconfig" id="screenshot" style="visibility: visible;"><br/>
         <!-- <font size="6">Configuration Pane</font> -->
         <!-- <img id="routeThumbnail-temp2" src="../media/routes-ring.jpg"> -->
-      </p>
-
+      </div>
 
       <!-- Configuration Panel -->
-      <p class="activityconfig" id="introconfig" style="visibility: visible;"><br/>
+      <div class="activityconfig" id="introconfig" style="visibility: visible;"><br/>
         <font size="6">Configuration Pane</font>
         <!-- <img id="routeThumbnail-temp2" src="../media/routes-ring.jpg"> -->
-      </p>
+      </div>
 
-      <p class="activityconfig" id="loginput"><br/>
+      <div class="activityconfig" id="loginput"><br/>
         <label>Log message:</label></br>
-        <input type="text" size="50" oninput="submitLogConfig()">
-        <vars></vars>
+        <!-- <input type="text" size="50" oninput="submitLogConfig()"> -->
+        <div class="expression">
+          <input type="text" size="50" oninput="submitLogConfig();syncEditor()">
+        </div>
         <button class="delete" type="submit" onclick="deleteConfigActivity()">delete</button>
-      </p>
+      </div>
 
-      <p class="activityconfig" id="newDirect"><br/>
+      <div class="activityconfig" id="newDirect"><br/>
         <label>direct call to:</label>
-        <select onchange="updateConfigDirect(this.value)">
+        <!-- <select onchange="updateConfigDirect(this.value)"> -->
+        <select oninput="updateConfigDirect(this.value);syncEditor()">
         </select>
         <button class="delete" type="submit" onclick="deleteConfigActivity()">delete</button>
         <br/><br/>
         <label id="hint-direct-config">To configure the call, ensure a Route exists with a 'Direct' starting activity. Then select the target route to call from the drop down list.</label>
-      </p>
+      </div>
 
-      <p class="activityconfig" id="config-choice-when"><br/>
+      <div class="activityconfig" id="config-choice-when"><br/>
         <label>expression language:</label>
         <select>
           <option>simple</option>
           <option>constant</option>
+          <option>xpath</option>
         </select>
         <br/>
         <input type="text" size="50" oninput="submitConfigChoice();syncEditor();">
-      </p>
+      </div>
 
-      <p class="activityconfig" id="name-value-pair"><br/>
+      <div class="activityconfig" id="name-value-pair"><br/>
         <label>Name:</label></br>
-        <input type="text" size="50" oninput="submitConfigNameValuePair()"></br>
+        <input type="text" size="50" oninput="submitConfigNameValuePair();syncEditor();"></br>
         </br>
-        <label>expression language:</label>
-        <select>
-          <option>simple</option>
-          <option>constant</option>
-        </select>
-        <br/>
-        <input type="text" size="50" oninput="submitConfigNameValuePair()">
-        <vars></vars>
+        <!-- the contents of this container get dynamically configured -->
+        <div class="container-expression"></div>
         <button class="delete" type="submit" onclick="deleteConfigActivity()">delete</button>
-      </p>
+      </div>
 
-      <p class="activityconfig" id="set-body"><br/>
-        <label>expression language:</label>
-        <select>
-          <option>simple</option>
-          <option>constant</option>
-        </select>
-        <br/>
-        <input type="text" size="50" oninput="submitConfigBody()">
-        <vars>
-          <select id="select-vars" onchange="useExpressionVariable(this)">
-            <option>use variable...</option>
-          </select>
-        </vars>
-        
+      <div class="activityconfig" id="set-body"><br/>
+        <div class="container-expression">
+          <!-- this is a reusable block, needs to reside inside a 'container-expression' -->
+          <div id="config-expression">
+            <div class="language">
+              <label>expression language:</label>
+              <select id="select-lang" onchange="useExpressionLanguage(this);syncEditor();">
+                <option value="simple">simple</option>
+                <option value="constant">constant</option>
+                <option value="xpath">xpath</option>
+              </select>
+              <div class="attributes" onchange="useExpressionAttribute(event);syncEditor();"></div>
+            </div>
+            <br/>
+            <div class="expression">
+              <input type="text" size="50" oninput="useExpression(this);syncEditor();">
+              <select id="select-vars" onchange="useExpressionVariable(this)">
+                <option>use variable...</option>
+              </select>
+            </div>
+          </div>
+        </div>
         <button class="delete" type="submit" onclick="deleteConfigActivity()">delete</button>
-      </p>
+      </div>
 
-      <p class="activityconfig" id="config-rest-group"><br/>
+      <div class="activityconfig" id="config-rest-group"><br/>
         <label>Path:</label>
         <label for="input-path">/</label>
-        <input type="text" size="50" oninput="submitRestGroupConfig()" id="input-path">
+        <input type="text" size="50" oninput="submitRestGroupConfig();syncEditor()" id="input-path">
         <button class="delete" type="submit" onclick="deleteConfigActivity()">delete</button>
-      </p>
+      </div>
 
-      <p class="activityconfig" id="config-rest-method"><br/>
+      <div class="activityconfig" id="config-rest-method"><br/>
         <label>uri:</label>
         <label for="input-uri">/</label>
-        <input type="text" size="50" oninput="submitRestMethodConfig()" id="input-uri">
+        <input type="text" size="50" oninput="submitRestMethodConfig();syncEditor()" id="input-uri">
         <button class="delete" type="submit" onclick="deleteConfigActivity()">delete</button>
-      </p>
+      </div>
 
     <!-- Spacial scene (A-Frame elements) -->
     <a-scene myoutline cursor="rayOrigin:mouse" raycaster="objects: .clickable, .testcollidable" vr-mode-ui="enabled: false" screenshot="width: 512; height: 256;">
@@ -182,7 +266,6 @@
         <!-- <img id="routeThumbnail" crossorigin="anonymous" src="routes-ring.jpg"> -->
 
         <!-- <img id="routeThumbnail" crossorigin="anonymous" src="https://github.com/brunoNetId/camel-designer/raw/master/src/media/routes-ring.jpg"> -->
-        
         <img id="routeThumbnail" src="data:image/jpeg;base64,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/I562Eo1f4kUz6Bh+NylD9o0n5x/cn4J/Fcivn6vOlw5l7/5d/i/8zieS4N/Y/F/5nrOvfFzX9Vga10+NNOjcbWMTF5SD1w5Ax+Az715NXTQyfBUnenTV/v/ADOilluFpu8IL8/zHMzOxZjkmm16R2hRQAUUAFFABRQAUUAOU7WB64PSm0AfpN+zv8SrbVfAVroM8qm70VfsrxnqYOfKbGTwV+X6g1+fHhvxLq/hTVI9W0acwzx8HjKOh6o6/wASnuPxBBrppYjlVmeRjcqjWl7SDsz9n7r4l+IZo2SXV7yRXjWFg07ENGpyqHnlQex+nTivgfQv2hdAvIVTXrO4s5wPmaH9/Efp0cZ9COPWuj28WeRLK60d4n2j4p+JGveItVXWb67LX0cK28csI8opEoYBV2nIHztnnnJr4y1r9oLwzZwsNGtLm+mI+XzQIIgfcnLfkKl113Lhl1ZvSJ2Hxi8VRaD4NvEdwLrUkazt0BwcOMOwwOAiZOfXA718WeKvFuteMdSOp6zNvfG1EUbY4k/uovYfmT3NYVK19EethMu9nLnnucyTk5FJXOeqFFABRQAUUAFFABRQAUUAFFABRQB//9b+f+igAooAKKACigAooAKKACigAooAKKACigAooAKKACigAooAKKACigAooAKKACigAooAKKACigAooAKKACigAooAKKAP/9f+f+igAooAKKACigAooAKKACigAooAKKACigAooAKKACigAooAKKACigAooAKKACigAooAKKACigAooAKKACigAooAKKAP/9D+f+igAooAKKACigAooAKKACigAooAKKACigAooAKKACigAooAKKACigAooAKKACigAooAKKACigAooAKKACigAooAKKAP/9k=" alt="" />
       </a-assets>
 
@@ -200,7 +283,7 @@
 
       <!-- Entity to accommodate REST definitions -->
       <!-- <a-entity id="rest-definitions" class="clickable" position="0 100 0"> -->
-      <a-entity id="rest-definitions" position="0 100 0">
+      <a-entity id="rest-definitions" visible="false" position="0 100 0">
       </a-entity>
 
       <a-sky color="black"></a-sky>

@@ -132,7 +132,12 @@ function getActivityRoute(activity)
 //Returns the activity currently being configured (with circle around)
 function getActiveActivity()
 {
-  return document.querySelector("#selector").parentNode;
+  if(isRestViewActive())
+  {
+    return document.querySelector("#selector-rest-activity").parentNode
+  }
+
+  return document.querySelector("#selector").parentNode
 }
 
 //returns TRUE when activity is contained in a group box (i.e. multicast)

@@ -329,7 +329,8 @@ function attachDirect(restMethod, yPos)
   // let activity = createDirect({scale: scale});
 
   //reposition label (to fit better)
-  activity.querySelector("#routeLabel").setAttribute('position', {x: 0, y: -.5, z: 0});
+  // activity.querySelector("#routeLabel").setAttribute('position', {x: 0, y: -.5, z: 0});
+  activity.querySelector(".uri").setAttribute('position', {x: 0, y: -.5, z: 0});
   
   //set relative position
   activity.setAttribute('position', {x: 2, y: yPos, z: 0});
@@ -460,3 +461,23 @@ function getRestMethodDirectActivity(method)
 {
   return method.nextSibling;
 }
+
+
+//returns 'true' if the user is REST definitions are visible
+//returns 'false' otherwise (e.g. user viewing Route definitions)
+function isRestViewActive()
+{
+  return Boolean(document.getElementById('rest-definitions').getAttribute('visible'))
+}
+
+//returns 'true' if the user is REST definitions are visible
+// //returns 'false' otherwise (e.g. user viewing Route definitions)
+// function getRestMethodPosition(method)
+// {
+//   if(isRestElement())
+//   {
+
+//   }
+
+//   return Boolean(document.getElementById('rest-definitions').getAttribute('visible'))
+// }

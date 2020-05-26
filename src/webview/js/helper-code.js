@@ -86,10 +86,12 @@ function loadSourceCode(camelContextImport)
 
         switch(type) {
             case 'timer':
-                createTimer(route.getElementsByTagName("from")[0]);
+                // createTimer(route.getElementsByTagName("from")[0]);
+                createTimer({definition: definition});
                 break;            
             case 'direct':
-                createDirectStart(route.getElementsByTagName("from")[0]);
+                // createDirectStart(route.getElementsByTagName("from")[0]);
+                createDirectStart({definition: definition});
                 break;
             default:
                 //if none of the above, then it's unknown or unsupported yet.
@@ -164,6 +166,12 @@ function createActivityFromSource(type, delay, definition,lastAction) {
     //when XML tag is 'to', we need to identify the Camel component
     if(type == 'to'){
         type = definition.attributes.uri.value.split(":")[0];
+
+        //<log> and <to uri="log"> are different  
+        if(type == 'log')
+        {
+            type = 'to-log'
+        }
     }
 
     switch(type) {
@@ -213,6 +221,8 @@ function createActivityDelayed(creator, delay, definition, lastAction)
 
 var prettifyXml = function(sourceXml)
 {
+    return sourceXml;
+
     var xmlDoc = new DOMParser().parseFromString(sourceXml, 'application/xml');
     var xsltDoc = new DOMParser().parseFromString([
         // describes how we want to modify the XML - indent everything
@@ -275,8 +285,31 @@ function getCamelSource()
     //when it runs in a browser
     else { // not an iframe
         var myWindow = window.open("", "_blank")
-        var myhtml ='<textarea rows="50" cols="100">'+prettifyXml(mycode.text)+'</textarea>'
-        myWindow.document.write(myhtml);
+
+        //was
+        // var myhtml ='<textarea rows="50" cols="100">'+prettifyXml(mycode.text)+'</textarea>'
+        // myWindow.document.write(myhtml);
+
+        //now
+        //escaping is needed in situations like XML within XML: <simple>&lt;data/&gt;<simple>
+        var escapeHTML = function(unsafe) {
+            return unsafe.replace(/[&<"']/g, function(m) {
+              switch (m) {
+                case '&':
+                  return '&amp;';
+                case '<':
+                  return '&lt;';
+                case '"':
+                  return '&quot;';
+                default:
+                  return '&#039;';
+              }
+            });
+          };
+
+        //we escape the content
+        var myhtml ='<textarea rows="50" cols="100">'+escapeHTML(prettifyXml(mycode.text))+'</textarea>'
+        myWindow.document.write(myhtml);  
     }
 }
 
@@ -332,7 +365,8 @@ function renderCamelRestDsl(mycode) {
                 // renderMethod(thisNode.id, mycode);
                 let direct = getRestMethodDirectActivity(value);
                 //mycode.text +=  mycode.tab+'<to uri="direct:'+'pending(hardcoded in helper-code line 460)'+'"/>\n'
-                mycode.text += mycode.tab+'<to uri="direct:'+direct.querySelector("#routeLabel").getAttribute('value')+'" id="'+direct.id+'"/>\n'
+                // mycode.text += mycode.tab+'<to uri="direct:'+direct.querySelector("#routeLabel").getAttribute('value')+'" id="'+direct.id+'"/>\n'
+                mycode.text += mycode.tab+'<to uri="direct:'+direct.querySelector(".uri").getAttribute('value')+'" id="'+direct.id+'"/>\n'
 
 
                 mycode.tab = mycode.tab.slice(0, -2);
@@ -386,33 +420,20 @@ let start = thisNode;
 
         let type = thisNode.getAttribute('processor-type');
 
-        // if(type == 'direct' )
-        // {
-        //     mycode.text += mycode.tab+'<from uri="direct:'+routeId+'" id="'+thisNode.id+'"/>\n'
-        // }
-        // else
-        // {
-        //     mycode.text += mycode.tab+'<from uri="timer:demo" id="'+thisNode.id+'"/>\n'
-        // }
-
         switch(type) {
             case 'direct':
-                mycode.text += mycode.tab+'<from uri="direct:'+routeId+'" id="'+thisNode.id+'"/>\n'
+                // mycode.text += mycode.tab+'<from uri="direct:'+routeId+'" id="'+thisNode.id+'"/>\n'
+                mycode.text += mycode.tab+'<from uri="direct:'+thisNode.querySelector(".uri").getAttribute('value')+'" id="'+thisNode.id+'"/>\n'
                 break;
             case 'timer':
-                mycode.text += mycode.tab+'<from uri="timer:demo" id="'+thisNode.id+'"/>\n'
+                let uri = "timer:"+thisNode.getElementsByTagName('a-text')[1].attributes.value.textContent
+                mycode.text += mycode.tab+'<from uri="'+uri+'" id="'+thisNode.id+'"/>\n'
                 break;
             default:
                 mycode.text += mycode.tab+thisNode.getElementsByTagName('a-text')[1].firstChild.getAttribute('value')+'\n'
                 break;
                 //code block
         }
-
-
-
-
-
-
 
         thisNode = iterator.iterateNext();
     }
@@ -427,10 +448,6 @@ thisNode = getNextActivity(start);
 
     while (thisNode) {
         thisNode = renderRouteActivity(thisNode, mycode, iterator);
-        // mycode.text += '  <log message='+thisNode.getElementsByTagName('a-text')[0].firstChild.getAttribute('value')+' id="'+thisNode.id+'"/>\n'
-        // thisNode = iterator.iterateNext();
-// thisNode = getNextActivity(thisNode);
-
     } 
 }
 
@@ -444,21 +461,28 @@ function renderRouteActivity(activity, mycode, iterator) {
             break;
         case 'property':
             mycode.text += mycode.tab+'<setProperty '+getCamelAttributePropertyName()+'="'+activity.getElementsByTagName('a-text')[0].firstChild.getAttribute('value').slice(0,-1)+'" id="'+activity.id+'">\n'+
-                           mycode.tab+mycode.tab+'<simple>'+activity.getElementsByTagName('a-text')[0].lastChild.getAttribute('value').slice(1,-1)+'</simple>\n'+
+                        //    mycode.tab+mycode.tab+'<simple>'+activity.getElementsByTagName('a-text')[0].lastChild.getAttribute('value').slice(1,-1)+'</simple>\n'+
+                        //    mycode.tab+mycode.tab+'<simple>'+activity.getElementsByTagName('a-text')[0].lastChild.getAttribute('value').slice(1,-1)+'</simple>\n'+
+                        //    mycode.tab+mycode.tab+'<'+activity.attributes.language.value+activity.getLanguageAttributes()+'>'+activity.getElementsByTagName('a-text')[0].lastChild.getAttribute('value').slice(1,-1)+'</'+activity.attributes.language.value+'>\n'+
+                           mycode.tab+mycode.tab+activity.components.expression.getXml()+'\n'+
                            mycode.tab+'</setProperty>\n'
             break;
         case 'header':
             mycode.text += mycode.tab+'<setHeader '+getCamelAttributeHeaderName()+'="'+activity.getElementsByTagName('a-text')[0].firstChild.getAttribute('value').slice(0,-1)+'" id="'+activity.id+'">\n'+
-                           mycode.tab+mycode.tab+'<simple>'+activity.getElementsByTagName('a-text')[0].lastChild.getAttribute('value').slice(1,-1)+'</simple>\n'+
+                        //    mycode.tab+mycode.tab+'<simple>'+activity.getElementsByTagName('a-text')[0].lastChild.getAttribute('value').slice(1,-1)+'</simple>\n'+
+                        //    mycode.tab+mycode.tab+'<'+activity.attributes.language.value+activity.getLanguageAttributes()+'>'+activity.getElementsByTagName('a-text')[0].lastChild.getAttribute('value').slice(1,-1)+'</'+activity.attributes.language.value+'>\n'+
+                           mycode.tab+mycode.tab+activity.components.expression.getXml()+'\n'+
                            mycode.tab+'</setHeader>\n'
             break;
         case 'body':
             mycode.text += mycode.tab+'<setBody id="'+activity.id+'">\n'+
-                           mycode.tab+mycode.tab+'<simple>'+activity.getElementsByTagName('a-text')[0].firstChild.getAttribute('value').slice(1,-1)+'</simple>\n'+
+                        //    mycode.tab+mycode.tab+'<simple>'+activity.getElementsByTagName('a-text')[0].firstChild.getAttribute('value').slice(1,-1)+'</simple>\n'+
+                           mycode.tab+mycode.tab+activity.components.expression.getXml()+'\n'+
                            mycode.tab+'</setBody>\n'
             break;
         case 'direct':
-            mycode.text += mycode.tab+'<to uri="direct:'+activity.querySelector("#routeLabel").getAttribute('value')+'" id="'+activity.id+'"/>\n'
+            // mycode.text += mycode.tab+'<to uri="direct:'+activity.querySelector("#routeLabel").getAttribute('value')+'" id="'+activity.id+'"/>\n'
+            mycode.text += mycode.tab+'<to uri="direct:'+activity.querySelector(".uri").getAttribute('value')+'" id="'+activity.id+'"/>\n'
             break;
         case 'choice-start':
             return renderChoice(activity, mycode, iterator);
@@ -501,6 +525,7 @@ function renderRouteActivity(activity, mycode, iterator) {
             mycode.text += mycode.tab+activity.getElementsByTagName('a-text')[0].firstChild.getAttribute('value')+'\n'
             break;
         default:
+            console.warn("could not render activity to XML, type unknown: ["+processorType+"]")
             //code block
     }
 

@@ -39,7 +39,29 @@ function getUniqueID(baseUid)
   return newUid;
 }
 
-function createFrom(processorType)
+
+function createFrom(metadata)
+{
+  //create activity
+  let from = createActivity(metadata)
+
+  //customise to make it a START activity
+  from.setAttribute('material', {color: '#52F40C', transparent: true, opacity: 0.5});
+  from.setAttribute('start', '');
+
+  //create inner label
+  var text = createText();
+  from.appendChild(text);
+  text.setAttribute('value', metadata.type);
+  text.setAttribute('color', '#f49b42');
+  text.setAttribute('position', {x: -0.3, y: 0, z: 0});
+  text.setAttribute('side', 'double');
+
+  return from;
+}
+
+
+function createFrom_original_deprecated(processorType)
 {
   // give name/id
   var uid = getUniqueID(processorType);
@@ -98,70 +120,110 @@ function createFrom(processorType)
   return from;
 }
 
-function createTimer(definition)
+
+function createTimer(metadata)
 {
-  console.log("timer date now: "+Date.now());
-  
-  let timer = createFrom("timer");
+  let params = {};
+  params.type = 'timer'
+
+  if(metadata && metadata.scale){
+    params.scale = metadata.scale;
+  }
+  if(metadata && metadata.definition){
+    params.definition = metadata.definition
+  }
+
+  //create activity
+  let timer = createFrom(params);
+
+  //'timer' name defaults to the Route ID
+  let label = timer.id
+
+
+  if(metadata)
+  {
+    //updates the 'direct' name
+    label = metadata.definition.getAttribute('uri').substring(6)
+  }
+
+  //label to display the name of the 'timer' component (as in uri="timer:name")
+  var text = createText();
+  timer.appendChild(text);
+  text.setAttribute('value', label);
+  text.setAttribute('color', 'white');
+  text.setAttribute('align', 'center');
+  text.setAttribute('position', {x: 0, y: .7, z: 0});
+  text.setAttribute('side', 'double');
 
   //create clock hands
   var minutes = document.createElement('a-triangle');
   minutes.setAttribute("vertex-a","0 .4 0")
   minutes.setAttribute("vertex-b","-.02 0 0")
   minutes.setAttribute("vertex-c",".02 0 0")
-      // var animation = document.createElement('a-animation');
-      // animation.setAttribute('rotation','');
-      // animation.setAttribute('dur','20000');
-      // animation.setAttribute('easing','linear');
-      // animation.setAttribute('to','0 0 -360');
-      // animation.setAttribute('repeat','indefinite');
-      // minutes.appendChild(animation);
-
-      //since A-Frame v1.0.0 it seems animations work as attributes, not as child nodes.
-      minutes.setAttribute('animation', {property: 'rotation', dur: '20000', to: '0 0 -360', loop: true, easing: 'linear'});
-
+  minutes.setAttribute('animation', {property: 'rotation', dur: '20000', to: '0 0 -360', loop: true, easing: 'linear'});
 
   var hours = document.createElement('a-triangle');
   hours.setAttribute("vertex-a","0 .25 0")
   hours.setAttribute("vertex-b","-.02 0 0")
   hours.setAttribute("vertex-c",".02 0 0")
-      // var animation = document.createElement('a-animation');
-      // animation.setAttribute('rotation','');
-      // animation.setAttribute('dur','240000');
-      // animation.setAttribute('easing','linear');
-      // animation.setAttribute('to','0 0 -360');
-      // animation.setAttribute('repeat','indefinite');
-      //hours.appendChild(animation);
+  hours.setAttribute('animation', {property: 'rotation', dur: '240000', to: '0 0 -360', loop: true, easing: 'linear'});
 
-      //since A-Frame v1.0.0 it seems animations work as attributes, not as child nodes.
-      hours.setAttribute('animation', {property: 'rotation', dur: '240000', to: '0 0 -360', loop: true, easing: 'linear'});
-
-
+  //add clock hands
   timer.appendChild(minutes);
   timer.appendChild(hours);
 
   goLive(timer);
-
-  if(definition)
-  {
-    updateActivityId(timer, definition.getAttribute('id'));
-  }
 }
 
 
-function createDirectStart(definition)
+// function createDirectStart_original(definition)
+// {
+//   let direct = createFrom("direct");
+
+//   goLive(direct);
+
+//   if(definition)
+//   {
+//     updateActivityId(direct, definition.getAttribute('id'));
+//   }
+// }
+
+
+function createDirectStart(metadata)
 {
-  let direct = createFrom("direct");
+  let params = {};
+  params.type = 'direct'
+
+  if(metadata && metadata.scale){
+    params.scale = metadata.scale;
+  }
+  if(metadata && metadata.definition){
+    params.definition = metadata.definition
+  }
+
+  let direct = createFrom(params);
+
+  //'direct' name defaults to the Route ID
+  let label = getActiveRoute().id
+
+  if(metadata)
+  {
+    //updates the 'direct' name
+    label = metadata.definition.getAttribute('uri').substring(7)
+  }
+
+  //label to display the name of the 'direct' component (as in uri="direct:name")
+  var text = createText();
+  direct.appendChild(text);
+  text.setAttribute('class', 'uri');
+  text.setAttribute('value', label);
+  text.setAttribute('color', 'white');
+  text.setAttribute('align', 'center');
+  text.setAttribute('position', {x: 0, y: .7, z: 0});
+  text.setAttribute('side', 'double');
 
   goLive(direct);
-
-  if(definition)
-  {
-    updateActivityId(direct, definition.getAttribute('id'));
-  }
-  // callDirectEnabled = true;
 }
-
       
 //creates Activity
 //metadata may include the definition (from source)
@@ -174,7 +236,7 @@ function createActivity(metadata)
   if(metadata.definition)
   {
     //when XML tag is 'to', we need to identify the Camel component
-    if(metadata.definition.tagName == 'to'){
+    if(metadata.definition.tagName == 'to' || metadata.definition.tagName == 'from'){
       processorType = metadata.definition.attributes.uri.value.split(":")[0];
     }
     else{
@@ -186,18 +248,13 @@ function createActivity(metadata)
       }
     }
   }
-  else
-  {
-    //if no definition, the type is required to be in the metadata
-    processorType = metadata.type
 
-    //if a scale is given, we take it, otherwise we use default
-    scale = metadata.scale || scale
-  }
+  //type given takes precedence, otherwise type definition applies
+  processorType = metadata.type || processorType
+
+  //if a scale is given, we take it, otherwise we use default
+  scale = metadata.scale || scale
   
-
-  //enableFromButtons(true);
-
   //create activity
   var newActivity = document.createElement('a-sphere');
 
@@ -287,13 +344,10 @@ function createLog(definition)
 //creates a setProperty activity
 function createProperty(definition)
 {
-  var property = createNameValuePair('property');
+  var property = createNameValuePair('property', definition);
 
   if(definition)
   {
-    //apply definition ID
-    updateActivityId(property, definition.getAttribute('id'));
-
     //obtain name value
     var propertyName = definition.getAttribute(getCamelAttributePropertyName())
 
@@ -306,7 +360,7 @@ function createProperty(definition)
     }
 
     property.getElementsByTagName("a-text")[0].firstChild.setAttribute('value', propertyName+':');
-    property.getElementsByTagName("a-text")[0].lastChild.setAttribute('value', '"'+definition.firstElementChild.textContent+'"');
+    //property.getElementsByTagName("a-text")[0].lastChild.setAttribute('value', '"'+definition.firstElementChild.innerHTML+'"');
   }
 
   return property
@@ -315,13 +369,10 @@ function createProperty(definition)
 //creates a setHeader activity
 function createHeader(definition)
 {
-  var header = createNameValuePair('header');
+  var header = createNameValuePair('header', definition);
 
   if(definition)
   {
-    //apply definition ID
-    updateActivityId(header, definition.getAttribute('id'));
-
     //obtain name value
     var headerName = definition.getAttribute(getCamelAttributeHeaderName())
 
@@ -334,18 +385,28 @@ function createHeader(definition)
     }
 
     header.getElementsByTagName("a-text")[0].firstChild.setAttribute('value', headerName+':');
-    header.getElementsByTagName("a-text")[0].lastChild.setAttribute('value', '"'+definition.firstElementChild.textContent+'"');
+    //header.getElementsByTagName("a-text")[0].lastChild.setAttribute('value', '"'+definition.firstElementChild.innerHTML+'"');
   }
 
   return header
 }
 
-function createNameValuePair(setterType)
+function createNameValuePair(setterType, definition)
 {
   //let activity = createTo(setterType);
-  let activity = createActivity({type: setterType});
+  let activity = createActivity({type: setterType, definition: definition});
 
-  // var text = document.createElement('a-text');
+  //add expression component (and load definition)
+  activity.setAttribute('expression', {position: "0 -1 0", configMethod: [updateConfigNameValuePair]})
+  activity.components.expression.setDefinition(definition)
+
+  if(!definition)
+  {
+    //default expression if not defined
+    activity.components.expression.setValue("dummy")
+  }
+  
+  //create activity label
   var text = createText();
   activity.appendChild(text);
   text.setAttribute('value', setterType);
@@ -354,12 +415,9 @@ function createNameValuePair(setterType)
   text.setAttribute('side', 'double');
 
   //defaults
-  // let defaultName = "name";
   let defaultName = activity.id;
-  let defaultValue = "dummy";
 
   //label for field name
-  // let label = document.createElement('a-text');
   var label = createText();
   text.appendChild(label);
   label.setAttribute('value', defaultName+':');
@@ -368,16 +426,7 @@ function createNameValuePair(setterType)
   label.setAttribute('position', {x: 0, y: -.7, z: 0});
   label.setAttribute('side', 'double');
 
-  //label for field value
-  // label = document.createElement('a-text');
-  label = createText();
-  text.appendChild(label);
-  label.setAttribute('value', '"'+defaultValue+'"');
-  label.setAttribute('color', 'white');
-  label.setAttribute('align', 'center');
-  label.setAttribute('position', {x: 0, y: -1, z: 0});
-  label.setAttribute('side', 'double');
-
+  //live on scene
   goLive(activity);
 
   return activity;
@@ -450,10 +499,13 @@ function createUnknown(definition)
 function createBody(definition)
 {
   //let activity = createTo('body');
-  let activity = createActivity({type: 'body'});
+  let activity = createActivity({type: 'body', definition: definition});
+
+  //add expression component (and load definition)
+  activity.setAttribute('expression', {position: "0 -0.7 0", configMethod: [updateConfigBody]})
+  activity.components.expression.setDefinition(definition)
 
   //this is the label inside the geometry (activity descriptor)
-  // var text = document.createElement('a-text');
   var text = createText();
   activity.appendChild(text);
   text.setAttribute('value', 'body');
@@ -461,46 +513,28 @@ function createBody(definition)
   text.setAttribute('align', 'center');
   text.setAttribute('side', 'double');
 
-  //defaults
-  let defaultValue = "hello world";
-
-  if(definition)
-  {
-    updateActivityId(activity, definition.getAttribute('id'));
-    defaultValue = definition.firstElementChild.textContent;
-  }
-
-  //label to display the value set for the activity
-  // let label = document.createElement('a-text');
-  let label = createText();
-  text.appendChild(label);
-  label.setAttribute('value', '"'+defaultValue+'"');
-  label.setAttribute('color', 'white');
-  label.setAttribute('align', 'center');
-  label.setAttribute('position', {x: 0, y: -.7, z: 0});
-  label.setAttribute('side', 'double');
-
   goLive(activity);
 
   return activity
 }
-
-
 
 // function directCreate()
 function createDirect(metadata)
 {
   let activity = createDirectActivity(metadata);
 
-  //add to scene (and other stuff)
-  goLive(activity);
 
 
   if(metadata)
   {
     //updates the target route it points to
-    activity.children.routeLabel.setAttribute("value", metadata.definition.getAttribute('uri').substring(7));
+    // activity.children.routeLabel.setAttribute("value", metadata.definition.getAttribute('uri').substring(7));
+    activity.firstChild.setAttribute("value", metadata.definition.getAttribute('uri').substring(7));
   }
+
+
+  //add to scene (and other stuff)
+  goLive(activity);
 
   return activity
 }
@@ -513,16 +547,6 @@ function createDirectActivity(metadata)
   let params = {};
   params.type = 'direct'
 
-  // if(metadata && metadata.scale)
-  // {
-  //   if(metadata.scale){
-  //     params.scale = metadata.scale;
-  //   }
-  //   if(metadata.definition){
-  //     params.definition = metadata.definition
-  //   }
-  // }
-
   if(metadata && metadata.scale){
     params.scale = metadata.scale;
   }
@@ -530,10 +554,7 @@ function createDirectActivity(metadata)
     params.definition = metadata.definition
   }
 
-
-
   //create activity
-  //let activity = createActivity({type: 'direct', scale: metadata.scale, definition: metadata.definition});
   let activity = createActivity(params);
 
   //lower opacity
@@ -545,21 +566,21 @@ function createDirectActivity(metadata)
   //obtain list
   var list = element.getElementsByTagName("select")[0];
 
-  reloadRoutes(list)
+  populateWithDirectStarters(list)
 
-  if(routes.length > 1)
-  {
-    list.value = routes[1];
-  }
-  else
-  {
-    list.value = routes[0];
-  }
+  // if(routes.length > 1)
+  // {
+  //   list.value = routes[1];
+  // }
+  // else
+  // {
+  //   list.value = routes[0];
+  // }
 
   // label to display Route it points to
   var text = createText();
   activity.appendChild(text);
-  text.setAttribute('id', 'routeLabel');
+  text.setAttribute('class', 'uri');
   text.setAttribute('value', list.value);
   text.setAttribute('color', 'white');
   text.setAttribute('align', 'center');
@@ -578,14 +599,6 @@ function createDirectActivity(metadata)
   {
     createDirectHint(activity);
   }
-
-  // goLive(activity);
-
-  // if(metadata && metadata.definition)
-  // {
-  //   //updates the target route it points to
-  //   activity.children.routeLabel.setAttribute("value", metadata.definition.getAttribute('uri').substring(7));
-  // }
 
   return activity;
 }
@@ -606,7 +619,7 @@ function goLive(activity, givenPos, sources, scale, staticLink, parent, handleRe
 
   //otherwise
   goLiveTo(activity, givenPos, sources, staticLink, parent, handleRewires);
-  switchConfigPaneByActivity(activity);
+  //switchConfigPaneByActivity(activity);
   
   syncEditor();
 }
@@ -1331,9 +1344,9 @@ function detachForwardLink(activity)
   let refLinks = JSON.parse(activity.getAttribute("links"));
 
   //if a forward link exists and is not a FROM activity
-  if(  forwardLink
-    && refLinks                           //filters out FROM activities
-    && refLinks.length > 1)               //filters out FROM activities with a connection
+  if(  forwardLink )
+    //&& refLinks                           //filters out FROM activities
+    //&& refLinks.length > 1)               //filters out FROM activities with a connection
   {
     //we remove (detach) it from the activity
     refLinks.splice(refLinks.indexOf(forwardLink.id),1)[0];
@@ -1392,7 +1405,7 @@ function deleteConfigActivity()
   //   - previous is a FROM activity
   //TODO: these are to prevent glitches, to be fixed.
   if(   isGroup(previous)
-     || previous.hasAttribute('start'))
+    )//  || previous.hasAttribute('start'))
   {
     return;
   }

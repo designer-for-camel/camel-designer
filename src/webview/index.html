@@ -8,18 +8,21 @@
     <!-- external style for buttons interface -->
     <link rel="stylesheet" type="text/css" href="${srcPathScheme}/src/webview/css/interface.css">
 
+    <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script> -->
+    <!-- <script src="https://unpkg.com/aframe-outline@%5E1.1.0/build/aframe-outline.min.js"></script> -->
+    <script src="${srcPathScheme}/node_modules/aframe/dist/aframe-v1.0.4.min.js"></script>
+
     <!-- local scripts -->
     <script src="${srcPathScheme}/src/webview/js/helper-blocks.js"></script>
     <script src="${srcPathScheme}/src/webview/js/helper-code.js"></script>
     <script src="${srcPathScheme}/src/webview/js/helper-rest.js"></script>
     <script src="${srcPathScheme}/src/webview/js/helper.js"></script>
 
+    <!-- custom aframe components -->
+    <script src="${srcPathScheme}/src/webview/js/components/expression.js"></script>
+
     <!-- experimental -->
     <script src="${srcPathScheme}/src/webview/js/incubator.js"></script>
-
-    <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script> -->
-    <!-- <script src="https://unpkg.com/aframe-outline@%5E1.1.0/build/aframe-outline.min.js"></script> -->
-    <script src="${srcPathScheme}/node_modules/aframe/dist/aframe-v1.0.4.min.js"></script>
 
     <!-- Fonts to work with off-line -->
     <script>
@@ -56,113 +59,203 @@
   <p class="activityconfig" id="screenshot" style="visibility: visible;"><br/>
   </p> -->
 
-
       <!-- Categories -->
-      <p class="producer">from</p>
-      <p class="setter">set</p>
-      <p class="consumer">to</p>
-      <p class="rest">rest</p>
+      <!-- <p class="producer">from</p> -->
+      <!-- <p class="setter">set</p> -->
+      <!-- <p class="consumer">to</p> -->
+      <!-- <p class="rest">rest</p> -->
+
+      <!-- FROMs -->
+      <p class="producer">
+        <select class="button" onchange="createSelectedFrom(this)">
+          <option>from...</option>
+          <option value="direct">direct</option>
+          <option value="timer">timer</option>
+          <option disabled>file</option>
+          <option disabled>jms</option>
+          <option disabled>kafka</option>
+          <option disabled>http</option>
+          <option disabled>ftp</option>
+          <option disabled>...</option>
+        </select>
+      </p>
+
+          <!-- SETTERs -->
+          <p class="setter">
+            <select class="button" onchange="createSelectedOption(this)">
+              <option>set...</option>
+              <option value="property">property</option>
+              <option value="header">header</option>
+              <option value="body">body</option>
+            </select>
+          </p>
+
+              <!-- EIPs -->
+              <p class="consumer">
+                <select class="button" onchange="createSelectedOption(this)">
+                  <option>eip...</option>
+                  <option value="log"     >log</option>
+                  <option value="direct"  >call to... (direct)</option>
+                  <option value="choice"  >choice</option>
+                  <option value="parallel">parallel (fork)</option>
+                  <option disabled>loop</option>
+                  <option disabled>split</option>
+                  <option disabled>filter</option>
+                  <option disabled>...</option>
+                </select>
+              </p>
+
+                  <!-- TOs -->
+                  <p class="consumer to">
+                    <select class="button" onchange="createSelectedOption(this)">
+                      <option>to...</option>
+                      <option value="direct"  >call to... (direct)</option>
+                      <option disabled>file</option>
+                      <option disabled>jms</option>
+                      <option disabled>kafka</option>
+                      <option disabled>http</option>
+                      <option disabled>ftp</option>
+                      <option disabled>...</option>
+                    </select>
+                  </p>
+
+                      <!-- KIT -->
+                      <p class="consumer kit">
+                        <select class="button" onchange="createPredefinedSet(this)">
+                          <option>kit...</option>
+                          <option value="xpath-json-to-xml">json-to-xml (xpath)</option>
+                          <option value="xpath-xml-to-json">xml-to-json (xpath)</option>
+                          <option value="df-json-to-xml">json-to-xml (dataFormat)</option>
+                          <option value="df-xml-to-json">xml-to-json (dataFormat)</option>
+                        </select>
+                      </p>
+
+                          <!-- REST -->
+                          <p class="rest">
+                            <select class="button" id="select-palette"  onchange="createSelectedOption(this)">
+                              <option>rest...</option>
+                              <option class="rest group" value="rest-group">new group...</option>
+                              <option class="rest get" disabled value="rest-method-get">GET</option>
+                              <option class="rest post" disabled value="rest-method-post">POST</option>
+                              <option class="rest put" disabled value="rest-method-put">PUT</option>
+                              <option disabled>DELETE</option>
+                              <option disabled>PATCH</option>
+                              <option disabled>OPTIONS</option>
+                            </select>
+                          </p>
 
       <!-- Camel Components & composites -->
-      <p class="producer timer"><button class="button"  onclick="createTimer()">timer</button></p>
-      <p class="producer direct-s"><button class="button"  onclick="createDirectStart()">direct</button></p>
+      <!-- <p class="producer timer"><button class="button"  onclick="createTimer()">timer</button></p>
+      <p class="producer direct-s"><button class="button"  onclick="createDirectStart()">direct</button></p> -->
  
-        <!-- SETTERs -->
-        <p class="setter prop"><button style="font-size:20px;" class="button" disabled onclick="createProperty()">property</button></p>
-        <p class="setter header"><button class="button" disabled onclick="createHeader()">header</button></p>
-        <p class="setter body"><button class="button" disabled onclick="createBody()">body</button></p>
+          <!-- SETTERs -->
+          <!-- <p class="setter prop"><button style="font-size:20px;" class="button" disabled onclick="createProperty()">property</button></p>
+          <p class="setter header"><button class="button" disabled onclick="createHeader()">header</button></p>
+          <p class="setter body"><button class="button" disabled onclick="createBody()">body</button></p> -->
 
-          <!-- TO -->
-          <p class="consumer log"><button class="button" disabled onclick="createLog()">log</button></p>
-          <p class="consumer direct"><button style="font-size:16px" class="button" disabled onclick="createDirect()">call to</br>direct</button></p>
-          <p class="consumer choice"><button class="button" disabled onclick="createChoice()">choice</button></p>
-          <p class="consumer multicast"><button class="button" disabled onclick="createMulticast()">fork</button></p>
-          
-            <!-- REST -->
-            <p class="rest group"><button class="button" disabled onclick="createRestGroup()">group</button></p>
-            <p class="rest get"><button class="button" disabled onclick="createRestMethod({method: 'get'})">GET</button></p>
-            <p class="rest post"><button class="button" disabled onclick="createRestMethod({method: 'post'})">POST</button></p>
-            <p class="rest put"><button class="button" disabled onclick="createRestMethod({method: 'put'})">PUT</button></p>
+              <!-- TO -->
+              <!-- <p class="consumer log"><button class="button" disabled onclick="createLog()">log</button></p>
+              <p class="consumer direct"><button style="font-size:16px" class="button" disabled onclick="createDirect()">call to</br>direct</button></p>
+              <p class="consumer choice"><button class="button" disabled onclick="createChoice()">choice</button></p>
+              <p class="consumer multicast"><button class="button" disabled onclick="createMulticast()">fork</button></p> -->
+
+                <!-- REST -->
+                <!-- <p class="rest group"><button class="button" disabled onclick="createRestGroup()">group</button></p>
+                <p class="rest get"><button class="button" disabled onclick="createRestMethod({method: 'get'})">GET</button></p>
+                <p class="rest post"><button class="button" disabled onclick="createRestMethod({method: 'post'})">POST</button></p>
+                <p class="rest put"><button class="button" disabled onclick="createRestMethod({method: 'put'})">PUT</button></p> -->
 
 
       <!-- Configuration Panel -->
-      <p class="activityconfig" id="introconfig" style="visibility: visible;"><br/>
+      <div class="activityconfig" id="screenshot" style="visibility: visible;"><br/>
+        <!-- <font size="6">Configuration Pane</font> -->
+        <!-- <img id="routeThumbnail-temp2" src="../media/routes-ring.jpg"> -->
+      </div>
+
+
+      <!-- Configuration Panel -->
+      <div class="activityconfig" id="introconfig" style="visibility: visible;"><br/>
         <font size="6">Configuration Pane</font>
-      </p>
+        <!-- <img id="routeThumbnail-temp2" src="../media/routes-ring.jpg"> -->
+      </div>
 
-      <p class="activityconfig" id="loginput"><br/>
-        <label>Log message:</label><br/>
-        <input type="text" size="50" oninput="submitLogConfig();syncEditor();">
-         <!--placeholder for expression variables-->
-        <vars></vars>
+      <div class="activityconfig" id="loginput"><br/>
+        <label>Log message:</label></br>
+        <!-- <input type="text" size="50" oninput="submitLogConfig()"> -->
+        <div class="expression">
+          <input type="text" size="50" oninput="submitLogConfig();syncEditor()">
+        </div>
         <button class="delete" type="submit" onclick="deleteConfigActivity()">delete</button>
-      </p>
+      </div>
 
-      <p class="activityconfig" id="newDirect"><br/>
+      <div class="activityconfig" id="newDirect"><br/>
         <label>direct call to:</label>
-        <select onchange="updateConfigDirect(this.value)">
+        <!-- <select onchange="updateConfigDirect(this.value)"> -->
+        <select oninput="updateConfigDirect(this.value);syncEditor()">
         </select>
         <button class="delete" type="submit" onclick="deleteConfigActivity()">delete</button>
         <br/><br/>
         <label id="hint-direct-config">To configure the call, ensure a Route exists with a 'Direct' starting activity. Then select the target route to call from the drop down list.</label>
-      </p>
+      </div>
 
-      <p class="activityconfig" id="config-choice-when"><br/>
+      <div class="activityconfig" id="config-choice-when"><br/>
         <label>expression language:</label>
         <select>
           <option>simple</option>
           <option>constant</option>
+          <option>xpath</option>
         </select>
         <br/>
         <input type="text" size="50" oninput="submitConfigChoice();syncEditor();">
-      </p>
+      </div>
 
-      <p class="activityconfig" id="name-value-pair"><br/>
+      <div class="activityconfig" id="name-value-pair"><br/>
         <label>Name:</label></br>
         <input type="text" size="50" oninput="submitConfigNameValuePair();syncEditor();"></br>
         </br>
-        <label>expression language:</label>
-        <select>
-          <option>simple</option>
-          <option>constant</option>
-        </select>
-        <br/>
-        <input type="text" size="50" oninput="submitConfigNameValuePair();syncEditor();">
-         <!--placeholder for expression variables-->
-        <vars></vars>
+        <!-- the contents of this container get dynamically configured -->
+        <div class="container-expression"></div>
         <button class="delete" type="submit" onclick="deleteConfigActivity()">delete</button>
-      </p>
+      </div>
 
-      <p class="activityconfig" id="set-body"><br/>
-        <label>expression language:</label>
-        <select>
-          <option>simple</option>
-          <option>constant</option>
-        </select>
-        <br/>
-        <input type="text" size="50" oninput="submitConfigBody();syncEditor();">
-         <!--placeholder for expression variables-->
-        <vars>
-          <select id="select-vars" onchange="useExpressionVariable(this)">
-            <option>use variable...</option>
-          </select>
-        </vars>
+      <div class="activityconfig" id="set-body"><br/>
+        <div class="container-expression">
+          <!-- this is a reusable block, needs to reside inside a 'container-expression' -->
+          <div id="config-expression">
+            <div class="language">
+              <label>expression language:</label>
+              <select id="select-lang" onchange="useExpressionLanguage(this);syncEditor();">
+                <option value="simple">simple</option>
+                <option value="constant">constant</option>
+                <option value="xpath">xpath</option>
+              </select>
+              <div class="attributes" onchange="useExpressionAttribute(event);syncEditor();"></div>
+            </div>
+            <br/>
+            <div class="expression">
+              <input type="text" size="50" oninput="useExpression(this);syncEditor();">
+              <select id="select-vars" onchange="useExpressionVariable(this)">
+                <option>use variable...</option>
+              </select>
+            </div>
+          </div>
+        </div>
         <button class="delete" type="submit" onclick="deleteConfigActivity()">delete</button>
-      </p>
+      </div>
 
-      <p class="activityconfig" id="config-rest-group"><br/>
+      <div class="activityconfig" id="config-rest-group"><br/>
         <label>Path:</label>
         <label for="input-path">/</label>
-        <input type="text" size="50" oninput="submitRestGroupConfig();syncEditor();" id="input-path">
+        <input type="text" size="50" oninput="submitRestGroupConfig();syncEditor()" id="input-path">
         <button class="delete" type="submit" onclick="deleteConfigActivity()">delete</button>
-      </p>
+      </div>
 
-      <p class="activityconfig" id="config-rest-method"><br/>
+      <div class="activityconfig" id="config-rest-method"><br/>
         <label>uri:</label>
         <label for="input-uri">/</label>
-        <input type="text" size="50" oninput="submitRestMethodConfig();syncEditor();" id="input-uri">
+        <input type="text" size="50" oninput="submitRestMethodConfig();syncEditor()" id="input-uri">
         <button class="delete" type="submit" onclick="deleteConfigActivity()">delete</button>
-      </p>
+      </div>
 
 
     <!-- Spacial scene (A-Frame elements) -->
@@ -188,7 +281,7 @@
       </a-entity>
 
       <!-- Entity to accommodate REST definitions -->
-      <a-entity id="rest-definitions" class="clickable" position="0 100 0">
+      <a-entity id="rest-definitions" visible="false" position="0 100 0">
       </a-entity>
 
       <a-sky color="black"></a-sky>
