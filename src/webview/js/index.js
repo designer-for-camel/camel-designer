@@ -1608,10 +1608,12 @@ var nextPos = refPos.x+2+shiftX;
       }
 
       //Sets Configuration Panel with Activity configuration
-      function updateConfigNameValuePair()//activity)
+      //on situations where there is execution concurrency (e.g. components being initialised asynchronously)
+      //the activity should be given
+      function updateConfigNameValuePair(activity)
       {
         //obtain worked activity
-        var activity = getActiveActivity()
+        var activity = activity || getActiveActivity()
 
         //obtains panel elements
         var element = document.getElementById("name-value-pair");
@@ -1634,10 +1636,12 @@ var nextPos = refPos.x+2+shiftX;
       }
 
       //Sets Configuration Panel with Activity configuration
-      function updateConfigBody()
+      //on situations where there is execution concurrency (e.g. components being initialised asynchronously)
+      //the activity should be given
+      function updateConfigBody(activity)
       {
         //obtain worked activity
-        var activity = getActiveActivity()
+        var activity = activity || getActiveActivity()
 
         if(activity.getAttribute('processor-type') != 'body')
         {

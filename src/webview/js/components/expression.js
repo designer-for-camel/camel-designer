@@ -19,7 +19,7 @@ AFRAME.registerComponent('expression', {
 
         //as init() runs asynchronously, it might run after the panel was loaded
         //config info needs to be reloaded
-        this.attrValue.configMethod[0]()
+        this.attrValue.configMethod[0](this.el)
     },
 
     setDefinition: function(definition) {
