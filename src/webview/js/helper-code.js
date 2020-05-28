@@ -150,7 +150,8 @@ function createRestDefinitions(xmlDoc) {
             createRestMethod({
                 method: methods[i].tagName,
                 id: methods[i].id, 
-                uri: methods[i].getAttribute('uri')
+                uri: methods[i].getAttribute('uri'),
+                direct: methods[i].querySelector('to')
             });            
         }
 

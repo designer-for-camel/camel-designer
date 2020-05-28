@@ -312,8 +312,27 @@ function getPositionInScene(activity)
 
     return position;
   }
+  else if(isRestElement(activity))
+  {
+      //e.g. REST directs
+      //a method is composed of 2 elements (method & direct) under a common container
+      //the container lives inside the REST box
+      let relativePosDirect    = activity.object3D.position
+      let relativePosContainer = activity.parentNode.object3D.position
+      let absolutePosRestBox   = activity.parentNode.parentNode.object3D.position
+      
+      return {
+        x: absolutePosRestBox.x+relativePosDirect.x,
+        y: absolutePosRestBox.y+relativePosContainer.y+relativePosDirect.y, 
+        z: absolutePosRestBox.z
+      }
+  }
 
-  return activity.object3D.position;
+  return  {
+    x: activity.object3D.position.x,
+    y: activity.object3D.position.y,
+    z: activity.object3D.position.z
+  }
 }
 
 //updates an Activity ID with a new one

@@ -305,7 +305,7 @@ function createRestMethod(definition)
     activity.appendChild(text);
 
   //create Direct task
-  attachDirect(activity, -numMethods)
+  attachDirect(activity, -numMethods, definition.direct)
 
   //adjust group size to accommodate new Method
   scaleRestGroupBox(group);
@@ -319,14 +319,20 @@ function createRestMethod(definition)
 }
 
 //Attaches a Direct task to the given REST method
-function attachDirect(restMethod, yPos)
+function attachDirect(restMethod, yPos, definition)
 {
-  let elementName = 'rest-direct';
+  // let elementName = 'rest-direct';
   let scale = {x: .8, y: .8, z: .8};
 
   //create activity
-  let activity = createDirectActivity({scale: scale});
+  let activity = createDirectActivity({scale: scale, definition: definition});
   // let activity = createDirect({scale: scale});
+
+  if(definition)
+  {
+    //updates the target route it points to
+    activity.firstChild.setAttribute("value", definition.getAttribute('uri').substring(7));
+  }
 
   //reposition label (to fit better)
   // activity.querySelector("#routeLabel").setAttribute('position', {x: 0, y: -.5, z: 0});

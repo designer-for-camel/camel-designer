@@ -1317,26 +1317,9 @@ var nextPos = refPos.x+2+shiftX;
               // console.log("this.nodeName");
               // console.log(this.nodeName);
 
-              //is this condition needed?
-              //if(this.getAttribute('processor-type') == "log")
-              //{
-              //  switchConfigPaneByActivity(this);
-              //}
-              //else 
               if(this.getAttribute('processor-type') == "direct")
               {
-                //this code is not intended for FROM elements
-                // if(this.hasAttribute('start'))
-                // {
-                //   return;
-                // }
-
-                // let targetUri = configObj.querySelector(".uri").getAttribute('value')
-
-
                 //don't jump if activity not configured yet
-                // let isConfigured = (configObj.querySelector("#routeLabel").getAttribute('value').length > 0)
-                // let isConfigured = (targetUri.length > 0)
                 let isConfigured = (configObj.querySelector(".uri").getAttribute('value').length > 0)
 
                 if(isDoubleClick && notGroup && isConfigured)
@@ -1355,47 +1338,15 @@ var nextPos = refPos.x+2+shiftX;
                     //to switch route:
                     // 1) obtain the target 'uri' the direct activity points to
                     // 2) find the route that contains the direct (target)
-                    // let targetUri = getActiveActivity().querySelector(".uri").getAttribute('value')
                     let targetUri = configObj.querySelector(".uri").getAttribute('value')
-                    // let routeId = document.querySelector('[start] > .uri[value="'+targetUri+'"]').parentElement.parentElement.id
                     let routeId = findRouteIdFromDirectUri(targetUri)
+
                     //jump to route
                     nextRoute(routeId);
                   });
 
-                  //somehow, if you pass directly 'object3D.position' the animation breaks Three.js
-                  //so we create the structure manually with x/y/z
-                  let target = {
-                    x: this.object3D.position.x,
-                    y: this.object3D.position.y, 
-                    z: this.object3D.position.z
-                  }
-
-                  //var to reuse
-                  let boxed = isBoxed(this)
-
-                  //if activity is encapsulated in group we need to add parent/child coordinates
-                  if(boxed || isRestElement(this))
-                  {
-                    let parent;
-
-                    if(boxed)
-                    {
-                      //e.g. multicast boxes
-                      parent = this.parentNode
-                    }
-                    else
-                    {
-                      //e.g. REST directs
-                      parent = this.parentNode.parentNode
-                    }
-
-                    target = {
-                      x: target.x+parent.object3D.position.x,
-                      y: target.y+parent.object3D.position.y, 
-                      z: target.z
-                    }
-                  }
+                  //obtain the absolute position to provide a target for the camera
+                  let target = getPositionInScene(this)
 
                   //animation starts from this moment
                   camera.setAttribute('animation', {property: 'position', dur: '1500', to: target, loop: false});
