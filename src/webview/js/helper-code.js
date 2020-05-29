@@ -44,53 +44,149 @@ function importSource()
     fileInput.click();
 }
 
-//Parses the source code and generates the graph
+//Parses the source code and generates the visual artifacts
 //When source code is loaded, a batch of creation activities is triggered
 //This would cause a sequence of code updates sent to VSCode we want to avoid.
 //To stop sending messages to VSCode, COMMS was disabled prior to calling this function
 function loadSourceCode(camelContextImport)
 {
-    let delay = 0;
-
+    //parse source code
     var xmlDoc = new DOMParser().parseFromString(camelContextImport, 'application/xml');
 
-    //REST definitionss
-    createRestDefinitions(xmlDoc);
+    //create REST definitions
+    //they might contain inner routes that we need to create
+    let methodRoutes = createRestDefinitions(xmlDoc);
 
-    //defined routes in source
-    var iteratorRoute = xmlDoc.evaluate('//*[local-name()="route"]', xmlDoc, null, XPathResult.ANY_TYPE, null);
-    // var iteratorRoute = xmlDoc.evaluate('//*[local-name()="route"]', xmlDoc.cloneNode(true), null, XPathResult.ANY_TYPE, null);
-    
-    var route = iteratorRoute.iterateNext();
-
-    //if it has an ID, we update the default route ID
-    if(route.id)
+    if(methodRoutes)
     {
-        updateRouteId(getSelectedRoute(), route.id);
+        //create REST inner routes as Context routes
+        createRouteDefinitions(methodRoutes)
     }
 
+    //obtain all route definitions with 'from' element (discard REST inner routes as they don't have 'from')
+    var iteratorRoute = xmlDoc.evaluate('//*[local-name()="from"]/ancestor::*[1]', xmlDoc, null, XPathResult.ANY_TYPE, null);
+    
+    //container for context routes
+    let contextRoutes = []
+
+    //iterate to populate container
+    var route = iteratorRoute.iterateNext();
     while(route)
     {
-        //if this is not the very first route
-        if(route.previousElementSibling != null && route.previousElementSibling.tagName == 'route')
+        contextRoutes.push(route)
+        route = iteratorRoute.iterateNext()
+    }
+
+    //create routes
+    createRouteDefinitions(contextRoutes)
+}
+
+//Creates REST definitions
+function createRestDefinitions(xmlDoc) {
+    var iteratorRest = xmlDoc.evaluate('//*[local-name()="rest"]', xmlDoc, null, XPathResult.ANY_TYPE, null);
+
+    var rest = iteratorRest.iterateNext();
+
+    var routesToCreate = []
+
+    while(rest)
+    {
+        //create REST container
+        createRestGroup({
+            id: rest.id, 
+            path: rest.getAttribute('path')
+        });
+
+        //obtain methods
+        let methods = rest.children;
+
+        //process methods
+        for(let i=0; i<methods.length;i++)
         {
-            //then we need to create a new route in the scene
-            newRoute(route.id);
+            //check if method contains a route definition
+            let methodRoute = methods[i].querySelector('route')
+
+            let definition;
+
+            if(methodRoute)
+            {
+                var uri = methodRoute.id
+
+                if(uri == null)
+                {
+                    uri = getUniqueID(methods[i].tagName)
+                }
+
+                //this is the 'direct' definition to be attached to the methood
+                definition = new DOMParser().parseFromString(
+                                                '<to uri="direct:'+uri+'"/>', 
+                                                "text/xml"
+                                             ).documentElement
+
+                //the route in the method lacks a 'from' element, needs to be added
+                let route = new DOMParser().parseFromString(methodRoute.outerHTML, "text/xml").documentElement
+                
+                //create 'from' element
+                let definitionFrom = new DOMParser().parseFromString('<from uri="direct:'+uri+'"/>', "text/xml").documentElement
+
+                //insert in route
+                route.insertBefore(definitionFrom,route.firstChild)
+
+                //include in collection
+                routesToCreate.push(route)
+            }
+            else
+            {
+                definition = methods[i].querySelector('to')
+            }
+            
+            createRestMethod({
+                method: methods[i].tagName,
+                id: methods[i].id, 
+                uri: methods[i].getAttribute('uri'),
+                direct: definition
+            });            
         }
 
+        rest = iteratorRest.iterateNext();
+    }
+
+    return routesToCreate
+}
+
+function createRouteDefinitions(routes)
+{
+    let sceneRoutes = document.getElementById('route-definitions')
+
+    for(let i=0; i < routes.length; i++)
+    {
+        //for code simplicity we declare a variable
+        let route = routes[i]
+
+        //check if no Routes have been created before
+        if(sceneRoutes.children[0].children.length == 0)
+        {
+            //if this is the very first route to be created
+            //we update the ID of the empty default route in the scene ('route1')
+            updateRouteId(getSelectedRoute(), route.id);
+        }
+        else
+        {
+            //otherwise we create a new route
+            newRoute(route.id);
+        } 
+    
         //obtain FROM definition
         let definition = route.getElementsByTagName("from")[0];
 
-        //obtain FROM component
+        //obtain FROM Camel component (scheme)
         let type = definition.attributes.uri.value.split(":")[0];
 
         switch(type) {
             case 'timer':
-                // createTimer(route.getElementsByTagName("from")[0]);
                 createTimer({definition: definition});
                 break;            
             case 'direct':
-                // createDirectStart(route.getElementsByTagName("from")[0]);
                 createDirectStart({definition: definition});
                 break;
             default:
@@ -120,42 +216,6 @@ function loadSourceCode(camelContextImport)
             //create activity with flag
             createActivityFromSource(xmlTag, delay, processors[i], isLastProcessor);
         }
-
-        route = iteratorRoute.iterateNext();
-    }
-}
-
-//Creates REST definitions
-function createRestDefinitions(xmlDoc) {
-    var iteratorRest = xmlDoc.evaluate('//*[local-name()="rest"]', xmlDoc, null, XPathResult.ANY_TYPE, null);
-
-    var rest = iteratorRest.iterateNext();
-
-    while(rest)
-    {
-        //if this is not the very first route
-        //if(rest.previousElementSibling != null)
-        {
-            //then we need to create a new route in the scene
-            createRestGroup({
-                id: rest.id, 
-                path: rest.getAttribute('path')
-            });
-        }
-
-        let methods = rest.children;
-
-        for(let i=0; i<methods.length;i++)
-        {
-            createRestMethod({
-                method: methods[i].tagName,
-                id: methods[i].id, 
-                uri: methods[i].getAttribute('uri'),
-                direct: methods[i].querySelector('to')
-            });            
-        }
-
-        rest = iteratorRest.iterateNext();
     }
 }
 

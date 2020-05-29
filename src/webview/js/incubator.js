@@ -3,10 +3,11 @@
 
 
 //copies the selection chosen to the input text the user is working with
-function useExpressionLanguage(event)
+function useExpressionLanguage(event, activity)
 {
     //obtain worked activity
-    let activity = getActiveActivity()
+    //on batch activity creation, it is mostly recommended to pass the activity explicitly
+    activity = activity || getActiveActivity()
 
     //update list of attributes
     activity.components.expression.setLanguage(event.selectedOptions[0].text)
@@ -172,17 +173,17 @@ function createPredefinedSet(event)
     let createSet = !Boolean(findRouteIdFromDirectUri(event.selectedOptions[0].value))
 
     switch(event.selectedOptions[0].value){
-        case 'xpath-xml-to-json':
-            createPredefinedSetXml2jsonXpath(createSet)
-            break;
         case 'xpath-json-to-xml':
             createPredefinedSetJson2xmlXpath(createSet)
             break;
-        case 'df-xml-to-json':
-            createPredefinedSetXml2jsonDataFormat(createSet)
+        case 'xpath-xml-to-json':
+            createPredefinedSetXml2jsonXpath(createSet)
             break;
         case 'df-json-to-xml':
             createPredefinedSetJson2xmlDataFormat(createSet)
+            break;
+        case 'df-xml-to-json':
+            createPredefinedSetXml2jsonDataFormat(createSet)
             break;
     }
     
@@ -221,23 +222,6 @@ function findRouteIdFromDirectUri(targetUri)
 //     loadSourceCode(snippet)
 // }
 
-function createPredefinedSetJson2xmlDataFormat(createSet)
-{
-    let uri = 'df-json-to-xml'
-
-    let snippet = '<route id="'+uri+'"><from uri="direct:'+uri+'"/><log message="input:\n${body}"/><to uri="dataformat:json-jackson:unmarshal"/><to uri="dataformat:jacksonxml:marshal?prettyPrint=true"/><log message="output:\n${body}"/></route>'
-
-    createPredefinedSetTemplate(uri, snippet, createSet)
-}
-
-function createPredefinedSetXml2jsonDataFormat(createSet)
-{
-    let uri = 'df-xml-to-json'
-
-    let snippet = '<route id="'+uri+'"><from uri="direct:'+uri+'"/><log message="input:\n${body}"/><to uri="dataformat:jacksonxml:unmarshal"/><to uri="dataformat:json-jackson:marshal?prettyPrint=true"/><log message="output:\n${body}"/></route>'
-
-    createPredefinedSetTemplate(uri, snippet, createSet)
-}
 
 function createPredefinedSetJson2xmlXpath(createSet)
 {
@@ -257,7 +241,27 @@ function createPredefinedSetXml2jsonXpath(createSet)
     createPredefinedSetTemplate(uri, snippet, createSet)
 }
 
+function createPredefinedSetJson2xmlDataFormat(createSet)
+{
+    let uri = 'df-json-to-xml'
 
+    let snippet = '<route id="'+uri+'"><from uri="direct:'+uri+'"/><log message="input:\n${body}"/><to uri="dataformat:json-jackson:unmarshal"/><to uri="dataformat:jacksonxml:marshal?prettyPrint=true"/><log message="output:\n${body}"/></route>'
+
+    createPredefinedSetTemplate(uri, snippet, createSet)
+}
+
+function createPredefinedSetXml2jsonDataFormat(createSet)
+{
+    let uri = 'df-xml-to-json'
+
+    let snippet = '<route id="'+uri+'"><from uri="direct:'+uri+'"/><log message="input:\n${body}"/><to uri="dataformat:jacksonxml:unmarshal"/><to uri="dataformat:json-jackson:marshal?prettyPrint=true"/><log message="output:\n${body}"/></route>'
+
+    createPredefinedSetTemplate(uri, snippet, createSet)
+}
+
+//Template creation for Kits
+//this function will create a new route containing the kit definition
+//and then creates a 'direct' call pointing to it
 function createPredefinedSetTemplate(uri,snippet,createSet)
 {
     //we keep the current reference
@@ -265,15 +269,17 @@ function createPredefinedSetTemplate(uri,snippet,createSet)
 
     if(createSet)
     {
-        newRoute()
+        //create snippet
         loadSourceCode(snippet)
 
+        //the above snippet creation will change the view focus
+        //so we set the focus where the user was
         nextRoute(getActivityRoute(current).id)
         setConfigSelector(current)
     }
 
+    //we then create a 'direct' activity pointing to the kit just created
     let direct = new DOMParser().parseFromString('<to uri="direct:'+uri+'">', 'application/xml').documentElement
-
     createDirect({definition: direct})
 }
 
@@ -301,7 +307,7 @@ function loadExpressionConfiguration(panel, activity)
     //update panel configuration with language
     var langSelect = document.getElementById('select-lang')
     langSelect.value = language
-    useExpressionLanguage(langSelect)
+    useExpressionLanguage(langSelect, activity)
 }
 
 
