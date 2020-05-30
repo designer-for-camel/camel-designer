@@ -120,12 +120,10 @@ function createSelectedFrom(event)
     console.log("selected from: "+event.selectedOptions[0].text)
 
     switch(event.selectedOptions[0].value){
-        case 'direct':
-            createDirectStart()
-            break;
-        case 'timer':
-            createTimer()
-            break;
+        case 'direct': createDirectStart(); break;
+        case 'timer':  createTimer();       break;
+        case 'kafka':  createKafkaStart();  break;
+        case 'file':   createFileStart();   break;
     }
     
     event.selectedIndex = 0
@@ -358,10 +356,9 @@ AFRAME.registerComponent('uri', {
         this.attributes        = {}
         this.defaultUri        = "target1";
 
-
         if(definition)
         {
-            let uri = definition.firstElementChild.attributes.uri.value.split(":")
+            let uri = definition.attributes.uri.value.split(":")
 
             this.scheme = uri[0]
 
@@ -489,17 +486,13 @@ function updateConfigEndpointTo(activity)
 
 function createKafka(definition)
 {
-    // definition = definition || new DOMParser().parseFromString('<to uri="kafka:topic1"/>', "text/xml")
-    definition = definition || new DOMParser().parseFromString('<to uri="kafka:topic1?brokers=YOUR_BROKER_SERVICE_URI&amp;autoOffsetReset=earliest"/>', "text/xml")
- 
+    definition = definition || new DOMParser().parseFromString('<to uri="kafka:topic1?brokers=YOUR_BROKER_SERVICE_URI&amp;autoOffsetReset=earliest"/>', "text/xml").documentElement
     return createGenericEndpointTo(definition)
 }
 
 function createFile(definition)
 {
-    // definition = definition || new DOMParser().parseFromString('<to uri="kafka:topic1"/>', "text/xml")
-    definition = definition || new DOMParser().parseFromString('<to uri="file:directory?fileName=YOUR_FILE_NAME"/>', "text/xml")
- 
+    definition = definition || new DOMParser().parseFromString('<to uri="file:directory?fileName=YOUR_FILE_NAME"/>', "text/xml").documentElement
     return createGenericEndpointTo(definition)
 }
 
@@ -507,12 +500,12 @@ function createFile(definition)
 function createGenericEndpointTo(definition)
 {
   //default type will be the scheme of the uri (e.g. 'file' in uri="file:name")
-  type = definition.firstElementChild.getAttribute('uri').split(":")[0];
+  type = definition.getAttribute('uri').split(":")[0];
 
   //create
   let activity = createActivity({type: "to", definition: definition});
 
-  //add expression component (and load definition)
+  //add uri component (and load definition)
   activity.setAttribute('uri', {position: "0 -0.7 0", configMethod: [updateConfigEndpointTo]})
   activity.components.uri.setDefinition(definition)
 
@@ -631,4 +624,48 @@ function configEndpointAddOptionNameValue(divOptions, name, value)
     option.innerHTML = snippet
 
     divOptions.appendChild(option)
+}
+
+
+
+
+function createKafkaStart(definition)
+{
+    definition = definition || new DOMParser().parseFromString('<from uri="kafka:topic1?brokers=YOUR_BROKER_SERVICE_URI"/>', "text/xml").documentElement
+    return createGenericEndpointFrom(definition)
+}
+
+function createFileStart(definition)
+{
+    definition = definition || new DOMParser().parseFromString('<from uri="file:directory1"/>', "text/xml").documentElement
+    return createGenericEndpointFrom(definition)
+}
+
+function createGenericEndpointFrom(definition)
+{
+  //default type will be the scheme of the uri (e.g. 'file' in uri="file:name")
+  type = definition.getAttribute('uri').split(":")[0];
+
+  //create
+  let activity = createActivity({type: "from", definition: definition});
+
+  //customise to make it a START activity
+  activity.setAttribute('material', {color: '#52F40C', transparent: true, opacity: 0.5});
+  activity.setAttribute('start', '');
+
+  //add uri component (and load definition)
+  activity.setAttribute('uri', {position: "0 0.7 0", configMethod: [updateConfigEndpointTo]})
+  activity.components.uri.setDefinition(definition)
+
+  //this is the label inside the geometry (activity descriptor)
+  var text = createText();
+  activity.appendChild(text);
+  text.setAttribute('value', type);
+  text.setAttribute('color', 'white');
+  text.setAttribute('align', 'center');
+  text.setAttribute('side', 'double');
+
+  goLive(activity);
+
+  return activity
 }

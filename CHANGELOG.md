@@ -50,5 +50,5 @@
 - fix: camera movement for REST methods
 - REST parsing is now aware of inner route definitions which get moved out as normal routes with 'from' element
 - new 'uri' (a-frame) component which provides uri handling functionality to activities
-- new Kafka endpoint to send kafka messages
-- new File endpoint to write data to filesystem
+- new Kafka endpoint to send/receive kafka messages
+- new File endpoint to read/write data from/to filesystem

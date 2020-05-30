@@ -185,9 +185,15 @@ function createRouteDefinitions(routes)
         switch(type) {
             case 'timer':
                 createTimer({definition: definition});
-                break;            
+                break;
             case 'direct':
                 createDirectStart({definition: definition});
+                break;
+            case 'kafka':
+                createKafkaStart(definition);
+                break;
+            case 'file':
+                createFileStart(definition);
                 break;
             default:
                 //if none of the above, then it's unknown or unsupported yet.
@@ -260,6 +266,12 @@ function createActivityFromSource(type, delay, definition,lastAction) {
             // break;
         case 'setBody':
             return createActivityDelayed(createBody, delay, definition, lastAction);            
+            // break;
+        case 'kafka':
+            return createActivityDelayed(createKafka, delay, definition, lastAction);            
+            // break;
+        case 'file':
+            return createActivityDelayed(createFile, delay, definition, lastAction);            
             // break;
         default:
             //if none of the above, then it's unknown or unsupported yet.
@@ -490,6 +502,12 @@ let start = thisNode;
                 let uri = "timer:"+thisNode.getElementsByTagName('a-text')[1].attributes.value.textContent
                 mycode.text += mycode.tab+'<from uri="'+uri+'" id="'+thisNode.id+'"/>\n'
                 break;
+
+            case 'from':
+                //assumes activity is an endpoint (<to>) and has URI
+                mycode.text += mycode.tab+'<from uri="'+thisNode.components.uri.getValue()+'" id="'+thisNode.id+'"/>\n'
+                break;
+
             default:
                 mycode.text += mycode.tab+thisNode.getElementsByTagName('a-text')[1].firstChild.getAttribute('value')+'\n'
                 break;

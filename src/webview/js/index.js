@@ -1514,6 +1514,10 @@ var nextPos = refPos.x+2+shiftX;
               newConfigPane = "config-endpoint-to";
               updateConfigEndpointTo(activity);
               break;
+          case 'from':
+              newConfigPane = "config-endpoint-to";
+              updateConfigEndpointTo(activity);
+              break;
           default:
             //code block
         }
