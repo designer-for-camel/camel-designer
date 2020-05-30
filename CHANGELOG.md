@@ -43,3 +43,12 @@
 - code rewrite to define a reusable 'expression' component
 - code rewrite to define a reusable 'expression' configuration panel
 - new button interface layout
+
+## 0.X.X
+
+- fix: issue on concurrent expressions initialising
+- fix: camera movement for REST methods
+- REST parsing is now aware of inner route definitions which get moved out as normal routes with 'from' element
+- new 'uri' (a-frame) component which provides uri handling functionality to activities
+- new Kafka endpoint to send kafka messages
+- new File endpoint to write data to filesystem
