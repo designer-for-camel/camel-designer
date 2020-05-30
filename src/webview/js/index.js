@@ -1510,8 +1510,12 @@ var nextPos = refPos.x+2+shiftX;
               newConfigPane = "set-body";
               updateConfigBody();
               break;
+          case 'to':
+              newConfigPane = "config-endpoint-to";
+              updateConfigEndpointTo(activity);
+              break;
           default:
-              //code block
+            //code block
         }
 
         // if(type == 'direct')

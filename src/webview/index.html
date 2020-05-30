@@ -110,7 +110,8 @@
                     <select class="button" onchange="createSelectedOption(this)">
                       <option>to...</option>
                       <option value="direct"  >call to... (direct)</option>
-                      <option disabled>file</option>
+                      <option value="kafka">kafka</option>
+                      <option value="file">file</option>
                       <option disabled>jms</option>
                       <option disabled>kafka</option>
                       <option disabled>http</option>
@@ -257,6 +258,14 @@
         <button class="delete" type="submit" onclick="deleteConfigActivity()">delete</button>
       </div>
 
+      <div class="activityconfig" id="config-endpoint-to"><br/>
+        <label>Target:</label>
+        <input type="text" size="50" oninput="useEndpointTarget(this);syncEditor()" id="input-target">
+        <button class="delete" type="submit" onclick="deleteConfigActivity()">delete</button>
+        </br></br>
+        <div class="config-endpoint-options" style="display: inline-block; width: 50; text-align: right;">
+        </div>
+      </div>
 
     <!-- Spacial scene (A-Frame elements) -->
     <a-scene myoutline cursor="rayOrigin:mouse" raycaster="objects: .clickable, .testcollidable" vr-mode-ui="enabled: false">

@@ -585,6 +585,10 @@ function renderRouteActivity(activity, mycode, iterator) {
         case 'unknown':
             mycode.text += mycode.tab+activity.getElementsByTagName('a-text')[0].firstChild.getAttribute('value')+'\n'
             break;
+        case 'to':
+            //assumes activity is an endpoint (<to>) and has URI
+            mycode.text += mycode.tab+'<to uri="'+activity.components.uri.getValue()+'" id="'+activity.id+'"/>\n'
+            break;
         default:
             console.warn("could not render activity to XML, type unknown: ["+processorType+"]")
             //code block

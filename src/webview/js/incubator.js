@@ -144,6 +144,9 @@ function createSelectedOption(event)
         case 'header':   createHeader();     break;        
         case 'body':     createBody();       break;
 
+                        case 'kafka':     createKafka();       break;
+                        case 'file':     createFile();       break;
+
         case 'log':      createLog();        break;
         case 'direct':   createDirect();     break;
         case 'choice':   createChoice();     break;
@@ -316,4 +319,316 @@ function useExpression(input)
 {
     //sets the expression value in the activity
     getActiveActivity().components.expression.setValue(input.value)
+}
+
+//===================================================
+//===================================================
+
+/*
+* This (a-frame) component adheres URI manipulation functionality to activities (a-entity)
+* URIs are defined as: 'scheme:target?options' (e.g. uri="file:directory?fileName=sample")
+* The component creates a visible label with [target] and loads the [options] as component attributes
+*/
+AFRAME.registerComponent('uri', {
+    schema: {
+        position: {type: 'string'},
+        configMethod: []
+    },
+    init: function () {
+
+        // let defaultValue = this.defaultExpression || "hello world";
+
+        //label to display the expression value set for the activity
+        this.label = createText();
+        this.el.appendChild(this.label);
+        this.label.setAttribute('value', this.defaultUri);
+        this.label.setAttribute('color', 'white');
+        this.label.setAttribute('align', 'center');
+        this.label.setAttribute('position', this.attrValue.position);
+        this.label.setAttribute('side', 'double');
+
+        //as init() runs asynchronously, it might run after the panel was loaded
+        //config info needs to be reloaded
+        this.attrValue.configMethod[0](this.el)
+    },
+
+    setDefinition: function(definition) {
+
+        //defaults
+        this.attributes        = {}
+        this.defaultUri        = "target1";
+
+
+        if(definition)
+        {
+            let uri = definition.firstElementChild.attributes.uri.value.split(":")
+
+            this.scheme = uri[0]
+
+            //remove 'scheme' and keep remaining
+            this.defaultUri = uri[1]
+
+            //look at options
+            let options = this.defaultUri.split("?")
+
+            //if there are options
+            if(options.length > 1)
+            {
+                //keep path value (before question mark)
+                this.defaultUri = options[0]
+
+                //split options
+                options = options[1].split("&");
+
+                //loops over options
+                for(let i=0; i<options.length; i++)
+                {
+                    let option = options[i].split("=")
+
+                    //adds uri option to component
+                    this.attributes[option[0]] = option[1]
+                }
+            }
+        }
+    },
+              
+    getDefinition: function () {
+      return this.definition
+    },
+
+    getTarget: function () {
+        //only if component has initialised we can return a value
+        //because the component loads asynchronously, the config panel may first attempt to get the value before the component is ready 
+        if(this.label)
+        {
+            return this.label.getAttribute('value')
+        }
+
+        //otherwise return default one (init might not have yet run)
+        return this.defaultUri
+    },
+
+    setTarget: function (uri) {
+        if(this.label)
+        {
+            this.label.setAttribute('value', uri)
+        }
+        else
+        {
+            //init() might not have executed, so we set value as default
+            this.defaultUri = uri
+        }
+    },
+
+    getOptions: function () {
+        return this.attributes
+    },
+
+    setOption: function(name, value){
+        if(value && (value.length > 0))
+        {
+            this.attributes[name] = value
+        }
+        else
+        {
+            delete this.attributes[name]
+        }
+    },
+
+    getValue: function () {
+
+        //set target to default value
+        let target = this.defaultUri
+
+        //only if component has initialised we can return the label value
+        //because the component loads asynchronously, the config panel may first attempt to get the value before the component is ready 
+        if(this.label)
+        {
+            target = this.label.getAttribute('value')
+        }
+
+        //get options
+        let options = new URLSearchParams(this.attributes).toString();
+
+        //XML escape string
+        if(options.length > 0)
+        {
+            options = "?"+options.replace(/&/g,"&amp;")
+        }
+        
+        return this.scheme+":"+target+options
+    },
+
+    // update: function () {},
+    // tick: function () {},
+    // remove: function () {},
+    // pause: function () {},
+    // play: function () {}
+});
+
+
+function updateConfigEndpointTo(activity)
+{
+    //obtain worked activity
+    var activity = activity || getActiveActivity()
+
+    //obtains configuration panel
+    var panel = document.getElementById("config-endpoint-to");
+
+    //obtain reference to target input
+    var targetConfig = panel.getElementsByTagName("input")[0];
+
+    //replace input value using activity values
+    targetConfig.value = activity.components.uri.getTarget()
+
+    let options = activity.components.uri.getOptions()
+
+    configEndpointPopulateOptions(panel.lastElementChild, options)
+}
+
+
+function createKafka(definition)
+{
+    // definition = definition || new DOMParser().parseFromString('<to uri="kafka:topic1"/>', "text/xml")
+    definition = definition || new DOMParser().parseFromString('<to uri="kafka:topic1?brokers=YOUR_BROKER_SERVICE_URI&amp;autoOffsetReset=earliest"/>', "text/xml")
+ 
+    return createGenericEndpointTo(definition)
+}
+
+function createFile(definition)
+{
+    // definition = definition || new DOMParser().parseFromString('<to uri="kafka:topic1"/>', "text/xml")
+    definition = definition || new DOMParser().parseFromString('<to uri="file:directory?fileName=YOUR_FILE_NAME"/>', "text/xml")
+ 
+    return createGenericEndpointTo(definition)
+}
+
+// function createGenericEndpointTo(definition, type)
+function createGenericEndpointTo(definition)
+{
+  //default type will be the scheme of the uri (e.g. 'file' in uri="file:name")
+  type = definition.firstElementChild.getAttribute('uri').split(":")[0];
+
+  //create
+  let activity = createActivity({type: "to", definition: definition});
+
+  //add expression component (and load definition)
+  activity.setAttribute('uri', {position: "0 -0.7 0", configMethod: [updateConfigEndpointTo]})
+  activity.components.uri.setDefinition(definition)
+
+  //this is the label inside the geometry (activity descriptor)
+  var text = createText();
+  activity.appendChild(text);
+  text.setAttribute('value', type);
+  text.setAttribute('color', 'white');
+  text.setAttribute('align', 'center');
+  text.setAttribute('side', 'double');
+
+  goLive(activity);
+
+  return activity
+}
+
+function useEndpointTarget(input)
+{
+    //sets the expression value in the activity
+    getActiveActivity().components.uri.setTarget(input.value)
+}
+
+function useEndpointOption(input)
+{
+    //sets the expression value in the activity
+    getActiveActivity().components.uri.setOption(input.previousElementSibling.textContent.slice(0,-1), input.value)
+}
+
+function configEndpointAddOption(element)
+{
+    snippet = `
+        <input type="text"  size="15" value="enter_name">
+        <button type="submit"  onclick="configEndpointAddOptionConfirm(this)">&check;</button>
+        <input type="text" size="30" style="visibility: hidden;">
+    `;
+
+    let option = document.createElement('div');
+    option.innerHTML = snippet
+
+    element.parentNode.parentNode.insertBefore(option, element.parentNode)
+
+    option.firstElementChild.select()
+}
+
+
+function configEndpointAddOptionConfirm(element)
+{
+    let name = element.previousElementSibling.value
+
+    snippet = `
+        <label style="width: 15">`+name+`:</label>
+        <input type="text" size="30" oninput="useEndpointOption(this);syncEditor()">
+        <button type="submit" onclick="configEndpointRemoveOption(this)">&cross;</button>
+    `;
+
+    let option = document.createElement('div');
+    option.innerHTML = snippet
+
+    element.parentNode.parentNode.insertBefore(option, element.parentNode)
+    element.parentNode.parentNode.removeChild(element.parentNode)
+
+    option.children[1].select()
+
+    syncEditor()
+}
+
+
+/** 
+ * removes the option from the configuration panel and updates the uri component
+ * @param {HTMLElement} element The option to remove from its parent
+*/
+function configEndpointRemoveOption(element)
+{
+    //obtain name of option (without the colon separator)
+    let option = element.previousElementSibling.previousElementSibling.textContent.slice(0,-1)
+
+    //setting null deletes the attribute
+    getActiveActivity().components.uri.setOption(option, null)
+
+    //remove the option from the configuration panel
+    element.parentNode.parentNode.removeChild(element.parentNode)
+
+    syncEditor()
+}
+
+
+function configEndpointPopulateOptions(divOptions, options)
+{
+    //clean options list
+    divOptions.innerHTML = ""
+
+    for (var name in options){
+        configEndpointAddOptionNameValue(divOptions, name, options[name])
+    }
+
+    snippet = `
+        <button type="submit" onclick="configEndpointAddOption(this)">add option...</button>
+    `;
+
+    let button = document.createElement('div');
+    button.innerHTML = snippet
+
+    divOptions.appendChild(button)
+}
+
+
+function configEndpointAddOptionNameValue(divOptions, name, value)
+{
+    snippet = `
+        <label style="width: 15">`+name+`:</label>
+        <input type="text" value="`+value+`" size="30" oninput="useEndpointOption(this);syncEditor()">
+        <button type="submit" onclick="configEndpointRemoveOption(this)">&cross;</button>
+    `;
+
+    let option = document.createElement('div');
+    option.innerHTML = snippet
+
+    divOptions.appendChild(option)
 }

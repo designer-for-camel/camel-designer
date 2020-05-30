@@ -523,15 +523,12 @@ function createDirect(metadata)
 {
   let activity = createDirectActivity(metadata);
 
-
-
   if(metadata)
   {
     //updates the target route it points to
     // activity.children.routeLabel.setAttribute("value", metadata.definition.getAttribute('uri').substring(7));
     activity.firstChild.setAttribute("value", metadata.definition.getAttribute('uri').substring(7));
   }
-
 
   //add to scene (and other stuff)
   goLive(activity);
