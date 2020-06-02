@@ -52,3 +52,7 @@
 - new 'uri' (a-frame) component which provides uri handling functionality to activities
 - new Kafka endpoint to send/receive kafka messages
 - new File endpoint to read/write data from/to filesystem
+- detach/reattach activities:
+  1. press SHIFT to discover (highlighted in yellow) detachable activities.
+  2. press SHIFT + MOUSE-click to detach.
+  3. to reattach an activity, drag'n'drop on a link. 

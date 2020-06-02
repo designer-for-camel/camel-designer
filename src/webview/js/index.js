@@ -1113,14 +1113,17 @@ var nextPos = refPos.x+2+shiftX;
         AFRAME.registerComponent("pulse", {
           init: function () {
             
-
-
             //for 'Drag&Drop' effect, when mousedown is detected
             //we add a 'mousemove' listener to follow mouse movement
             this.el.addEventListener('mousedown', function(){
                   
               movingObj = this;
             
+              //SHIFT + CLICK = DETACH
+              if(movingObj.components.detachable && movingObj.components.detachable.shiftPressed)
+              {
+                movingObj.components.detachable.detach()
+              }
 
               //discard links for dragNdrop functionality
               if(this.nodeName.toLowerCase() != "a-cylinder")
@@ -1141,6 +1144,13 @@ var nextPos = refPos.x+2+shiftX;
                   //update activity position
                   movingObj.setAttribute('position', {x: vectorX, y: vectorY, z: movingObj.object3D.position.z});
 
+                  //check if this is a detached object
+                  if(movingObj.components.detachable && movingObj.components.detachable.detached)
+                  {
+                    //if so, no need to recalculate positions
+                    return 
+                  }
+
                   //no special handling for REST components, just select it
                   if(movingObj.getAttribute('processor-type') == "rest-group")
                   {
@@ -1151,38 +1161,24 @@ var nextPos = refPos.x+2+shiftX;
                   //obtain links to other activities
                   var links = JSON.parse(movingObj.getAttribute("links"));
 
-                  var objectInGroup = movingObj.nodeName.toLowerCase() == "a-box";
-// console.log("checking entity: "+movingObj.nodeName);
+                  // var objectInGroup = movingObj.nodeName.toLowerCase() == "a-box";
+                  var objectInGroup = movingObj.localName == "a-box";
 
-                  // if(movingObj.nodeName.toLowerCase() == "a-box")
                   if(objectInGroup)
                   {
-// console.log("is box");
-// console.log("movingObj.firstChild: " +movingObj.firstChild.nodeName);
-// console.log("movingObj.firstChild.id: " +movingObj.firstChild.id);
+                    //helper
+                    links = []
 
-                    // links = JSON.parse(movingObj.firstChild.getAttribute("links"));
-                    links = JSON.parse(document.getElementById(movingObj.getAttribute("group-start")).getAttribute("links"));
-// console.log("movingObj.id: " + movingObj.id);
-// console.log("movingObj.firstChild.id: " + movingObj.firstChild.id);
-// // console.log("linksStart nodeName: " + links.nodeName);
-// console.log("linksStart nodeName: " + links.nodeName);
-// console.log("linksStart id: " + links.id);
-// console.log("linksStart length: " + links.length);
-// console.log("linksStart: " + links);
+                    //include link going back
+                    links.push(getBackwardsLink(movingObj).id)
 
-//                 console.log("moving obj end: " + movingObj.getAttribute("group-end"));
-//                 console.log("moving obj end: " + document.getElementById(movingObj.getAttribute("group-end")).id);
+                    //get link going forward
+                    let linkForward = getForwardLink(movingObj)
 
-                    var linksEnd = document.getElementById(movingObj.getAttribute("group-end")).getAttribute("links");
+                    //if exists, include
+                    if(linkForward)
+                      links.push(getForwardLink(movingObj).id)
 
-// console.log("linksEnd length: " + linksEnd.length);
-// console.log("linksEnd: " + linksEnd);
-
-                    links = links.concat(
-                              // JSON.parse(document.getElementById(movingObj.getAttribute("group-end")).getAttribute("links"))
-                              JSON.parse(linksEnd)
-                            );
                   }//end of if(objectInGroup)
 
                   //iterate links
@@ -1190,8 +1186,6 @@ var nextPos = refPos.x+2+shiftX;
 
                     //obtain link
                     var link = document.querySelector("#"+links[i]);
-
-// console.log("link type: "+ link.nodeName)
 
                     // we only want to update EDITABLE links (cylinders).
                     // Groups contain link lines (NON-EDITABLE links) that must stay static
@@ -1277,6 +1271,13 @@ var nextPos = refPos.x+2+shiftX;
             //we use click event to highlight activity clicked
             this.el.addEventListener('click', function(evt){
                  
+
+                if(this.getAttribute('detached') == "true")
+                {
+                  return
+                }
+
+
               //no further handling for REST groups, we just select the group and return
               if(this.getAttribute('processor-type') == "rest-group")
               {
@@ -1452,13 +1453,6 @@ var nextPos = refPos.x+2+shiftX;
 
       function switchConfigPaneByActivity(activity)
       {
-        //REST elements have their own switch (to better manage different Designer views)
-        if(isRestElement(activity))
-        {
-          selectRestActivity(activity);
-          return;
-        }
-
         setConfigSelector(activity);
 
         if(activity == null)
@@ -1466,6 +1460,27 @@ var nextPos = refPos.x+2+shiftX;
           switchConfigPane("introconfig");
           return;
         }
+
+        if(activity.components.detachable && activity.components.detachable.detached)
+        {
+          //ignore when activity is detached
+          return
+        }
+
+        //REST elements have their own switch (to better manage different Designer views)
+        if(isRestElement(activity))
+        {
+          selectRestActivity(activity);
+          return;
+        }
+
+        // setConfigSelector(activity);
+
+        // if(activity == null)
+        // {
+        //   switchConfigPane("introconfig");
+        //   return;
+        // }
 
         let newConfigPane = "introconfig";
         let type     = activity.getAttribute('processor-type');

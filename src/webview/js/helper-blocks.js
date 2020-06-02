@@ -42,6 +42,9 @@ function getUniqueID(baseUid)
 
 function createFrom(metadata)
 {
+  //should be always attached to the flow
+  metadata.detachable = false
+
   //create activity
   let from = createActivity(metadata)
 
@@ -231,6 +234,12 @@ function createActivity(metadata)
 {
   var scale         = {x: 1, y: 1, z: 1}
   var processorType;
+  var detachable = true
+
+  if('detachable' in metadata)
+  {
+    detachable = metadata.detachable
+  }
 
   //definition takes precedence
   if(metadata.definition)
@@ -299,6 +308,12 @@ function createActivity(metadata)
                                   property: 'scale',
                                   dur: '500',
                                   to: scale});
+
+              if(detachable)
+              {
+                newActivity.setAttribute('detachable','')
+              }
+                      
   return newActivity;
 }
 
@@ -550,6 +565,9 @@ function createDirectActivity(metadata)
   if(metadata && metadata.definition){
     params.definition = metadata.definition
   }
+  if(metadata && ('detachable' in metadata)){
+    params.detachable = metadata.detachable
+  }
 
   //create activity
   let activity = createActivity(params);
@@ -800,7 +818,7 @@ function createMulticastBox(groupName, labelStart, labelEnd)
   let sourceFwdLink = detachForwardLink(source)
 
   //create root activity  
-  let rootActivity = createActivity({type: typeStart, scale: scale});
+  let rootActivity = createActivity({type: typeStart, scale: scale, detachable: false});
 
 
   let rootId = rootActivity.getAttribute('id');
@@ -818,7 +836,7 @@ function createMulticastBox(groupName, labelStart, labelEnd)
   //loop branches
   for(let i=1; i<=numActivities; i++)
   {
-    let activity = createDirectActivity({scale: scale});
+    let activity = createDirectActivity({scale: scale, detachable: false});
     // let activity = createDirect({scale: scale});
     activity.setAttribute('group', true);
     activity.setAttribute('group-branch',i);
@@ -847,7 +865,7 @@ function createMulticastBox(groupName, labelStart, labelEnd)
 
 
   //create closing activity
-  var closeActivity = createActivity({type: typeEnd, scale: scale});
+  var closeActivity = createActivity({type: typeEnd, scale: scale, detachable: false});
 
   
   //we make the closing activity to shares ID with starting activity.
@@ -889,6 +907,10 @@ function createMulticastBox(groupName, labelStart, labelEnd)
   //somehow the link to the multicast is not accurate, need to redraw
   //anyone wants to review this?
   redrawLink(getBackwardsLink(rootActivity))
+
+
+          box.setAttribute('detachable','')
+  
 
   return box;
 }
@@ -989,7 +1011,7 @@ function createMulticast(definition)
         refPosition = getPositionInScene(activityBeforeChoice)
 
         // create CHOICE start activity
-        let start = createActivity({type: 'choice-start', definition: definition});
+        let start = createActivity({type: 'choice-start', definition: definition, detachable: false});
 
         //We create CHOICE end activity
         //We need to provide a specific ID for the end activity (with format: "[startId]-end")
@@ -1003,7 +1025,7 @@ function createMulticast(definition)
         definitionUpdate.id = start.id+"-end"
 
         //then we can create the end activity with the given ID
-        let end   = createActivity({type: 'choice-end', definition: definitionUpdate});
+        let end   = createActivity({type: 'choice-end', definition: definitionUpdate, detachable: false});
 
         //align choice to preceding activity
         //this is particularly important to maintain flow in Y coordinate 
@@ -1254,9 +1276,9 @@ function createMulticast(definition)
         //activities been injected between 2 others. Enabled by default.
         handleRewires = handleRewires || true;
 
-        console.log("createLink...");
-        printActivityLinks(src);
-        printActivityLinks(dst);
+        // console.log("createLink...");
+        // printActivityLinks(src);
+        // printActivityLinks(dst);
 
         //gather data to compose conditions
         if(handleRewires)
@@ -1289,6 +1311,9 @@ function createMulticast(definition)
         link.setAttribute('source',      src.id);
         link.setAttribute('destination', dst.id);
 
+
+                        //link.setAttribute('aabb-collider', "objects: .testsphere; debug: true");
+
         // //Visible line
         // var testline = document.createElement('a-entity');
         // cilinder.appendChild(testline);
@@ -1303,7 +1328,7 @@ function createMulticast(definition)
 //this function does the following:
 //   A is the.........'source'
 //   B is the (to be) 'destination'
-//   X is the  activity A is currently attached to
+//   X is the activity to which A is currently attached to
 //   L-1 connects A and X 
 //                                  L-1
 //   given these connections:  A ========> X
@@ -1327,6 +1352,11 @@ function handleForwardLinks(src, dst, srcPos, dstPos)
 //returns null if no link forward was found
 function detachForwardLink(activity)
 {
+  if(activity.localName == "a-box")
+  {
+    activity = activity.querySelector('[processor-type=multicast-end]')
+  }
+
   //variable preparations
   let activityType = activity.getAttribute('processor-type')
   var forwardLink  = null;
@@ -1334,6 +1364,7 @@ function detachForwardLink(activity)
   //We only look forward links for non-group starter activities
   if(!activityType.endsWith('-start')) //filters out groups
   {
+    // forwardLink = getForwardLink(activity);
     forwardLink = getForwardLink(activity);
   }
 
@@ -1355,16 +1386,49 @@ function detachForwardLink(activity)
   return forwardLink;
 }
 
+//detaches the activity from its backwards link and returns it
+//returns null if no link forward was found
+// function detachBackwardsLink(activity)
+function detachBackwardsLink(activity, link)
+{
+  if(activity.localName == "a-box")
+  {
+    activity = activity.querySelector('[processor-type=multicast-start]')
+  }
+
+  //variable preparations
+  // let activityType = activity.getAttribute('processor-type')
+  // var backwardsLink  = null;
+
+  var backwardsLink  = link || getBackwardsLink(activity)
+
+  //We only look forward links for non-group starter activities
+  // if(!activityType.endsWith('-start')) //filters out groups
+  // {
+    // backwardsLink = getBackwardsLink(activity);
+  // }
+
+  //obtain all link references the activity has
+  let refLinks = JSON.parse(activity.getAttribute("links"));
+
+  //if a forward link exists and is not a FROM activity
+  if( backwardsLink)
+  {
+    //we remove (detach) it from the activity
+    refLinks.splice(refLinks.indexOf(backwardsLink.id),1)[0];
+
+    //we update the activity (with forward link stripped out)
+    activity.setAttribute("links", JSON.stringify(refLinks));
+  }
+
+  return backwardsLink;
+}
+
 
 //replaces the 'source' reference in the link provided with the given one
 function attachSourceToLink(source, link)
 {
-
-// dstPos.y += 2; 
-
   //obtain source position
-  //was
-  //let srcPos = source.components.position.attrValue;
   let srcPos = source.object3D.position;
   
   //we update the link 'source' reference to use the new given source
@@ -1386,9 +1450,28 @@ function attachSourceToLink(source, link)
   // printActivityLinks(dst);
 }
 
+//replaces the 'destination' reference in the link provided with the given one
+function attachDestinationToLink(destination, link)
+{
+  //obtain source position
+  // let srcPos = source.object3D.position;
+  
+  //we update the link 'destination' reference to use the new given source
+  link.setAttribute('destination', destination.id);
+  // link.setAttribute('srcPos', srcPos);
+
+  //obtain source activity
+  let source = document.getElementById(link.getAttribute('source'))
+
+  //we add the given link reference to the given destination
+  addLink(destination, link.id);
+
+  //redraw link after changes
+  resetLink(link, getPositionInScene(source), getPositionInScene(destination));
+}
 
 
-function deleteConfigActivity()
+function deleteConfigActivity2()
 {
   let toDelete = getActiveActivity();
 
@@ -1434,6 +1517,68 @@ function deleteConfigActivity()
 
   toDelete.parentNode.removeChild(toDelete);
   linkBackwards.parentNode.removeChild(linkBackwards);
+
+  syncEditor();
+}
+
+
+function deleteConfigActivity()
+{
+  let toDelete = getActiveActivity();
+
+  //not allowed to delete multicast activities
+  if(isBoxed(toDelete))
+  {
+    return;
+  }
+
+  //get activity that follows
+  let next = getNextActivity(toDelete);
+  let previous = getPreviousActivity(toDelete)
+
+  //not allowed to delete last activity in choice branch
+  if(previous.getAttribute('processor-type') == 'choice-start' && next.getAttribute('processor-type') == 'choice-end')
+  {
+    return
+  }
+
+  let linkForward = null
+
+  if(next)
+  {
+    if(next.getAttribute('processor-type') == 'choice-end')
+    {
+      linkForward = getForwardLink(toDelete)
+    }
+
+    // linkForward = detachBackwardsLink(next);    
+    linkForward = detachBackwardsLink(next, linkForward);    
+  }
+
+  let linkBackwards = detachBackwardsLink(toDelete)
+
+  //if there is an activity that follows
+  if(next)
+  {
+      //we rewire
+      attachDestinationToLink(next, linkBackwards);
+  }
+  else
+  {
+    //otherwise delete link as well
+    detachForwardLink(previous)
+    // detachForwardLink(previous, linkBackwards)
+    toDelete.parentNode.removeChild(linkBackwards)
+  }
+
+  if(linkForward)
+  {
+    toDelete.parentNode.removeChild(linkForward)
+  }
+
+  toDelete.parentNode.removeChild(toDelete)
+
+  switchConfigPaneByActivity(previous);
 
   syncEditor();
 }

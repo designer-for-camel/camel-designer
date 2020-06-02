@@ -65,6 +65,7 @@
 	"dependencies": {
 		"@types/vscode": "^1.44.0",
 		"aframe": "^1.0.4",
+		"aframe-aabb-collider-component": "^3.2.0",
 		"xmldom": "^0.3.0",
 		"xpath": "0.0.27"
 	},

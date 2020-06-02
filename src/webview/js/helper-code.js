@@ -633,12 +633,24 @@ function renderChoice(choice, mycode, iterator) {
     mycode.tab  += '  '
 
     //Itereta over the paths...
-    //... but we jump i=0 as it connects with previous activity
-    for(let i=1; i<links.length; i++)
+    for(let i=0; i<links.length; i++)
     {
+        //get link
         link = document.getElementById(links[i]);
 
-        alternative = link.getElementsByTagName('a-text')[0].getAttribute('value');
+        //attempt to obtain label entity
+        alternative = link.getElementsByTagName('a-text')[0]
+        
+        //if there is no label
+        if(alternative == null)
+        {
+            //then this link is the incoming link to the choice activity
+            //we ignore it, and continue on next iteration
+            continue
+        }
+
+        //obtain text on label
+        alternative = alternative.getAttribute('value');
 
         if(alternative == 'when')
         {
@@ -659,7 +671,7 @@ function renderChoice(choice, mycode, iterator) {
             mycode.tab = mycode.tab.slice(0, -2);
             mycode.text += mycode.tab+'</when>\n'
         }
-        else
+        else if(alternative == 'otherwise')
         {
             mycode.text += mycode.tab+'<otherwise>\n'
             mycode.tab += '  ';

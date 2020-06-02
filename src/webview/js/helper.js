@@ -15,13 +15,13 @@ function vscodePostMessage(command, payload)
 //Adds the activity to the scene in ordered manner
 //if the newElement is not added last and will sit in between 2 activities
 //then we need to open space by shifting all right sided activities further away
-function insertActivity(newElement)
+function insertActivity(newElement, refActivity)
 {
   //default shiftX
   var shiftX = 2;
 
   //obtain the activity the new element needs to follow
-  var refActivity = getActiveActivity();
+  var refActivity = refActivity || getActiveActivity();
 
   //obtain parent
   var parent = refActivity.parentNode;
@@ -171,18 +171,19 @@ function isGroup(activity)
 //Given an activity, it retrieves the link that flows forward 
 function getForwardLink(activity){
 
-  // if(activity.localName == 'a-box')
-  // {
-  //   activity = activity.getAttribute('group-end')
+  if(activity.localName == 'a-box')
+  {
+    // activity = activity.getAttribute('group-end')
 
-  //   if(activity == null)
-  //   {
-  //     //do not continue
-  //     return;
-  //   }
-  //   //or
-  //   //activity = activity.querySelectorAll('#multicast-end')[0]
-  // }
+    // if(activity == null)
+    // {
+    //   //do not continue
+    //   return;
+    // }
+
+    //or
+    activity = activity.querySelector('[processor-type=multicast-end]')
+  }
 
   // we look at the links the activity has
   let links = JSON.parse(activity.getAttribute("links"));
@@ -209,6 +210,11 @@ function getForwardLink(activity){
 
 //Given an activity, it retrieves the link that flows forward 
 function getBackwardsLink(activity){
+
+  if(activity.localName == "a-box")
+  {
+    activity = activity.querySelector('[processor-type=multicast-start]')
+  }
 
   // we look at the links the activity has
   let links = JSON.parse(activity.getAttribute("links"));

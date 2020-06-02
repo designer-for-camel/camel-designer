@@ -11,6 +11,7 @@
     <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script> -->
     <!-- <script src="https://unpkg.com/aframe-outline@%5E1.1.0/build/aframe-outline.min.js"></script> -->
     <script src="${srcPathScheme}/node_modules/aframe/dist/aframe-v1.0.4.min.js"></script>
+    <script src="${srcPathScheme}/node_modules/aframe-aabb-collider-component/dist/aframe-aabb-collider-component.min.js"></script>
 
     <!-- local scripts -->
     <script src="${srcPathScheme}/src/webview/js/helper-blocks.js"></script>
@@ -284,7 +285,7 @@
       </a-entity>
 
       <!-- Entity to accommodate route definitions -->
-      <a-entity id="route-definitions">
+      <a-entity id="route-definitions" keyboardlistener>
         <a-entity id="route1" route="" class="clickable" position="0 0 0">
         </a-entity>
       </a-entity>

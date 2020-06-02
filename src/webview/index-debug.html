@@ -14,6 +14,10 @@
     <!-- a-frame dependencies -->
     <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script> -->
     <script src="https://aframe.io/releases/1.0.4/aframe.min.js"></script>
+    <script src="https://unpkg.com/aframe-aabb-collider-component@3.2.0/dist/aframe-aabb-collider-component.min.js"></script>
+    <!-- <script src="https://unpkg.com/aframe-event-set-component@4.0.1/dist/aframe-event-set-component.js"></script> -->
+
+    
     <!-- <script src="https://unpkg.com/aframe-outline@%5E1.1.0/build/aframe-outline.min.js"></script> -->
 
 
@@ -286,7 +290,7 @@
       </a-entity>
 
       <!-- Entity to accommodate route definitions -->
-      <a-entity id="route-definitions">
+      <a-entity id="route-definitions" keyboardlistener>
         <a-entity id="route1" route="" class="clickable" position="0 0 0">
         </a-entity>
       </a-entity>
