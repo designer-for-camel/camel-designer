@@ -647,7 +647,7 @@ function createGenericEndpointFrom(definition)
   type = definition.getAttribute('uri').split(":")[0];
 
   //create
-  let activity = createActivity({type: "from", definition: definition});
+  let activity = createActivity({type: "from", definition: definition, detachable: false});
 
   //customise to make it a START activity
   activity.setAttribute('material', {color: '#52F40C', transparent: true, opacity: 0.5});
@@ -845,7 +845,14 @@ AFRAME.registerComponent('detachable', {
         //keep shift status
         this.shiftPressed = pressed
 
-        if(pressed && !this.isLastInBranch())
+        //if currently detached
+        if(this.detached)
+        {
+            //no point to continue
+            return
+        }
+
+        if(pressed && !this.isLastInChoiceBranch() && !this.followsFromAndIsLast())
         {
             this.el.setAttribute('color', this.colorHighlight)
         }
@@ -858,7 +865,31 @@ AFRAME.registerComponent('detachable', {
         }
     },
 
-    isLastInBranch: function() {
+    followsFromAndIsLast: function() {
+
+        //get activity that follows
+        let previous = getPreviousActivity(this.el)
+
+        //if not following 'from' (starting activity)
+        if(!previous.attributes.start)
+        {
+            //no need to continue
+            return false
+        }
+
+        let next = getNextActivity(this.el);
+
+        //if no activity follows
+        if(next == null)
+        {
+            //then it meets the criteria
+            return true
+        }
+
+        return false
+    },
+
+    isLastInChoiceBranch: function() {
         //get activity that follows
         let next = getNextActivity(this.el);
         let previous = getPreviousActivity(this.el)
@@ -883,13 +914,14 @@ AFRAME.registerComponent('detachable', {
         //helper
         let activity = this.el
 
-        //not allowed to detach last activity in choice branch
-        if(this.isLastInBranch())
+        //these rule checks do not allow the activity to be detached
+        if(this.followsFromAndIsLast() || this.isLastInChoiceBranch())
         {
             return
         }
 
-        //do not allow new activies while moving objects
+        //do not allow navigation and activity creation while moving objects
+        enableNavigationButtons(false)
         enableToButtons(false)
 
         //flag
@@ -1029,7 +1061,8 @@ AFRAME.registerComponent('detachable', {
                     entity.setAttribute('class', 'clickable')
             }
 
-            //allow again new activies
+            //allow again navigation and creation
+            enableNavigationButtons(true)
             enableToButtons(true)
 
             //remove listeners

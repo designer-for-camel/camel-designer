@@ -429,18 +429,15 @@ function renderCamelRestDsl(mycode) {
         //loop over methods
         methods.forEach(
             function renderCamelRestDslMethod(value) {
-                let uri = value.getAttribute("uri");
+                let uri = value.children[1].getAttribute("value");
                 if(uri)
                     mycode.text += mycode.tab+'<'+value.getAttribute("method")+' uri="'+uri+'" id="'+value.id+'">\n'
                 else
                     mycode.text += mycode.tab+'<'+value.getAttribute("method")+' id="'+value.id+'">\n'
                 mycode.tab += '  '
-                // renderMethod(thisNode.id, mycode);
-                let direct = getRestMethodDirectActivity(value);
-                //mycode.text +=  mycode.tab+'<to uri="direct:'+'pending(hardcoded in helper-code line 460)'+'"/>\n'
-                // mycode.text += mycode.tab+'<to uri="direct:'+direct.querySelector("#routeLabel").getAttribute('value')+'" id="'+direct.id+'"/>\n'
-                mycode.text += mycode.tab+'<to uri="direct:'+direct.querySelector(".uri").getAttribute('value')+'" id="'+direct.id+'"/>\n'
 
+                let direct = getRestMethodDirectActivity(value);
+                mycode.text += mycode.tab+'<to uri="direct:'+direct.querySelector(".uri").getAttribute('value')+'" id="'+direct.id+'"/>\n'
 
                 mycode.tab = mycode.tab.slice(0, -2);
                 mycode.text +=  mycode.tab+'</'+value.getAttribute("method")+'>\n'

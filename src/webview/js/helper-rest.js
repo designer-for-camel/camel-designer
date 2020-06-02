@@ -175,13 +175,7 @@ function selectRestGroup(restGroup)
 
   //if one exists
   if(selector)
-  {
-    //no action needed if selection is the same
-    // if(selector.parentElement == restGroup)
-    // {
-    //   return;
-    // }
-  
+  {  
     //we unselect the previous rest group
     selector.parentElement.removeChild(selector);
 
@@ -275,7 +269,7 @@ function createRestMethod(definition)
 
   //metadata info
   activity.setAttribute('id', id);
-  activity.setAttribute('uri', uri);
+  //activity.setAttribute('uri', uri);
   activity.setAttribute('method', definition.method);
 
 
@@ -388,6 +382,8 @@ function isRestElement(element)
 
 function selectRestActivity(activity)
 {
+  selectRestGroup(activity.parentNode.parentNode)
+
   let ring = document.querySelector("#selector-rest-activity");
 
   //Since A-Frame 1.0.0
@@ -424,7 +420,15 @@ function selectRestActivity(activity)
   {
     //set corresponding configuration pane
     let config = switchConfigPane('config-rest-method');
-    config.querySelector("input#input-uri").value = activity.getAttribute('uri').slice(1);
+    // config.querySelector("input#input-uri").value = activity.getAttribute('uri').slice(1);
+
+    let path = activity.children[1].getAttribute('value')
+
+    if(path.startsWith('/'))
+    {
+      path = path.slice(1)
+    }
+    config.querySelector("input#input-uri").value = path;
   }
 }
 
@@ -455,11 +459,18 @@ function submitRestMethodConfig()
   var method = getSelectedRestActivity();
   var text = method.getElementsByTagName("a-text")[1];
 
+  var groupPath = method.parentEl.parentEl.getAttribute('path')
+
+  if(!groupPath.endsWith('/'))
+  {
+    uri = '/'+uri
+  }
+
   //display new value
-  text.setAttribute('value', '/'+uri);
+  text.setAttribute('value', uri);
 
   //update method uri
-  method.setAttribute('uri','/'+uri);
+  // method.setAttribute('uri','/'+uri);
 }
 
 //returns the Direct activity associated with a Method

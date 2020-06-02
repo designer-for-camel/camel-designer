@@ -197,6 +197,36 @@
       //needs revision
       addPulse('whatever');
 
+      function enableNavigationButtons(enabled)
+      {
+          let opacity;
+
+          if(enabled)
+          {
+            opacity = .5;
+          }
+          else
+          {
+            opacity = .2;
+          }
+
+          //toggle active/inactive UX buttons for navigation
+          var element = document.getElementsByClassName("prev");
+          element[0].style.opacity = opacity;
+          element[0].firstChild.disabled = !enabled;
+          
+          element = document.getElementsByClassName("next");
+          element[0].style.opacity = opacity;
+          element[0].firstChild.disabled = !enabled;
+
+          element = document.getElementsByClassName("new");
+          element[0].style.opacity = opacity;
+          element[0].firstChild.disabled = !enabled;
+
+          element = document.getElementsByClassName("bRest");
+          element[0].style.opacity = opacity;
+          element[0].firstChild.disabled = !enabled;
+      }
 
       function enableToButtons(enabled)
       {
@@ -216,7 +246,7 @@
           var element = document.getElementsByClassName("consumer");
           for(let i=0; i<element.length; i++) {
             element[i].style.opacity = opacity;
-            element[i].firstChild.disabled = !enabled;
+            element[i].firstElementChild.disabled = !enabled;
           }
 
           //UX buttons for consumers are disabled to start with
@@ -224,7 +254,7 @@
           var element = document.getElementsByClassName("setter");
           for(let i=0; i<element.length; i++) {
             element[i].style.opacity = opacity;
-            element[i].firstChild.disabled = !enabled;
+            element[i].firstElementChild.disabled = !enabled;
           }
 
           // enableCallDirect(callDirectEnabled);
@@ -248,41 +278,45 @@
           var element = document.getElementsByClassName("producer");
           for(let i=0; i<element.length; i++) {
             element[i].style.opacity = opacity;
-            element[i].firstChild.disabled = !enabled;
+            element[i].firstElementChild.disabled = !enabled;
           }
       
       }
 
       function enableRestButtons(enabled)
       {
-          let opacity;
+        let opacity;
 
-          if(enabled)
-          {
-            opacity = .5;
-          }
-          else
-          {
-            opacity = .2;
-          }
+        if(enabled)
+        {
+          opacity = .5;
+        }
+        else
+        {
+          opacity = .2;
+        }
 
-          let restIsEmpty = (document.getElementById('rest-definitions').children.length == 0)
+        let restIsEmpty = (document.getElementById('rest-definitions').children.length == 0)
 
-          //toggles buttons ON/OFF
-          var element = document.getElementsByClassName("rest");
-          for(let i=0; i<element.length; i++) {
+        //toggles buttons ON/OFF
+        var element = document.querySelector(".rest").firstElementChild
+        element.parentElement.style.opacity = opacity;
+        element.disabled = !enabled
+
+        if(enabled)
+        {
+          for(let i=0; i<element.length-3; i++) {
             
             //Mechanism to keep REST methods disabled until a REST group has been created.
-            //(i=0 is the label, i=1 is the group button, i>1 are the methood buttons)
-            if(restIsEmpty && i>1)
+            //(i=0 is the label, i=1 is the group button, i>1 are the method buttons)
+            if(i<2)
             {
-              break;
+              continue;
             }
 
-            element[i].style.opacity = opacity;
-            // element[i].firstChild.disabled = !enabled && !restIsEmpty;
-            element[i].disabled = !enabled && !restIsEmpty;
+            element[i].disabled = restIsEmpty;
           }
+        }
       }
 
       function enableCallDirect(enabled)
@@ -397,6 +431,7 @@
           //enableToButtons(true);
           enableFromButtons(true);
           enableToButtons(false);
+          enableRestButtons(false);
           // var element = document.getElementById("newDirect");
           // var routeSelected = element.getElementsByTagName("input")[0].value;
 
@@ -1453,6 +1488,23 @@ var nextPos = refPos.x+2+shiftX;
 
       function switchConfigPaneByActivity(activity)
       {
+        // setConfigSelector(activity);
+
+        // if(activity == null)
+        // {
+        //   switchConfigPane("introconfig");
+        //   return;
+        // }
+
+
+
+        //REST elements have their own switch (to better manage different Designer views)
+        if(isRestElement(activity))
+        {
+          selectRestActivity(activity);
+          return;
+        }
+
         setConfigSelector(activity);
 
         if(activity == null)
@@ -1466,21 +1518,6 @@ var nextPos = refPos.x+2+shiftX;
           //ignore when activity is detached
           return
         }
-
-        //REST elements have their own switch (to better manage different Designer views)
-        if(isRestElement(activity))
-        {
-          selectRestActivity(activity);
-          return;
-        }
-
-        // setConfigSelector(activity);
-
-        // if(activity == null)
-        // {
-        //   switchConfigPane("introconfig");
-        //   return;
-        // }
 
         let newConfigPane = "introconfig";
         let type     = activity.getAttribute('processor-type');
