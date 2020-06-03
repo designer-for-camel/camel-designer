@@ -401,6 +401,11 @@ function updateActivityId(activity, newId)
 //Updates the ID of the given Route to the new ID
 function updateRouteId(route, newId)
 {
+  //empty string not a valid route ID
+  if(newId == ""){
+    return
+  }
+
   for(let i=0; i<routes.length; i++)
   {
     if(routes[i] == route.id)

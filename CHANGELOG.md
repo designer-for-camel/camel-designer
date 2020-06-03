@@ -58,3 +58,6 @@
   2. press SHIFT + MOUSE-click to detach.
   3. to reattach an activity, drag'n'drop on a link.
 
+## 0.4.1
+
+- fix: issue loading routes with no id

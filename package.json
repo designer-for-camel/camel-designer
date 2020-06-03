@@ -2,7 +2,7 @@
 	"name": "camel-designer",
 	"displayName": "Camel Designer",
 	"description": "A visual designer to model Camel routes",
-	"version": "0.4.0",
+	"version": "0.4.1",
 	"publisher": "brunoNetId",
 	"license": "Apache-2.0",
 	"preview": true,

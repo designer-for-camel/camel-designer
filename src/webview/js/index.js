@@ -405,8 +405,12 @@
       {
         initPanes();
 
-        //was
-        //var routeId = "route"+(++routeNum);
+        //empty string not a valid route ID
+        if(routeId == ""){
+          routeId == null
+        }
+
+        //set Route ID
         routeNum++;
         routeId = routeId || "route"+routeNum;
 
