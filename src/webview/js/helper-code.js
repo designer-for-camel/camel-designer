@@ -79,6 +79,9 @@ function loadSourceCode(camelContextImport)
 
     //create routes
     createRouteDefinitions(contextRoutes)
+
+    //ensures buttons are set to defaults, and camera shows routes
+    viewRouteDefinitions()
 }
 
 //Creates REST definitions
