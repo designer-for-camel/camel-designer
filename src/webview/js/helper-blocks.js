@@ -179,19 +179,6 @@ function createTimer(metadata)
 }
 
 
-// function createDirectStart_original(definition)
-// {
-//   let direct = createFrom("direct");
-
-//   goLive(direct);
-
-//   if(definition)
-//   {
-//     updateActivityId(direct, definition.getAttribute('id'));
-//   }
-// }
-
-
 function createDirectStart(metadata)
 {
   let params = {};
@@ -610,9 +597,12 @@ function createDirectActivity(metadata)
   disc.setAttribute('radius-inner', 0.00001);
   disc.setAttribute('radius-outer', 0.5);
 
-  if(hintDirectPending)
+  if(hintDirectPending && !activity.attributes.hint)
   {
-    createDirectHint(activity);
+    hintDirectPending = false;
+
+    activity.setAttribute('hint', 'message: double-click \n to open route')
+    // createDirectHint(activity);
   }
 
   return activity;
@@ -761,13 +751,16 @@ function goLiveTo(to, givenPos, sources, staticLink, parent, handleRewires)
     insertActivity(to);
   }
 
-  // parent.appendChild(to);
-
   switchConfigPaneByActivity(to);
 
   scene.setAttribute("lastCreated", to.id);
-}
 
+  if(hintDetachablePending && (uidCounter>3) && to.components.detachable && !to.attributes.hint)
+  {
+    hintDetachablePending = false
+    to.setAttribute('hint', 'message: to detach: SHIFT + CLICK \n to reattach: drag & drop')
+  }
+}
 
 
 //returns Start activity, or box if 'boxed'

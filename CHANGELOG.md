@@ -44,15 +44,17 @@
 - code rewrite to define a reusable 'expression' configuration panel
 - new button interface layout
 
-## 0.X.X
+## 0.4.0
 
 - fix: issue on concurrent expressions initialising
 - fix: camera movement for REST methods
 - REST parsing is now aware of inner route definitions which get moved out as normal routes with 'from' element
 - new 'uri' (a-frame) component which provides uri handling functionality to activities
+- new 'hint' (a-frame) component to create tutorial hints to the user on how to use the interface
 - new Kafka endpoint to send/receive kafka messages
 - new File endpoint to read/write data from/to filesystem
 - detach/reattach activities:
   1. press SHIFT to discover (highlighted in yellow) detachable activities.
   2. press SHIFT + MOUSE-click to detach.
-  3. to reattach an activity, drag'n'drop on a link. 
+  3. to reattach an activity, drag'n'drop on a link.
+

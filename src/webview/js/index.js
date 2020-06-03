@@ -35,8 +35,8 @@
 
       var timestampFirstClick = Date.now();
 
-      var hintDirectPending = true; 
-      // var hintDirectPending = false; 
+      var hintDirectPending     = true;
+      var hintDetachablePending = true;
 
       var flagTestEnabled = false;
 
@@ -919,45 +919,6 @@ var nextPos = refPos.x+2+shiftX;
             z: cameraZ}
 
           camera.setAttribute('animation__focus', {property: 'position', dur: '1000', to: target, loop: false, easing: "easeInOutQuad"});
-      }
-
-      
-      function createDirectHint(activity)
-      {
-        //inactivate hints on new direct activities
-        hintDirectPending = false;
-
-        console.log("creating arrow on top");
-
-        //hint pointer
-        var arrow = document.createElement('a-triangle');
-        activity.appendChild(arrow);
-        arrow.setAttribute("vertex-a","0 .8 0")
-        arrow.setAttribute("vertex-b","-.25 1.3 0")
-        arrow.setAttribute("vertex-c",".25 1.3 0")
-        arrow.setAttribute("color","grey")
-        arrow.setAttribute('side', 'double');
-
-        //hint label
-        // var text = document.createElement('a-text');
-        var text = createText();
-        activity.appendChild(text);
-        text.setAttribute('value', "double-click \n to open route");
-        text.setAttribute('color', 'grey');
-        text.setAttribute('position', {x: .3, y: .9, z: 0});
-        text.setAttribute('side', 'double');
-
-        //hint animation
-        // var animation = document.createElement('a-animation');
-        // animation.setAttribute('attribute','position');
-        // animation.setAttribute('dur','500');
-        // animation.setAttribute('to','0 -0.25 0');
-        // animation.setAttribute('repeat','indefinite');
-        // animation.setAttribute('direction','alternate');
-        // arrow.appendChild(animation);
-
-        //since A-Frame v1.0.0 it seems animations work as attributes, not as childs.
-        arrow.setAttribute('animation', {property: 'position', dur: '500', to: '0 -0.25 0', loop: true, dir: 'alternate'});
       }
 
 
