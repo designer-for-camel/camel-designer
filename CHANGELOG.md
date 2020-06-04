@@ -61,3 +61,7 @@
 ## 0.4.1
 
 - fix: issue loading routes with no id
+
+## 0.4.2
+
+- included 'method' as an optional expression language in setter activities
