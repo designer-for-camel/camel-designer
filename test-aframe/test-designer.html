@@ -9,34 +9,33 @@
 
     
     <!-- external style for buttons interface -->
-    <link rel="stylesheet" type="text/css" href="css/interface.css">
+    <link rel="stylesheet" type="text/css" href="../src/webview/css/interface.css">
 
     <!-- a-frame dependencies -->
     <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script> -->
-    <!-- <script src="https://aframe.io/releases/1.0.4/aframe.min.js"></script>
-    <script src="https://unpkg.com/aframe-aabb-collider-component@3.2.0/dist/aframe-aabb-collider-component.min.js"></script> -->
-    <script src="../../node_modules/aframe/dist/aframe-v1.0.4.min.js"></script>
-    <script src="../../node_modules/aframe-aabb-collider-component/dist/aframe-aabb-collider-component.min.js"></script>
+    <script src="https://aframe.io/releases/1.0.4/aframe.min.js"></script>
+    <script src="https://unpkg.com/aframe-aabb-collider-component@3.2.0/dist/aframe-aabb-collider-component.min.js"></script>
     <!-- <script src="https://unpkg.com/aframe-event-set-component@4.0.1/dist/aframe-event-set-component.js"></script> -->
 
+    
     <!-- <script src="https://unpkg.com/aframe-outline@%5E1.1.0/build/aframe-outline.min.js"></script> -->
 
 
     <!-- local scripts -->
-    <script src="js/helper-blocks.js"></script>
-    <script src="js/helper-code.js"></script>
-    <script src="js/helper-rest.js"></script>
-    <script src="js/helper.js"></script>
+    <script src="../src/webview/js/helper-blocks.js"></script>
+    <script src="../src/webview/js/helper-code.js"></script>
+    <script src="../src/webview/js/helper-rest.js"></script>
+    <script src="../src/webview/js/helper.js"></script>
 
     <!-- custom aframe components -->
-    <script src="js/components/uri.js"></script>
-    <script src="js/components/hint.js"></script>
-    <script src="js/components/expression.js"></script>
-    <script src="js/components/detachable.js"></script>
-    <script src="js/components/keyboardlistener.js"></script>
+    <script src="../src/webview/js/components/uri.js"></script>
+    <script src="../src/webview/js/components/hint.js"></script>
+    <script src="../src/webview/js/components/expression.js"></script>
+    <script src="../src/webview/js/components/detachable.js"></script>
+    <script src="../src/webview/js/components/keyboardlistener.js"></script>
 
     <!-- experimental -->
-    <script src="js/incubator.js"></script>
+    <script src="../src/webview/js/incubator.js"></script>
 
     <!-- Fonts to work with off-line -->
     <script>
@@ -44,12 +43,15 @@
       var fontSourceCodePro = "sourcecodepro";
     </script>
 
-    <script src="js/index.js"></script>
+    <script src="../src/webview/js/index.js"></script>
 
   </head>
 
 
-  <body onload="init()">
+  <!-- <body onload="init()"> -->
+  <body onload="">
+
+    <div id="designer">
 
       <!-- This is the list of activities -->
       <routenav class="prev"><button class="button" onclick="nextRoute()">&lt;</button></routenav>
@@ -57,7 +59,6 @@
       <routenav class="next"><button class="button" onclick="nextRoute()">&gt;</button></routenav>
       <routenav class="new"><button class="button" onclick="newRoute()" style="font-size:16px" >New<br/>route</button></routenav>
       <routenav class="export"><button class="button" onclick="getCamelSource()">Export</button></routenav>
-      <!-- <routenav class="export"><button class="button" onclick="init()">Reset</button></routenav> -->
       <routenav class="import"><button class="button" onclick="importSource()">Import</button></routenav>
 
       <!-- These are dedicated to Web Services -->
@@ -236,7 +237,6 @@
                 <option value="simple">simple</option>
                 <option value="constant">constant</option>
                 <option value="xpath">xpath</option>
-                <option value="method">method</option>
               </select>
               <div class="attributes" onchange="useExpressionAttribute(event);syncEditor();"></div>
             </div>
@@ -310,6 +310,37 @@
       <a-sky color="black"></a-sky>
 
 	  </a-scene>
+
+    </div>
+    
+    <!-- <div id="sample"></div> -->
+    <div id="mocha"></div>
+  
+    <!-- Add the Chai assertion library -->
+    <script src="http://chaijs.com/chai.js"></script>
+    
+    <!-- Add the Mocha test library -->
+    <script src="https://cdn.rawgit.com/mochajs/mocha/2.2.5/mocha.js"></script>
+    
+    <script>
+      // Set chai.expect as a global variable
+      var expect = chai.expect;
+      
+      //Designer initialisation
+      init()
+
+      // Setup Mocha to use the BDD interface
+      mocha.setup('bdd');
+    </script>
+    
+    <!-- Import the tests for the sum function -->
+    <script src="from-activities.test.js"></script>
+    
+    <script>
+      // Run the tests with Mocha
+      mocha.run();
+    </script>
+
 
   </body>
 </html>

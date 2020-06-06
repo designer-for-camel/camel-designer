@@ -55,12 +55,19 @@
 		"@types/glob": "^7.1.1",
 		"@types/mocha": "^5.2.6",
 		"@types/node": "^10.12.21",
+		"aframe": "^1.0.4",
+		"canvas": "^2.6.1",
+		"chai": "^4.2.0",
 		"eslint": "^5.13.0",
 		"glob": "^7.1.4",
+		"jsdom": "^16.2.2",
+		"jsdom-global": "3.0.2",
 		"mocha": "^6.1.4",
+		"requirejs": "^2.3.6",
+		"three": "^0.117.1",
 		"typescript": "^3.3.1",
 		"vscode-test": "^1.0.2",
-		"aframe": "^1.0.4"
+		"webgl-mock-threejs": "0.0.1"
 	},
 	"dependencies": {
 		"@types/vscode": "^1.44.0",

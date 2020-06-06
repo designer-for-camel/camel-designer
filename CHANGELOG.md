@@ -65,3 +65,7 @@
 ## 0.4.2
 
 - included 'method' as an optional expression language in setter activities
+
+## 0.X.X
+
+- Initial implementation of unit testing process, browser dependant at the moment. 

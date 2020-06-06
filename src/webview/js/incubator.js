@@ -641,3 +641,71 @@ function createGenericEndpointFrom(definition)
 
 //=========================================
 
+function resetDesigner()
+{
+    //Switch to stream edit updates
+    syncEditorEnabled = true;
+    syncStartUpEnabled = false;
+    
+    //Camera default position in axis
+    cameraY = 0;
+    cameraZ = 7;
+
+    routes = ["route1"];
+//   this.routes = ["resetDesigner"];
+    routeNum = 1;
+
+    startActivityPos = -5;
+    stepPos = 2;
+    setGreen = false;
+    
+    //counter to generate new Unique IDs
+    uidCounter = 0;
+    
+    moving = false;
+    movingObj = null;
+    movingObjX = null;
+    movingObjY = null;
+    event1X = null;
+    event1Y = null;
+
+    configObj = null;
+
+    currentConfigPane = "introconfig";
+
+    timestampFirstClick = Date.now();
+
+    hintDirectPending     = true;
+    hintDetachablePending = true;
+
+    flagTestEnabled = false;
+
+    var allroutes = document.getElementById('route-definitions')//.firstElementChild
+
+    // updateRouteId(route1, "route1")
+
+    // route1.innerHTML = ""
+    while (allroutes.firstChild) {
+        allroutes.removeChild(allroutes.firstChild);
+    }
+
+    snippet = `
+    <a-entity id="route1" route="" class="clickable" position="0 0 0">
+    </a-entity>
+    `;
+
+    let route1 = document.createElement('div');
+    route1.innerHTML = snippet
+
+    allroutes.innerHTML = route1.innerHTML
+    // element.parentNode.parentNode.insertBefore(option, element.parentNode)
+
+
+    var allrest = document.getElementById('rest-definitions')//.firstElementChild
+    allrest.innerHTML = ""
+    allrest.setAttribute('visible', 'false')
+    allrest.setAttribute('position', '0 100 0')
+
+    // viewRouteDefinitions()
+    // nextRoute()
+}

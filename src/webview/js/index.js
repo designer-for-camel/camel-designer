@@ -1,44 +1,44 @@
-      //Switch to stream edit updates
-      var syncEditorEnabled = true;
-      var syncStartUpEnabled = false;
+      // //Switch to stream edit updates
+      // var syncEditorEnabled = true;
+      // var syncStartUpEnabled = false;
       
-      //Camera default position in axis
-      var cameraY = 0;
-      var cameraZ = 7;
+      // //Camera default position in axis
+      // var cameraY = 0;
+      // var cameraZ = 7;
 
-      // var routes = ["route1", "route2"];
-      var routes = ["route1"];
-      // var routes = [];
-      var routeNum = 1;
+      // // var routes = ["route1", "route2"];
+      // var routes = ["route1"];
+      // // var routes = [];
+      // var routeNum = 1;
 
-      var startActivityPos = -5;
-      var stepPos = 2;
-      //var sceneFlag = false;
-      var setGreen = false;
+      // var startActivityPos = -5;
+      // var stepPos = 2;
+      // //var sceneFlag = false;
+      // var setGreen = false;
       
-      //counter to generate new Unique IDs
-      var uidCounter = 0;
-      //deprecated: var logId = 0;
-      //deprecated: var linkCounter = 0;
+      // //counter to generate new Unique IDs
+      // var uidCounter = 0;
+      // //deprecated: var logId = 0;
+      // //deprecated: var linkCounter = 0;
       
-      var moving = false;
-      var movingObj = null;
-      var movingObjX = null;
-      var movingObjY = null;
-      var event1X = null;
-      var event1Y = null;
+      // var moving = false;
+      // var movingObj = null;
+      // var movingObjX = null;
+      // var movingObjY = null;
+      // var event1X = null;
+      // var event1Y = null;
 
-      // var lastCreated = null;
-      var configObj = null;
+      // // var lastCreated = null;
+      // var configObj = null;
 
-      var currentConfigPane = "introconfig";
+      // var currentConfigPane = "introconfig";
 
-      var timestampFirstClick = Date.now();
+      // var timestampFirstClick = Date.now();
 
-      var hintDirectPending     = true;
-      var hintDetachablePending = true;
+      // var hintDirectPending     = true;
+      // var hintDetachablePending = true;
 
-      var flagTestEnabled = false;
+      // var flagTestEnabled = false;
 
       //Camel constants
       const CAMEL2_ATTRIBUTE_HEADER_NAME   = "headerName"
@@ -372,6 +372,7 @@
 
       function init()
       {
+        resetDesigner()
         tests();
         setCamelDefaults();
         initPanes();
