@@ -1,6 +1,14 @@
 # How to...
 
-This section describes how to perform some of the most common user actions with *Camel Designer*
+This section describes how to perform some of the most common user actions with *Camel Designer*:
+
+ - [Getting Started](#getting-started)
+ - [Define REST definitions](#define-rest-definitions)
+ - [Navigate the code](#navigate-the-code)
+ - [Organise activities](#organise-activities)
+ - [Trace Camel Exchanges](#trace-camel-exchanges)
+
+<br>
 
 ## Getting Started
 
@@ -29,7 +37,7 @@ You can start defining your REST operations and later define your Camel routes. 
 
 On the example below, we assume a Camel Route `route1` already exists, and we'd like to define a GET operation that triggers the Camel route. To include a new REST definition to the *Camel* project, follow the steps below:
 
-1. In the visual editor, click on the `REST` button. This action activates the REST viewer.
+1. In the visual editor, click on the <kbd>REST</kbd> button. This action activates the REST viewer.
 2. From the <kbd>rest..</kbd> menu, select the option: <kbd>new group...</kbd>. This action will create a new REST group
 3. From the <kbd>rest..</kbd> menu, select the option: <kbd>GET</kbd>. This action will define a GET operation with a `direct` call activity.
 4. Click on the `direct` activity and select on the configuration pane `route1`
@@ -93,7 +101,7 @@ The animation below illustrates how to detach/attach activities:
 
 <br>
 
-## Tracing Camel Exchanges
+## Trace Camel Exchanges
 
 As part of the development process, it's important to validate the code executes as expected. Tracing allows you to have a magnifying glass to inspect each activity's data input/output, and to have an overall view of the execution path the process follows.
 
@@ -109,7 +117,7 @@ If the above conditions are met, tracing can be enabled. Follow the steps below 
 
 1. Tracing options and switches are located in the upper right corner of the screen. Click on the <kbd>C</kbd> button (for configuration) and ensure the URL to your remote Camel/Jolokia instance is correct.
 2. Click <kbd>ok</kbd> to accept and close the tracing configuration panel.
-3. Click on the switch to turn ON tracing ((grey is OFF, blue is ON). If the connection to Jolokia is unsuccessful, an alert message will show and tracing will staying disabled.
+3. Click on the switch to turn ON tracing (grey is OFF, blue is ON). If the connection to Jolokia is unsuccessful, an alert message will show and tracing will stay disabled.
 4. When tracing has been enabled enabled, trigger a job to be executed in Camel (via HTTP or other means).
 5. Camel Designer has a timer and will repeatedly poll the Java process for new traces.
 6. When a new Trace is collected, the Camel Exchange ID will pop up on screen. If more traces are collected, then multiple Exchange IDs will be listed.
