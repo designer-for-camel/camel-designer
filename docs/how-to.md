@@ -113,9 +113,13 @@ These are the requirements to enable tracing:
 2. The above Camel instance needs to be Jolokia enabled (HTTPS is currently not supported)
 3. The Camel XML code running in the Java process needs to match the code displayed in *Camel Designer*
 
-If the above conditions are met, tracing can be enabled. Follow the steps below to visualise traces:
+If the above conditions are met, tracing can be enabled. Tracing options and switches are located in the upper right corner of the screen.
 
-1. Tracing options and switches are located in the upper right corner of the screen. Click on the <kbd>C</kbd> button (for configuration) and ensure the URL to your remote Camel/Jolokia instance is correct.
+![Navigation](images/how-to/interface-tracing.jpg)
+
+Follow the steps below to visualise traces:
+
+1. Click on the <kbd>C</kbd> button (for configuration) and ensure the URL to your remote Camel/Jolokia instance is correct.
 2. Click <kbd>ok</kbd> to accept and close the tracing configuration panel.
 3. Click on the switch to turn ON tracing (grey is OFF, blue is ON). If the connection to Jolokia is unsuccessful, an alert message will show and tracing will stay disabled.
 4. When tracing has been enabled enabled, trigger a job to be executed in Camel (via HTTP or other means).
