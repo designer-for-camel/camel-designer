@@ -19,18 +19,7 @@ Please bear in mind this *VSCode* extension is in 'early-prototype' phase and is
 * Configuration panels per activity
 * Predefined sets (*Choice* / *Parallel*)
 * Open Camel XML files and render visually.
-
-### REST definitions
-
-The Designer includes a REST designer where you an define groups of REST methods. As you create new REST elements, the tool translates into Camel REST DSL in the text editor.
-
-![REST](docs/images/readme/vs-extension-rest.gif)
-
-### Navigation
-
-From the text editor, click or use the arrow keys to navigate to the region of interest, and the Camel Designer will visually display the definition corresponding to the block of code selected.
-
-![Navigation](docs/images/readme/vs-extension-navigation.gif)
+* Trace live Camel Exchanges
 
 
 ## Using the extension
@@ -44,6 +33,10 @@ To start using the extension and generate your Camel definitions:
     - pressing the keys (Mac) <kbd>⌘</kbd>+<kbd>K</kbd> then <kbd>M</kbd>, (Windows) <kbd>Ctrl</kbd>+<kbd>K</kbd> then <kbd>M</kbd>
 4. The preview button will appear (top right), click on it as shown in the extension animation above.
 5. The Designer view will load, you can now model you Camel definitions.
+
+## How-To guide
+
+To get more familiar with the available functionality, check the   [*HOW-TO*](./docs/how-to.md) guide which includes step by step details and helpful animations.
 
 ## Requirements
 
@@ -66,7 +59,6 @@ To start using the extension and generate your Camel definitions:
 - create Transform activity (idea: box and triangle morphing)
 - option to create 2/3/4 ways in choices and forks
 - possibility to add comments
-- keep positional state of diagram
 - align VR/mouse controllers
 - option on/off to move/work
 - navigation buttons (e.g. left/right with slide animations effect) 

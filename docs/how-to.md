@@ -14,10 +14,13 @@ When starting from scratch and to start defining Camel routes, follow the steps 
 4. The preview button will appear (top right), click on it as shown in the animation below.
 5. The Designer view will load, you can now model you Camel definitions.
 
-![Overview](docs/images/readme/vs-extension.gif)
+![Overview](images/readme/vs-extension.gif)
 
+<br>
 
 ## Define REST definitions
+
+The visual editor includes a REST designer where you can define groups of REST methods. As you create new REST elements, the tool translates them into Camel REST DSL in the text editor.
 
 It's important to know that REST definitions represent HTTP entry points to Camel. You can define REST methods such as GET/POST/PUT.
 For each entry point defined (REST operation), Camel Designer links the REST method to a Camel Route that will process the request. REST Camel routes require to have a `'direct'` starting activity.
@@ -27,15 +30,18 @@ You can start defining your REST operations and later define your Camel routes. 
 On the example below, we assume a Camel Route `route1` already exists, and we'd like to define a GET operation that triggers the Camel route. To include a new REST definition to the *Camel* project, follow the steps below:
 
 1. In the visual editor, click on the `REST` button. This action activates the REST viewer.
-2. From the `rest...` menu, select the option: `new group...`. This action will create a new REST group
-3. From the `rest...` menu, select the option: `GET`. This action will define a GET operation with a `direct` call activity.
+2. From the <kbd>rest..</kbd> menu, select the option: <kbd>new group...</kbd>. This action will create a new REST group
+3. From the <kbd>rest..</kbd> menu, select the option: <kbd>GET</kbd>. This action will define a GET operation with a `direct` call activity.
 4. Click on the `direct` activity and select on the configuration pane `route1`
 5. If `route1` exists, you can double click on the direct activity to jump to the Camel Route definition
 
+<br>
+
 The animation below illustrates how to interact with the REST editor:
 
-![REST](docs/images/readme/vs-extension-rest.gif)
+![REST](images/readme/vs-extension-rest.gif)
 
+<br>
 
 ## Navigate the code
 
@@ -51,10 +57,13 @@ There are two ways for users to move around the code.
     - clicks on the text editor will reposition the text cursor. *Camel Designer* will react and move the camera setting focus on the corresponding activity.
     - if the cursor is replaced in a different route, *Camel Designer* will switch and show the selected *Camel* route.
 
+<br>
+
 The animation below illustrates how to navigate the code by interacting with the XML source code:
 
-![Navigation](docs/images/readme/vs-extension-navigation.gif)  
+![Navigation](images/readme/vs-extension-navigation.gif)  
 
+<br>
 
 ## Organise activities
 
@@ -68,7 +77,7 @@ There are two ways for users to organise the code.
 
 1. Interact with the Visual Editor:
     - use 'Drag & Drop' to move activities around. Click on an activity and drag it where needed.
-    - use 'Detach/Attach' on detachable activities to change executional order of activities. To discover 'detachable' activities press `SHIFT`, they will be highlighted in yellow. While `SHIFT` is pressed you can click on the activity, and then drag it to a new position.
+    - use 'Detach/Attach' on detachable activities to change executional order of activities. To discover 'detachable' activities press <kbd>SHIFT</kbd> , they will be highlighted in yellow. While <kbd>SHIFT</kbd> is pressed you can click on the activity, and then drag it to a new position.
 
 2. Interact with the Text editor
     - As an alternative, you can close the Visual Editor, then cut/paste portions of Camel XML code to reorganise to your needs. Then open the Visual Editor which will show the new activities layout.
@@ -76,11 +85,13 @@ There are two ways for users to organise the code.
     > **Attention**: \
     Ensure the newly organised code is valid, Camel Designer does not currently implement a code validation process. If the code is not valid it will result in unexpected behaviour.
 
+<br>
+
 The animation below illustrates how to detach/attach activities:
 
-![Navigation](docs/images/readme/vs-extension-attach-detach.gif)  
+![Navigation](images/readme/vs-extension-attach-detach.gif)  
 
-
+<br>
 
 ## Tracing Camel Exchanges
 
@@ -96,8 +107,8 @@ These are the requirements to enable tracing:
 
 If the above conditions are met, tracing can be enabled. Follow the steps below to visualise traces:
 
-1. Tracing options and switches are located in the upper right corner of the screen. Click on the `C` (for configuration) and ensure the URL to your remote Camel/Jolokia instance is correct.
-2. Click `ok` to accept and close the tracing configuration panel.
+1. Tracing options and switches are located in the upper right corner of the screen. Click on the <kbd>C</kbd> button (for configuration) and ensure the URL to your remote Camel/Jolokia instance is correct.
+2. Click <kbd>ok</kbd> to accept and close the tracing configuration panel.
 3. Click on the switch to turn ON tracing ((grey is OFF, blue is ON). If the connection to Jolokia is unsuccessful, an alert message will show and tracing will staying disabled.
 4. When tracing has been enabled enabled, trigger a job to be executed in Camel (via HTTP or other means).
 5. Camel Designer has a timer and will repeatedly poll the Java process for new traces.
@@ -108,11 +119,13 @@ If the above conditions are met, tracing can be enabled. Follow the steps below 
 10. You can discard a trace by clicking the cross button in the Exchange ID.
 11. When you're done, you can disable tracing by clicking in the ON/OFF switch.
 
+<br>
 
 The animation below illustrates how tracing is operated:
 
-![Navigation](docs/images/readme/vs-extension-tracing.gif)  
+![Navigation](images/readme/vs-extension-tracing.gif)  
 
+<br>
 
 ### How to enable Jolokia
 
