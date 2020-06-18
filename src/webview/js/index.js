@@ -190,6 +190,33 @@
                   //Once finished, we need to sync the changes, (new ID values may have been applied)
                   syncEditor();
                   break;
+
+              case 'tracing-activate-poller':
+                  
+                  //obtain tracing component
+                  var tracing = document.getElementById('route-definitions').components.tracing
+
+                  //enable trace poller
+                  tracing.enableCamelTracingPoller()
+
+                  break;
+
+              case 'tracing-poll-traces-response':
+              
+                  //obtain tracing component
+                  var tracing = document.getElementById('route-definitions').components.tracing
+
+                  //enable trace poller
+                  tracing.digestTraces(message.payload)
+
+                  break;
+
+              case 'tracing-enable-failed':
+            
+                  //obtain tracing component
+                  setTracingUserAlert(message.payload, true)
+
+                  break;
           }
         });
 

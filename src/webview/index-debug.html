@@ -31,6 +31,7 @@
     <!-- custom aframe components -->
     <script src="js/components/uri.js"></script>
     <script src="js/components/hint.js"></script>
+    <script src="js/components/tracing.js"></script>
     <script src="js/components/expression.js"></script>
     <script src="js/components/detachable.js"></script>
     <script src="js/components/keyboardlistener.js"></script>
@@ -65,6 +66,39 @@
       
       <!-- Experimental -->
       <!-- <routenav class="soap"><button class="button" onclick="takeScreenshot()">SOAP</button></routenav> -->
+
+      <!-- Tracing (Experimental) -->
+      <routenav class="tconfig">
+        <button class=" button" type = "submit" name = "learn" value = "myimage" onclick="tracingShowConfig(true)">c</button>
+      </routenav>
+      <label class="lblswitch" >Tracing (on/off)</label>
+      <label class="switch">
+          <input id="trace-switch" type="checkbox" onclick="tracingSwitch(this)">
+          <span class="slider round"></span>       
+      </label>
+      <div class="trace-list" >
+        <ul id="myUL" class="round" >
+          <!-- <li>fsdfsdf</li> -->
+        </ul>
+      </div>
+      <!-- Needed tracing setup -->
+      <script>setupTracingSwitch()</script>
+
+      <!-- Tracing Error message -->
+      <div id="tracingerror" class="tracealert" style="visibility: hidden;">
+        <span class="traceclosebtn" onclick="this.parentElement.style.visibility='hidden';">&times;</span> 
+        <strong>Connection failure!</strong> please review your configuration URL to Jolokia, and your target instance is running
+      </div>
+
+      <!-- Tracing configuration -->
+      <div class="tracingconfig" id="tracing-config" style="visibility: hidden;"><br/>
+        <font size="6">Tracing configuration</font><br><br>
+        <label>Jolokia URL:</label>
+        <input type="text" size="50" value="http://localhost:10001/hawtio/jolokia"><br>
+        <input id="trace-body"    type="checkbox" checked onclick="this.checked?this.setAttribute('checked',''):this.removeAttribute('checked')">show message body</input><br>
+        <input id="trace-headers" type="checkbox"         onclick="this.checked?this.setAttribute('checked',''):this.removeAttribute('checked')">show message headers</input>
+        <button class="delete" type="submit" onclick="tracingShowConfig(false)">ok</button>
+      </div>
 
 
       <!-- Categories -->

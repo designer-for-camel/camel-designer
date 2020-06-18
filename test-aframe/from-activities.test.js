@@ -64,7 +64,7 @@ var prettifyXml = function(sourceXml)
 };
 
 
-describe('#sum()', function() {
+describe('#from-activities()', function() {
 
     beforeEach(function() {
         // some logic to run before each test
@@ -106,7 +106,7 @@ describe('#sum()', function() {
 
       context('From Kafka', function() {
     
-        it('should return sum of arguments', async function() {
+        it('should render a route with a Kafka activity', function() {
           console.log('test log 1')
 
           createKafkaStart()

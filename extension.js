@@ -3,6 +3,7 @@
 const vscode = require('vscode');
 const path = require("path");
 const fs = require("fs");
+const fetch = require('node-fetch');
 
               //xpath testing
               var dom = require('xmldom').DOMParser;
@@ -121,6 +122,16 @@ function activate(context) {
             case 'metadata':
               console.log('synching metadata');
               metadata = message.payload.metadata;
+              return;
+
+            case 'tracing-enable':
+              console.log('enabling tracing...');
+              sendCamelTracingEnabled(message.url, message.payload, currentPanel.webview);
+              return;
+
+            case 'tracing-poll-traces':
+              console.log('polling traces...');
+              sendCamelTracingPoll(message.url, currentPanel.webview);
               return;
 
             case 'alert':
@@ -323,4 +334,89 @@ function deactivate() {
 module.exports = {
 	activate,
 	deactivate
+}
+
+
+
+//signals Camel to enable tracing
+//if successful, it polls Camel for new traces (check frequency)
+//if not, it informs the user and disables tracing
+async function sendCamelTracingEnabled(url, enabled, webview)
+{
+  //helper variable
+  let networkError = null
+
+  //sends a signal to Camel to enable tracing
+  let response = await fetch(url+"/?maxDepth=7&maxCollectionSize=50000&ignoreErrors=true&canonicalNaming=false", {
+      "headers": {
+      },
+      "body": "{\"type\":\"write\",\"mbean\":\"org.apache.camel:context=MyCamel,type=tracer,name=BacklogTracer\",\"attribute\":\"Enabled\",\"value\":"+enabled+"}",
+      "method": "POST"
+
+  }).catch(function(error) {
+      // Error handling here!
+      console.error("Tracing network error, could not talk to Jolokia: " + error);
+      networkError = error
+  });
+
+  // if HTTP-status is 200-299
+  if (response && response.ok) {
+
+      // get the response body (the method explained below)
+      let json = await response.json();
+
+      console.log("got: " + json.value)
+  
+      if(enabled)
+      {
+        console.log("invoke webview 'tracing-activate-poller'")
+
+        webview.postMessage({ command: 'tracing-activate-poller'});
+      }
+
+  } else {
+
+      let errorMessage = "Tracing error, could not talk to Jolokia: " + networkError.message
+
+      console.error(errorMessage);
+
+      //only switch-off tracing when failure occurs during switch-on, otherwise execution falls into an ON-OFF spiral
+      if(enabled)
+      {
+        console.log("invoke webview 'tracing-enable-failed'")
+        webview.postMessage({ command: 'tracing-enable-failed', payload: errorMessage});
+      }
+  }
+}
+
+
+//signals Camel to enable tracing
+//if successful, it polls Camel for new traces (check frequency)
+//if not, it informs the user and disables tracing
+async function sendCamelTracingPoll(url, webview)
+{
+    //sends a signal to Camel to poll traces
+    let response = await fetch(url+"/?maxDepth=7&maxCollectionSize=50000&ignoreErrors=true&canonicalNaming=false", {
+      "headers": {
+      },
+      "body": "[{\"type\":\"exec\",\"mbean\":\"org.apache.camel:context=MyCamel,type=tracer,name=BacklogTracer\",\"operation\":\"dumpAllTracedMessagesAsXml()\",\"ignoreErrors\":true,\"arguments\":[],\"config\":{}}]",
+      "method": "POST"
+    }).catch(function(error) {
+        // Error handling here!
+        console.error("Tracing network error, could not talk to Jolokia: " + error);
+        networkError = error
+    });
+
+    // if HTTP-status is 200-299
+    if (response && response.ok) {
+
+        // get the response body
+        let json = await response.json();
+
+        console.log("got: " + json[0].value)
+        webview.postMessage({ command: 'tracing-poll-traces-response', payload: json[0].value});
+
+    } else {
+        console.error("Tracing error, could not talk to Jolokia: " + response.status);
+    }
 }

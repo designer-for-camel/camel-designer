@@ -68,4 +68,6 @@
 
 ## 0.X.X
 
-- Initial implementation of unit testing process, browser dependant at the moment. 
+- Initial implementation of unit testing process, browser dependant at the moment.
+- Initial implementation of Camel tracing via Jolokia, and visually displaying results
+- new 'how-to' guide to help new users getting up to speed

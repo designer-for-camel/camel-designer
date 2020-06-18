@@ -709,3 +709,183 @@ function resetDesigner()
     // viewRouteDefinitions()
     // nextRoute()
 }
+
+
+//====================== TRACE MESSAGES VIA JOLOKIA
+
+// reference:
+    // https://access.redhat.com/documentation/en-us/red_hat_fuse/7.6/html/managing_fuse/manage-monitor-fuse-springboot#fuse-console-access-springboot1
+
+// Need to include in SpringBoot:
+
+//POM:
+    // <dependency>
+    // <groupId>io.hawt</groupId>
+    // <artifactId>hawtio-springboot-1</artifactId>
+    // </dependency>
+
+// application.properties
+//========================
+    // management.port=10001
+    // # enable management endpoints for healthchecks and hawtio
+    // endpoints.enabled = false
+    // endpoints.hawtio.enabled = true
+    // endpoints.jolokia.enabled = true
+    // endpoints.health.enabled = true
+    // management.health.defaults.enabled=false
+    // camel.health.enabled=false
+    // camel.health.indicator.enabled=true
+    // endpoints.jolokia.sensitive=false
+    // endpoints.hawtio.sensitive=false
+    // hawtio.authenticationEnabled=false
+
+
+// Enables/Disables tracing functionality
+function tracingSwitch(element) {
+
+    //when disabled
+    if(element.checked != true)
+    {
+        //clear list of exchange IDs
+        document.getElementById('myUL').innerHTML = ""
+
+        //remove tracing component
+        document.getElementById('route-definitions').removeAttribute("tracing")
+
+        return
+    }
+
+    //obtain user configuration
+    let config = getTracingConfig()
+
+    //add tracing component
+    document.getElementById('route-definitions').setAttribute("tracing", config)    
+}
+
+
+//setup functionality for the Tracing functionality
+function setupTracingSwitch() {
+
+    // Add a "checked" symbol when clicking on a list item
+    var list = document.querySelector('ul');
+
+    list.addEventListener('click', function(ev) {
+
+        //we ignore 'close' clicks
+        //only selection clicks on this list are processed
+        if(ev.target.localName == 'span')
+        {
+            return
+        }
+
+        //deselect all options
+        var items = list.querySelectorAll('li')
+        for(let i=0; i<items.length; i++)
+        {
+            // ev.target.classList.toggle('checked', false);
+            if(items[i].classList.length > 0)
+                items[i].classList.toggle('checked', false);
+        }
+
+        //select the one clicked
+        if (ev.target.tagName === 'LI') {
+            ev.target.classList.toggle('checked');
+
+            let exchangeId = ev.target.firstChild.textContent
+            // currentTrace = exchangeId
+
+            var routes = document.getElementById('route-definitions')
+
+            routes.components.tracing.showTrace(exchangeId)
+            // showTrace(exchangeId)
+        }
+    }, false);
+};
+
+
+//Displays tracing configuration pane to the user
+function tracingShowConfig(show)
+{
+    if(show)
+    {
+        document.getElementById('tracing-config').style.visibility="visible"
+    }
+    else
+    {
+        let routes = document.getElementById('route-definitions')
+        let tracing = routes.components.tracing
+
+        //if tracing is already active
+        if(tracing)
+        {
+            //update configuration
+            routes.setAttribute('tracing', getTracingConfig())
+        }
+
+        //check if there is a trace already selected by the user
+        let selected = document.querySelector('#myUL > li.checked')
+
+        //if so
+        if(selected)
+        {
+            //obtain the ID value
+            let exchangeId = selected.firstChild.nodeValue
+
+            //clear links and regenerate
+            tracing.traceClearTraceLinks()
+            tracing.showTrace(exchangeId)
+        }
+
+        document.getElementById('tracing-config').style.visibility="hidden"
+    }
+}
+
+//////////////////
+// This is an interface layer function.
+// Its purpose is to decouple the User UI interface (menus/buttons) from the Visual 3D Canvas
+// This gives room to replace the current User UI with other choices (i.e. PatternFly)
+///////////////////////////////////////////////////////////////////////////////////////
+//obtain the configuration data from the tracing configuration pane
+function getTracingConfig()
+{
+    let tracingConfig = document.getElementById('tracing-config')
+
+    let fields = tracingConfig.getElementsByTagName('input')
+
+    let config = {
+        url: fields[0].value,
+        showBody: fields[1].hasAttribute('checked'),
+        showHeaders: fields[2].hasAttribute('checked')
+    }
+
+    return config
+}
+
+//////////////////
+// This is an interface layer function.
+// Its purpose is to decouple the User UI interface (menus/buttons) from the Visual 3D Canvas
+// This gives room to replace the current User UI with other choices (i.e. PatternFly)
+///////////////////////////////////////////////////////////////////////////////////////
+//displays an alert message to the user
+function setTracingUserAlert(message, disableTracing)
+{
+    //log
+    console.error(message);
+
+    //we inform the user
+    document.getElementById('tracingerror').style.visibility="visible"
+
+    //only switch-off when failure occurs during switch-on, otherwise execution falls into an ON-OFF spiral
+    if(disableTracing)
+    {
+        //we disable tracing
+
+        //this doesn't work, it should, but doesn't
+        // document.getElementById('trace-switch').click()
+
+        //so we un-check manually and fire the click event to trigger tracing tear down
+        let tSwitch = document.getElementById('trace-switch')
+        tSwitch.checked = false
+        tSwitch.dispatchEvent(new Event('click'));
+    }    
+}

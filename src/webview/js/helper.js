@@ -287,6 +287,13 @@ function getGroupEndActivity(activity)
     return activity;
   }
 
+  //the activity may well be the start of a group
+  if(activity.getAttribute('processor-type').endsWith('-start'))
+  {
+    let endId = activity.id + "-end"
+    return document.getElementById(endId);
+  }
+
   //let link = getForwardLink(activity)
 
   let next = getNextActivity(activity);

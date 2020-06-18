@@ -442,14 +442,15 @@ function createUnknown(definition)
 
   if(definition.tagName == 'from')
   {
-    activity = createFrom('unknown');
+    // activity = createFrom('unknown');
+    activity = createFrom({type: 'unknown', definition: definition});
     activity.firstChild.setAttribute('value','');
 
     tag = definition.attributes.uri.value.split(":")[0];
   }
   else
   {
-    activity = createActivity({type: 'unknown'});
+    activity = createActivity({type: 'unknown', definition: definition});
 
     if(definition.tagName == 'to')
     {
