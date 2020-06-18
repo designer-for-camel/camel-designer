@@ -66,8 +66,9 @@
 
 - included 'method' as an optional expression language in setter activities
 
-## 0.X.X
+## 0.5.0
 
 - Initial implementation of unit testing process, browser dependant at the moment.
-- Initial implementation of Camel tracing via Jolokia, and visually displaying results
+- Initial implementation of Camel tracing via Jolokia, and visually displaying results.
 - new 'how-to' guide to help new users getting up to speed
+- fix: issue saving files in workspace where a '.metadata' file was generated. Now only Camel XML should save a '.metadata'.

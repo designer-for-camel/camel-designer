@@ -189,8 +189,13 @@ function activate(context) {
 
       currentPanel.onDidDispose(
         () => {
-          vd = currentPanel.webview.html;
           console.log("panel closed");
+          metadata = null
+
+          //this seems to throw a silent exception
+          //not sure what this instruction was meant to do.
+          //debug to find out more
+          vd = currentPanel.webview.html;
         },
         null,
         context.subscriptions
@@ -279,11 +284,11 @@ function activate(context) {
           })
 
           vscode.workspace.onDidSaveTextDocument((e) => {
-            console.log("document was saved");          
+            console.log("document was saved");     
             // console.log("TEST textChange: "+e.document.fileName);
             // console.log(`changed: ${JSON.stringify(e)}`);
 
-            if(metadata)
+            if(metadata && (td.fileName == e.fileName))
             {
               fs.writeFile(e.fileName+'.metadata', metadata, function (err) {
                 if (err) return console.log(err);
