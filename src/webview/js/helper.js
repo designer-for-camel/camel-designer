@@ -1,3 +1,6 @@
+// const { createFileLevelUniqueName } = require("typescript");
+// const { entity } = require("../../../test-aframe/experimental/mock-webgl/aframe-v1.0.4");
+
 //Returns the activity (visible) Route
 function vscodePostMessage(command, payload)
 {
@@ -26,8 +29,10 @@ function insertActivity(newElement, refActivity)
   //obtain parent
   var parent = refActivity.parentNode;
    
-  //if it's boxed, then its parent should be the reference
-  if(isBoxed(refActivity))
+  //if reference is boxed and end of group, then reference's parent should be the reference
+  //was
+  // if(isBoxed(refActivity) && refActivity.getAttribute('processor-type').endsWith('-end'))
+  if(refActivity.classList.contains('group-end'))
   {
     refActivity = refActivity.parentNode
     parent = refActivity.parentNode;
@@ -53,15 +58,23 @@ function insertActivity(newElement, refActivity)
     }
   }
 
+  // let elType = newElement.getAttribute('processor-type')  
+
   //if multicast (a box)
-  if(newElement.localName == 'a-box')
+  if(newElement.localName == 'a-box' && newElement.id.startsWith('multicast'))
   {
     //boxes require more space
     shiftX = 4;
   }
+  //if group box
+  else if(newElement.localName == 'a-box' )
+  {
+    //default boxes have 3 activities (start,activity,end)
+    shiftX = 6;
+  }
 
   //handling for Choice groups
-  if(newElement.getAttribute('processor-type') == 'choice-end')
+  else if(newElement.getAttribute('processor-type') == 'choice-end')
   {
     //hack to count a total shift of 6
     //choice-start counts 2
@@ -73,7 +86,8 @@ function insertActivity(newElement, refActivity)
   var next = newElement.nextSibling;
   while(next)
   {
-    if(next.localName != 'a-cylinder')
+    //we have to shift only connected (linked) entities
+    if(next.localName != 'a-cylinder' && !next.classList.contains('standalone'))
     {
       //this is a hack and will need revision
       //Choice group inner activities are tagged as 'group'
@@ -121,12 +135,16 @@ function getActiveRoute()
 //Returns the activity (visible) route
 function getActivityRoute(activity)
 {
-  //the activity may be 'boxed' (i.e. multicast)
-  if(isBoxed(activity)){
-    return activity.parentNode.parentNode;
-  }
+  //WAS
+  // //the activity may be 'boxed' (i.e. multicast)
+  // if(isBoxed(activity)){
+  //   return activity.parentNode.parentNode;
+  // }
+  // return activity.parentNode;
 
-  return activity.parentNode;
+  //'closest'() searches up the DOM tree the closest element matching the selector
+  //in this case the selector looks for a DOM element with 'route' attribute
+  return activity.closest('[route]')
 }
 
 //Returns the activity currently being configured (with circle around)
@@ -140,6 +158,32 @@ function getActiveActivity()
   return document.querySelector("#selector").parentNode
 }
 
+//Returns the activity with circle around
+function getSelectedActivityPrimary()
+{
+  return getActiveActivity()
+}
+
+//Returns the activity with a ring used for range selection
+//the range of activities are all those between the primary and secondary selectors
+function getSelectedActivitySecondary()
+{
+  let selector = document.getElementById('selector-end')
+
+  if(selector)
+  {
+    return selector.parentElement
+  }
+
+  return null
+}
+
+//indicates if a range of activities is currently selected (2 rings in the UI)
+function rangeExists()
+{
+  return (getSelectedActivitySecondary() != null)
+}
+
 //returns TRUE when activity is contained in a group box (i.e. multicast)
 function isBoxed(activity)
 {
@@ -148,7 +192,7 @@ function isBoxed(activity)
     return false;
   }
 
-  return activity.parentNode && (activity.parentNode.nodeName.toLowerCase() == "a-box");
+  return activity.parentNode && (activity.parentNode.nodeName.toLowerCase() == "a-box" || activity.parentNode.nodeName.toLowerCase() == "a-plane");
 }
 
 //returns TRUE when activity is part of a group of acvivities (choices/multicasts)
@@ -181,8 +225,11 @@ function getForwardLink(activity){
     //   return;
     // }
 
-    //or
-    activity = activity.querySelector('[processor-type=multicast-end]')
+    //was
+    //activity = activity.querySelector('[processor-type=multicast-end]')
+    
+    //finds child activity marked as group end
+    activity = document.getElementById(activity.getAttribute('group-end'))
   }
 
   // we look at the links the activity has
@@ -213,7 +260,13 @@ function getBackwardsLink(activity){
 
   if(activity.localName == "a-box")
   {
-    activity = activity.querySelector('[processor-type=multicast-start]')
+    //was
+    // activity = activity.querySelector('[processor-type=multicast-start]')
+
+    //this should obtain the first BOX's activity
+    // activity = activity.querySelector('[group-start]')
+    activity = document.getElementById(activity.getAttribute('group-start'))
+
   }
 
   // we look at the links the activity has
@@ -312,16 +365,42 @@ function getPositionInScene(activity)
 {
   if(isBoxed(activity))
   {
-    //position of parent
-    let posBox   = activity.parentNode.object3D.position;
+    // //position of parent
+    // let posBox   = activity.parentNode.object3D.position;
    
-    //position inside parent
-    let posInBox = activity.object3D.position;
+    // //position inside parent
+    // let posInBox = activity.object3D.position;
+
+    // //absolute position
+    // let position = { x: posBox.x+posInBox.x,
+    //                  y: posBox.y+posInBox.y,
+    //                  z: 0};
+
+
+    // let route = activity.closest('[route]')
+    let topEntity = activity.closest('[route]')
+
+    //might be a REST container
+    if(topEntity == null){
+      // topEntity = activity.closest('[rest-dsl]')
+      topEntity = activity.closest('#rest-definitions')
+    }
 
     //absolute position
-    let position = { x: posBox.x+posInBox.x,
-                     y: posBox.y+posInBox.y,
-                     z: 0};
+    let position = activity.object3D.position
+
+    let entity = activity
+
+    while(entity.parentNode != topEntity){
+
+      entity = entity.parentNode
+
+        //absolute position
+      position = { x: position.x+entity.object3D.position.x,
+                  y: position.y+entity.object3D.position.y,
+                  z: position.z+entity.object3D.position.z};
+    }
+
 
     return position;
   }
@@ -553,4 +632,46 @@ function takeScreenshot()
   plane.setAttribute('src', canvas.toDataURL());
   getSelectedRoute().appendChild(plane);
 
+}
+
+//this function works with a range of activities
+//from activity1 to activity2
+//returns a list of activities ordered in execution order 
+function getListActivitiesFirstToLast(activity1, activity2)
+{
+  if(activity1 && !activity2)
+  {
+    return [activity1]
+  }
+  else if(activity2 && !activity1)
+  {
+    return [activity2]
+  }
+
+  let next = getNextActivity(activity1)
+
+  while(next)
+  {
+    if(next == activity2)
+    {
+      return [activity1,activity2]
+    }
+    next = getNextActivity(next)
+  }
+
+  return [activity2,activity1]
+}
+
+//returns TRUE if the entity is a MULTICAST processor
+function isMulticast(entity)
+{
+  if(entity)
+  {
+    let type = entity.getAttribute('processor-type')
+
+    if(type == 'multicast')
+      return true
+  }
+
+  return false
 }

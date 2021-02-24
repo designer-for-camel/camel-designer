@@ -4,7 +4,7 @@
 * URIs are defined as: 'scheme:target?options' (e.g. uri="file:directory?fileName=sample")
 * The component creates a visible label with [target] and loads the [options] as component attributes
 */
-AFRAME.registerComponent('uri', {
+AFRAME.registerComponent('exceptions', {
     schema: {
         position: {type: 'string'},
         configMethod: []
@@ -13,28 +13,27 @@ AFRAME.registerComponent('uri', {
 
         // let defaultValue = this.defaultExpression || "hello world";
 
-        //label to display the expression value set for the activity
-        this.label = createText();
-        this.el.appendChild(this.label);
-        this.label.setAttribute('value', this.defaultUri);
-        this.label.setAttribute('color', 'white');
-        this.label.setAttribute('align', 'center');
-        this.label.setAttribute('position', this.attrValue.position);
-        this.label.setAttribute('side', 'double');
+        // //label to display the expression value set for the activity
+        // this.label = createText();
+        // this.el.appendChild(this.label);
+        // this.label.setAttribute('value', this.defaultUri);
+        // this.label.setAttribute('color', 'white');
+        // this.label.setAttribute('align', 'center');
+        // this.label.setAttribute('position', this.attrValue.position);
+        // this.label.setAttribute('side', 'double');
 
         //as init() runs asynchronously, it might run after the panel was loaded
         //config info needs to be reloaded
         this.attrValue.configMethod[0](this.el)
 
 
-        this.attributes        = {}
+        // this.exceptions = {}
 
     },
 
     setDefinition: function(definition) {
 
         //defaults
-        this.attributes        = {}
         this.defaultUri        = "target1";
 
         if(definition)
@@ -74,42 +73,28 @@ AFRAME.registerComponent('uri', {
       return this.definition
     },
 
-    getTarget: function () {
-        //only if component has initialised we can return a value
-        //because the component loads asynchronously, the config panel may first attempt to get the value before the component is ready 
-        if(this.label)
-        {
-            return this.label.getAttribute('value')
-        }
-
-        //otherwise return default one (init might not have yet run)
-        return this.defaultUri
+    getExceptions: function () {
+        return this.exceptions
     },
 
-    setTarget: function (uri) {
-        if(this.label)
-        {
-            this.label.setAttribute('value', uri)
-        }
-        else
-        {
-            //init() might not have executed, so we set value as default
-            this.defaultUri = uri
+    setExceptions: function (exArray) {
+
+        this.exceptions = {}
+
+        for(let i=0; i<exArray.length; i++){
+            this.setException(i, exArray[i].textContent)
         }
     },
 
-    getOptions: function () {
-        return this.attributes
-    },
 
-    setOption: function(name, value){
+    setException: function(name, value){
         if(value && (value.length > 0))
         {
-            this.attributes[name] = value
+            this.exceptions[name] = value
         }
         else
         {
-            delete this.attributes[name]
+            delete this.exceptions[name]
         }
     },
 
@@ -126,7 +111,7 @@ AFRAME.registerComponent('uri', {
         }
 
         //get options
-        let options = new URLSearchParams(this.attributes).toString();
+        let options = new URLSearchParams(this.exceptions).toString();
 
         //XML escape string
         if(options.length > 0)

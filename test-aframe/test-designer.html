@@ -276,7 +276,7 @@
       </div>
 
     <!-- Spacial scene (A-Frame elements) -->
-    <a-scene myoutline cursor="rayOrigin:mouse" raycaster="objects: .clickable, .testcollidable" vr-mode-ui="enabled: false" screenshot="width: 512; height: 256;">
+    <a-scene myoutline cursor="rayOrigin:mouse" raycaster="objects: .interactive, .testcollidable" vr-mode-ui="enabled: false" screenshot="width: 512; height: 256;">
 
       <a-assets>
 
@@ -298,12 +298,12 @@
 
       <!-- Entity to accommodate route definitions -->
       <a-entity id="route-definitions" keyboardlistener>
-        <a-entity id="route1" route="" class="clickable" position="0 0 0">
+        <a-entity id="route1" route="" class="interactive" position="0 0 0">
         </a-entity>
       </a-entity>
 
       <!-- Entity to accommodate REST definitions -->
-      <!-- <a-entity id="rest-definitions" class="clickable" position="0 100 0"> -->
+      <!-- <a-entity id="rest-definitions" class="interactive" position="0 100 0"> -->
       <a-entity id="rest-definitions" visible="false" position="0 100 0">
       </a-entity>
 

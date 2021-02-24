@@ -223,7 +223,7 @@ function createRouteDefinitions(routes)
             let isLastProcessor = (i<processors.length)
 
             //create activity with flag
-            createActivityFromSource(xmlTag, delay, processors[i], isLastProcessor);
+            createActivityFromSource(xmlTag, delay, {definition: processors[i]}, isLastProcessor);
         }
     }
 }
@@ -231,11 +231,12 @@ function createRouteDefinitions(routes)
 //Creates an activity based on the XML tag (type)
 //it delays the creation activity because all creation actions are asynchronous
 //if it is the last action, we need to flag it.
-function createActivityFromSource(type, delay, definition,lastAction) {
+function createActivityFromSource(type, delay, definition, lastAction) {
 
     //when XML tag is 'to', we need to identify the Camel component
     if(type == 'to'){
-        type = definition.attributes.uri.value.split(":")[0];
+        // type = definition.attributes.uri.value.split(":")[0];
+        type = definition.definition.attributes.uri.value.split(":")[0];
 
         //<log> and <to uri="log"> are different  
         if(type == 'log')
@@ -247,38 +248,41 @@ function createActivityFromSource(type, delay, definition,lastAction) {
     switch(type) {
         case 'log':
             //setTimeout(createLog, delay);
+            // return createActivityDelayed(createLog, delay, definition,lastAction);
+            // return createActivityDelayed(createLog, delay, {definition: definition},lastAction);
             return createActivityDelayed(createLog, delay, definition,lastAction);
             // break;
         case 'direct':
             //setTimeout(createDirect, delay);
-            return createActivityDelayed(createDirect, delay, {definition: definition}, lastAction);
+            // return createActivityDelayed(createDirect, delay, {definition: definition}, lastAction);
+            return createActivityDelayed(createDirect, delay, definition, lastAction);
             // break;
         case 'choice':
             //setTimeout(createChoice, delay);
-            return createActivityDelayed(createChoice, delay, definition, lastAction);
+            return createActivityDelayed(createChoice, delay, definition.definition, lastAction);
             // break;
         case 'multicast':
             //setTimeout(createMulticast, delay);            
-            return createActivityDelayed(createMulticast, delay, definition, lastAction);            
+            return createActivityDelayed(createMulticast, delay, definition.definition, lastAction);            
             // break;
         case 'setProperty':
-            return createActivityDelayed(createProperty, delay, definition, lastAction);            
+            return createActivityDelayed(createProperty, delay, definition.definition, lastAction);            
             // break;
         case 'setHeader':
-            return createActivityDelayed(createHeader, delay, definition, lastAction);            
+            return createActivityDelayed(createHeader, delay, definition.definition, lastAction);            
             // break;
         case 'setBody':
-            return createActivityDelayed(createBody, delay, definition, lastAction);            
+            return createActivityDelayed(createBody, delay, definition.definition, lastAction);            
             // break;
         case 'kafka':
-            return createActivityDelayed(createKafka, delay, definition, lastAction);            
+            return createActivityDelayed(createKafka, delay, definition.definition, lastAction);            
             // break;
         case 'file':
-            return createActivityDelayed(createFile, delay, definition, lastAction);            
+            return createActivityDelayed(createFile, delay, definition.definition, lastAction);            
             // break;
         default:
             //if none of the above, then it's unknown or unsupported yet.
-            return createActivityDelayed(createUnknown, delay, definition, lastAction);            
+            return createActivityDelayed(createUnknown, delay, definition.definition, lastAction);            
             // break;
             //code block
     }
@@ -527,10 +531,17 @@ thisNode = getNextActivity(start);
 
     while (thisNode) {
         thisNode = renderRouteActivity(thisNode, mycode, iterator);
-    } 
+    }
 }
 
-function renderRouteActivity(activity, mycode, iterator) {
+function renderRouteActivity(activity, mycode, iterator)
+{
+    renderActivity(activity, mycode, iterator)
+    return getNextActivity(activity);
+}
+
+// function renderRouteActivity(activity, mycode, iterator) {
+function renderActivity(activity, mycode, iterator) {
 
     var processorType = activity.getAttribute('processor-type');
 
@@ -612,9 +623,7 @@ function renderRouteActivity(activity, mycode, iterator) {
             //code block
     }
 
-return getNextActivity(activity);
-    // return 
-    // alert(mycode.text)
+    // return getNextActivity(activity);
 }
 
 

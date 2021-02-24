@@ -307,7 +307,7 @@
       </div>
 
     <!-- Spacial scene (A-Frame elements) -->
-    <a-scene myoutline cursor="rayOrigin:mouse" raycaster="objects: .clickable, .testcollidable" vr-mode-ui="enabled: false">
+    <a-scene myoutline cursor="rayOrigin:mouse" raycaster="objects: .interactive, .testcollidable" vr-mode-ui="enabled: false">
 
       <a-assets>
         <img id="routeThumbnail" crossorigin="anonymous" src="${srcPathScheme}/src/media/routes-ring.jpg">
@@ -324,7 +324,7 @@
 
       <!-- Entity to accommodate route definitions -->
       <a-entity id="route-definitions" keyboardlistener>
-        <a-entity id="route1" route="" class="clickable" position="0 0 0">
+        <a-entity id="route1" route="" class="interactive" position="0 0 0">
         </a-entity>
       </a-entity>
 

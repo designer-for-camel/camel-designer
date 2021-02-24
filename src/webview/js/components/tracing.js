@@ -363,7 +363,7 @@ AFRAME.registerComponent('tracing', {
                     text.setAttribute('visible', 'false')
                     link.appendChild(text)
 
-                    link.setAttribute('class', 'clickable');
+                    link.setAttribute('class', 'interactive');
                     link.setAttribute('isTraced', '')
     
                     //apply mouse hover behavior

@@ -41,13 +41,15 @@ function createRestGroupBox(definition)
     var container = null;
 
     box = document.createElement('a-box');
+    box.classList.add('interactive')
+    box.classList.add('configurable')
     container = document.createElement('a-entity');
     container.setAttribute('id', "container");
     container.setAttribute('processor-type', "rest-container");
     box.appendChild(container);
 
     //Needed since A-FRAME v1.0.0
-    box.setAttribute('class', 'clickable');
+    // box.setAttribute('class', 'interactive');
 
     // rootActivity.appendChild(box);
     box.setAttribute('processor-type', "rest-group");
@@ -61,7 +63,6 @@ function createRestGroupBox(definition)
     box.setAttribute('id', id)
     box.setAttribute('path', path);
 
-    // boxPosition = getNextSequencePosition(scene, 1, false);
     boxPosition = {x:nextGroupPosX,y:0,z:0};
     box.object3D.position.set(boxPosition.x, boxPosition.y, boxPosition.z);
     nextGroupPosX+=4;
@@ -75,8 +76,9 @@ function createRestGroupBox(definition)
     // box.setAttribute('scale', scale)
 
     //ATTENTION: this attribute registers the drag & drop behaviour
-    box.setAttribute('pulse', '')
-
+    // box.setAttribute('pulse', '')
+    box.classList.add('interactive')
+    box.setAttribute('dragndrop','')
 
     // var text = document.createElement('a-text');
     var text = createText();
@@ -260,11 +262,15 @@ function createRestMethod(definition)
 
   //activity creation
   var activity = document.createElement('a-sphere');
+  activity.classList.add('interactive')
+  activity.classList.add('configurable')
   activity.setAttribute('position', {x: 0, y: -numMethods, z: 0});
   activity.setAttribute('processor-type', "rest-method");
   activity.setAttribute('material', {color: methodColor.get(definition.method), transparent: true, opacity: 0.5});
   activity.setAttribute('radius', .5);
-  activity.setAttribute('pulse', '');
+  // activity.classList.add('clickable')
+  activity.setAttribute('clickable', '');
+  // activity.setAttribute('pulse', '');
   // activity.setAttribute('scale', scale);
 
   //metadata info
@@ -277,7 +283,7 @@ function createRestMethod(definition)
   container.appendChild(activity);
 
   //Needed since A-FRAME v1.0.0
-  activity.setAttribute('class', 'clickable');
+  // activity.setAttribute('class', 'interactive');
 
   //Create labels
   // var text = document.createElement('a-text');
@@ -335,6 +341,8 @@ function attachDirect(restMethod, yPos, definition)
   //set relative position
   activity.setAttribute('position', {x: 2, y: yPos, z: 0});
 
+  //marks type of activity
+  activity.setAttribute('rest-direct','')
 
   //add task to group
   restMethod.parentElement.appendChild(activity);

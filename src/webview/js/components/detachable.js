@@ -102,10 +102,14 @@ AFRAME.registerComponent('detachable', {
         //flag
         this.detached = true
 
+        let interactiveEntities = getActivityRoute(activity).querySelectorAll('.interactive')
+
         //make all activities static
-        for(entity of activity.parentNode.children) {
+        // for(entity of activity.parentNode.children) {
+        for(entity of interactiveEntities) {
             if(entity != activity)
-                entity.setAttribute('class', 'not-clickable')
+                // entity.setAttribute('class', 'interactive-frozen')
+                entity.classList.replace('interactive', 'interactive-frozen')
         }
 
         //make look dimmer
@@ -156,6 +160,7 @@ AFRAME.registerComponent('detachable', {
         if(linkBackwards)
         {
             attachDestinationToLink(next, linkBackwards);
+            redrawLink(linkBackwards)
         }
 
         if(activity.localName == "a-box")
@@ -230,10 +235,15 @@ AFRAME.registerComponent('detachable', {
         //if candidate exists
         if(detachable.linkDetected)
         {
+            let frozenEntities = getActivityRoute(activity).querySelectorAll('.interactive-frozen')
+
             //reactivate all activities
-            for(entity of activity.parentNode.children) {
-                if(entity != activity)
-                    entity.setAttribute('class', 'clickable')
+            // for(entity of activity.parentNode.children) {
+            for(entity of frozenEntities) {
+                // if(entity != activity)
+                    // entity.setAttribute('class', 'interactive')
+                    entity.classList.replace('interactive-frozen', 'interactive')
+
             }
 
             //allow again navigation and creation
@@ -251,21 +261,19 @@ AFRAME.registerComponent('detachable', {
             //obtain necessray artifacts
             let link = detachable.linkDetected
             let source = document.getElementById(link.getAttribute('source'))
-    
-    
-            // let copy = activity.cloneNode(true)
-            // activity.parentNode.removeChild(activity)
-            // source.parentNode.appendChild(copy)
-    
+   
             //restore material attributes
             activity.setAttribute('opacity', detachable.opacityDefault)
             activity.setAttribute('color', detachable.colorDefault)
             link.removeAttribute('color')
 
+            //reference to links manipulated
             let newLink
+            let reusableLink
 
             //obtain endpoint of link
-            let destination = activity.parentNode.querySelector('#'+link.getAttribute('destination'))
+            // let destination = activity.parentNode.querySelector('#'+link.getAttribute('destination'))
+            let destination = document.getElementById(link.getAttribute('destination'))
 
             //when reattaching a box (multicast)
             if(activity.localName == "a-box")
@@ -274,7 +282,7 @@ AFRAME.registerComponent('detachable', {
                 let boxEnd   = activity.querySelector('[processor-type=multicast-end]')
 
                 //we keep link reference.
-                let reusableLink = detachBackwardsLink(destination, link)
+                reusableLink = detachBackwardsLink(destination, link)
 
                 //create new link
                 newLink = createLink(boxEnd, destination, false, false)
@@ -285,7 +293,7 @@ AFRAME.registerComponent('detachable', {
             else
             {
                 //we keep link reference.
-                let reusableLink = detachBackwardsLink(destination, link)
+                reusableLink = detachBackwardsLink(destination, link)
 
                 //create new link
                 newLink = createLink(activity, destination, false, false)
@@ -293,19 +301,83 @@ AFRAME.registerComponent('detachable', {
                 //attach end of link to activity
                 attachDestinationToLink(activity, reusableLink)
             }
-
-            //add link to scene
-            activity.parentNode.appendChild(newLink);
     
-            // let copy = activity.cloneNode(true)
-            // activity.parentNode.removeChild(activity)
-            // source.parentNode.appendChild(copy)
-            // activity.after(source);
-            // insertActivity(activity, source)
-
             //reset variables
             detachable.linkDetected = null
             detachable.detached = false
+
+            //====================================================
+            // POSITION RECALCULATION (part 1/2):
+            // An activity detached/reattached is subject to change is hierarchy position.
+            // The strategy is: 
+            //  - to translate its source position from its container position to its scene position
+            //  - to translate its scene position to its destination container position
+            // (the container could be the top level container [the route] or a group-box [split or try-catch, etc]) 
+            //====================================================
+            
+            //reference to top level container
+            let topEntity = activity.closest('[route]')
+
+            //reference to source container
+            let tempEntity = activity.parentNode
+
+            //clone of original position
+            let translation = activity.object3D.position.clone()
+
+            //walk up the hierarchy while not at the same level
+            while(tempEntity != topEntity){
+                //add entity and parent entity vectors
+                translation.add(tempEntity.object3D.position)
+
+                //step 1 level up
+                tempEntity = tempEntity.parentNode
+            }
+            //=====================================================
+
+
+            //A-Frame does not support entities to move in the DOM tree
+            //We need to make it happen manually by deleting the old entity and recreating it
+            let clone = cloneActivity(activity)
+            let parent = activity.parentNode
+            parent.removeChild(activity)
+
+            if(destination.classList.contains('group-start')){
+                destination.parentNode.parentNode.insertBefore(clone, destination.parentNode)
+                destination.parentNode.parentNode.appendChild(newLink);
+            }
+            else{
+                destination.parentNode.insertBefore(clone, destination)
+                destination.parentNode.appendChild(newLink);
+            }
+
+            //====================================================
+            // POSITION RECALCULATION (part 2/2):
+            // Read part 1/2 above.
+            //====================================================
+
+            //reference to destination container
+            tempEntity = clone.parentNode
+
+            //walk up the hierarchy while not at the same level
+            while(tempEntity != topEntity){
+                //substract entity and parent entity vectors
+                translation.sub(tempEntity.object3D.position)
+
+                //step 1 level up
+                tempEntity = tempEntity.parentNode
+            }
+
+            //set translated coordinates
+            clone.object3D.position.set(
+                translation.x,
+                translation.y,
+                translation.z
+            )
+            //=====================================================
+
+            //This ensures the links are visually correctly connected
+            redrawLink(newLink)
+            redrawLink(reusableLink)
 
             syncEditor()
         }

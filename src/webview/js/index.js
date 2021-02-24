@@ -541,6 +541,8 @@
         var element = document.getElementById("loginput");
         var logText = element.getElementsByTagName("input")[0].value;
 
+let configObj = getActiveActivity()
+
         var text = configObj.getElementsByTagName("a-text")[0].firstChild;
 
         //display new value
@@ -554,6 +556,8 @@
         var element = document.getElementById("name-value-pair");
         var fieldName = element.getElementsByTagName("input")[0].value;
         //var fieldValue = element.getElementsByTagName("input")[1].value;
+
+let configObj = getActiveActivity()
 
         var textName = configObj.getElementsByTagName("a-text")[0].firstChild;
         //var textValue = configObj.getElementsByTagName("a-text")[0].lastChild;
@@ -584,8 +588,12 @@
         var element = document.getElementById("config-choice-when");
         var condition = element.getElementsByTagName("input")[0].value;
 
+        //we should obtain the link with the expression configuration
+        let expressionLink = getActiveActivity()
+
         //obtain activity label
-        var text = configObj.getElementsByTagName("a-text")[1];
+        // var text = configObj.getElementsByTagName("a-text")[1];
+        var text = expressionLink.getElementsByTagName("a-text")[1];
 
         //display new value
         text.setAttribute('value', condition);
@@ -769,57 +777,33 @@
       }
 
 
-
-      function getNextSequencePosition(scene, shiftX, isGroup)
+      //Predicts which should be the next positional coordinate
+      //for a new activity (to be created) relative to the currently selected activity
+      function getNextSequencePosition()
       {
-        shiftX = shiftX || 0;
-        isGroup = isGroup || false;
-          // if(shiftX == null)
+        //obtain the currently selected activity
+        let source = getActiveActivity()
 
-          let refActivity;
-
-          if(isGroup) //for groups we keep reference of last activity created
-          {
-            refActivity = document.getElementById(scene.getAttribute("lastCreated"));
+        //this covers the case for activities ending a group (group-end ---> new-activity)
+        if(source.classList.contains('group-end')){
+          return {
+              x: source.parentNode.object3D.position.x + source.object3D.position.x + 2, 
+              y: source.parentNode.object3D.position.y + source.object3D.position.y,
+              z: 0
           }
-          else // for anything else new positions are given from
-          {
-            refActivity = getActiveActivity();
+        }
+        //for all other use cases X+2 is enough
+        else{
+          return {
+              x: source.object3D.position.x + 2, 
+              y: source.object3D.position.y,
+              z: 0
           }
-
-          let lastInGroup = isBoxed(refActivity);
-
-          var refPos;
-
-          if(lastInGroup)
-          {
-            let parentPos = refActivity.parentNode.object3D.position;
-            refPos = {x: parentPos.x+1, y: parentPos.y, z:0}
-          }
-          else
-          {
-            // refPos = document.getElementById(scene.getAttribute("lastCreated")).getAttribute('position');
-            
-            //was
-            //refPos = refActivity.getAttribute('position');
-            refPos = refActivity.object3D.position;
-          }
-
-
-
-var nextPos = refPos.x+2+shiftX;
-
-
-          // var scene = document.getElementById(routes[0]);
-          // var nextPos = parseInt(scene.getAttribute("nextPos"))+shiftX;
-
-          // scene.setAttribute("nextPos", nextPos+stepPos);
-
-          return {x: nextPos, y: refPos.y, z: 0};
-          // return {x: nextPos, y: 0, z: 0};
+        }
       }
 
-      function getNextParallelPosition(scene, current, total, shiftX, boxed)
+      //Method used to position parallel activities
+      function getNextParallelPosition(current, total, shiftX, boxed)
       {
         shiftX = shiftX || 0;
 
@@ -834,25 +818,17 @@ var nextPos = refPos.x+2+shiftX;
         let posY = ((current-1)*gap) - (total*gap/2) + gap/2;// + (baseY);
         posY = -posY + baseY;
 
-          // var scene = document.getElementById(routes[0]);
-          // var nextPos = parseInt(scene.getAttribute("nextPos")-shiftX);
+        if(boxed)
+        {
+          return {x: 0, y: posY, z: 0};
+        }
 
-          //scene.setAttribute("nextPos", nextPos+stepPos);
+        var position = getNextSequencePosition();
+        position.x += shiftX
 
-          if(boxed)
-          {
-            return {x: 0, y: posY, z: 0};
-          }
+        position.y += posY;
 
-          var position = getNextSequencePosition(scene, shiftX, true);
-
-          position.y += posY;
-
-          return position;
-
-          // return {x: nextPos, y: posY, z: 0};
-          // return {x: 0, y: posY, z: 0};
-          // return {x: posY, y: posY, z: 0};
+        return position;
       }
 
 
@@ -947,7 +923,8 @@ var nextPos = refPos.x+2+shiftX;
           //Since A-Frame v1.0.0 the camera angle seems different, so we have adjusted
           let target = {
             x: posActivity.x,
-            y: cameraY,
+            // y: cameraY,
+            y: posActivity.y,
             z: cameraZ}
 
           camera.setAttribute('animation__focus', {property: 'position', dur: '1000', to: target, loop: false, easing: "easeInOutQuad"});
@@ -981,8 +958,23 @@ var nextPos = refPos.x+2+shiftX;
       //This shape allows interaction not possible with the line alone.
       function createEditableLink(src, dst)
       {
-        srcPos = getPositionInScene(src);
-        dstPos = getPositionInScene(dst);
+        // srcPos = getPositionInScene(src);
+        // dstPos = getPositionInScene(dst);
+
+        let srcPos 
+        let dstPos
+
+        if(isBoxed(src) && !src.id.endsWith('-end'))
+        {
+          srcPos = src.object3D.position
+          dstPos = dst.object3D.position
+        }
+        else
+        {
+          srcPos = getPositionInScene(src);
+          dstPos = getPositionInScene(dst);
+        }
+
 
         var radius = .2;
         var opacity = 0.2;
@@ -1054,16 +1046,68 @@ var nextPos = refPos.x+2+shiftX;
         var srcShiftX = 0;
         var dstShiftX = 0;
 
+        //============================
+
+        let sourcePos = source.object3D.position
+        let destPos   = destination.object3D.position
+
+
+  //this covers the case for same level activities, or activities of the same group
+  if(source.parentNode == destination.parentNode)
+  {
+    sourcePos = source.object3D.position
+    destPos   = destination.object3D.position    
+  }
+  //this covers the case for links connecting 2 different groups (group-end ---> group-start)
+  else if(source.classList.contains('group-end') && destination.classList.contains('group-start'))
+  {
+    sourcePos = source.object3D.position.clone()
+                .add(source.parentNode.object3D.position)
+
+    destPos = destination.object3D.position.clone()
+              .add(destination.parentNode.object3D.position)
+  }
+  //this covers the case for links connecting a group to an activity (group-end ---> activity)
+  else if(source.classList.contains('group-end') && !destination.classList.contains('group-start'))
+  {
+    sourcePos = source.object3D.position.clone()
+                .add(source.parentNode.object3D.position)
+  }
+  //this covers when destination is boxed and source isn't
+  //this covers the case for links connecting an activity to a group (activity ---> group-start)
+  else if(!source.classList.contains('group-end') && destination.classList.contains('group-start'))
+  {
+    destPos = destination.object3D.position.clone()
+              .add(destination.parentNode.object3D.position)
+  }
+
+
+
+        //============================
+
+
+
+/*
         if(isBoxed(source))
         {
           source = source.parentNode;
-          srcShiftX += 1;
+
+          //we need to obtain the position of the box's ending activity
+          dstShiftX = document.getElementById(destination.getAttribute('group-end')).object3D.position.x;
+
+          //was
+          //srcShiftX += 1;
         }
 
         if(isBoxed(destination))
         {
           destination = destination.parentNode;
-          dstShiftX -= 1;
+
+          //we need to obtain the position of the box's starting activity
+          dstShiftX = document.getElementById(destination.getAttribute('group-start')).object3D.position.x;
+
+          //was
+          //dstShiftX -= 1
         }
 
         sourcePos = {
@@ -1077,7 +1121,7 @@ var nextPos = refPos.x+2+shiftX;
           y: destination.object3D.position.y,
           z: destination.object3D.position.z
         }
-
+*/
         resetLink(link, sourcePos, destPos);
       }
 
@@ -1115,11 +1159,17 @@ var nextPos = refPos.x+2+shiftX;
         cilinder.setAttribute('rotation', {z: rotation});
 
         //set position
-        cilinder.setAttribute('position', {
-            x: srcPos.x+((dstPos.x-srcPos.x)/2),
-            y: srcPos.y+((dstPos.y-srcPos.y)/2),
-            z: 0
-        });
+        // cilinder.setAttribute('position', {
+        //     x: srcPos.x+((dstPos.x-srcPos.x)/2),
+        //     y: srcPos.y+((dstPos.y-srcPos.y)/2),
+        //     z: 0
+        // });
+        cilinder.object3D.position.set(
+          srcPos.x+((dstPos.x-srcPos.x)/2),
+          srcPos.y+((dstPos.y-srcPos.y)/2),
+          0
+        )
+
       }
 
       //updates the activity to include the new link ID
@@ -1145,6 +1195,8 @@ var nextPos = refPos.x+2+shiftX;
             //we add a 'mousemove' listener to follow mouse movement
             this.el.addEventListener('mousedown', function(){
                   
+              // event.stopPropagation()
+
               movingObj = this;
             
               //SHIFT + CLICK = DETACH
@@ -1389,6 +1441,12 @@ var nextPos = refPos.x+2+shiftX;
               {
                 //do nothing
               }
+              else if(getActiveRoute().parentElement.components.keyboardlistener.altpressed == true)
+              {
+                console.log("ALT down");
+                // evt.stopPropagation()
+                setGroupSelector(this)
+              }
               else
               {
                 // console.log("it's unknown");
@@ -1516,12 +1574,13 @@ var nextPos = refPos.x+2+shiftX;
         let type     = activity.getAttribute('processor-type');
 
         //prepare conditions to enable/disable buttons
-        let isChoice = (type == 'choice-start')
-        let isFork   = isBoxed(activity) && (type != "multicast-end");
+        let isChoice = (type == 'choice-start') || activity.hasAttribute('choice-expression')
+        // let isFork   = isBoxed(activity) && (type != "multicast-end");
+        let isFork   = activity.parentNode.id.startsWith('multicast') && (type != "multicast-end");
         //let isFrom   = activity.hasAttribute('start');
 
         if(   (isChoice)
-           || (isFork)
+           || (isFork) || (type == 'catch-end') || (type == 'finally-end')
           )// || (isFrom && activity.hasAttribute('links')))
         {
           enableToButtons(false);
@@ -1555,6 +1614,16 @@ var nextPos = refPos.x+2+shiftX;
               newConfigPane = "set-body";
               updateConfigBody();
               break;
+
+case 'split-start':
+    newConfigPane = "set-body";
+    updateConfigBody();
+    break;
+case 'catch-start':
+    newConfigPane = "config-catch";
+    updateConfigCatch();
+    break;
+    
           case 'to':
               newConfigPane = "config-endpoint-to";
               updateConfigEndpointTo(activity);
@@ -1664,6 +1733,36 @@ var nextPos = refPos.x+2+shiftX;
         //replace input value using activity values
         expressionConfig.value = activity.components.expression.getValue()
       }
+
+      //===============================================
+      //PENDING COMPLETION
+      //===============================================
+      //COPIED from 'updateConfigBody'.
+      //It may still be reusing elements from 'setBody'
+      //===============================================
+      function updateConfigSplit(activity)
+      {
+        //obtain worked activity
+        var activity = activity || getActiveActivity()
+
+        if(activity.getAttribute('processor-type') != 'split-start')
+        {
+          return
+        }
+
+        //obtains panel elements
+        var element = document.getElementById("set-body");
+
+        //prepare panel elements
+        loadExpressionConfiguration(element, activity)
+
+        //obtain reference to input
+        var expressionConfig = element.getElementsByClassName("expression")[0].getElementsByTagName("input")[0];
+
+        //replace input value using activity values
+        expressionConfig.value = activity.components.expression.getValue()
+      }
+
 
       //Sets Configuration Panel with Activity configuration
       function updateConfigChoice()//activity)

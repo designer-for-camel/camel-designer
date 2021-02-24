@@ -148,6 +148,8 @@ function createSelectedOption(event)
         case 'log':      createLog();        break;
         case 'direct':   createDirect();     break;
         case 'choice':   createChoice();     break;
+case 'try-catch':createTryCatch();   break;
+case 'split':    createSplit();      break;
         case 'parallel': createMulticast();  break;
 
         case 'rest-group': createRestGroup();  break;
@@ -185,6 +187,10 @@ function createPredefinedSet(event)
             break;
         case 'df-xml-to-json':
             createPredefinedSetXml2jsonDataFormat(createSet)
+            break;
+        
+        case 'experiment-1':
+            createPredefinedSetExperiment1(createSet)
             break;
     }
     
@@ -259,6 +265,17 @@ function createPredefinedSetXml2jsonDataFormat(createSet)
 
     createPredefinedSetTemplate(uri, snippet, createSet)
 }
+
+
+function createPredefinedSetExperiment1(createSet)
+{
+    let uri = 'experiment1'
+
+    let snippet = '<route id="'+uri+'"><from uri="direct:'+uri+'"/><log message="trace1"/><log message="trace2"/><log message="trace3"/><log message="trace4"/></route>'
+
+    createPredefinedSetTemplate(uri, snippet, createSet)
+}
+
 
 //Template creation for Kits
 //this function will create a new route containing the kit definition
@@ -690,7 +707,7 @@ function resetDesigner()
     }
 
     snippet = `
-    <a-entity id="route1" route="" class="clickable" position="0 0 0">
+    <a-entity id="route1" route="" class="interactive" position="0 0 0">
     </a-entity>
     `;
 
@@ -888,4 +905,1041 @@ function setTracingUserAlert(message, disableTracing)
         tSwitch.checked = false
         tSwitch.dispatchEvent(new Event('click'));
     }    
+}
+
+
+
+function setGroupSelector(activity)
+{
+        //Since A-Frame 1.0.0
+        //A problem moving the ring forces us te destroy and recreate
+        let ring = document.createElement('a-ring');
+        activity.appendChild(ring);
+        ring.setAttribute('id', 'selector-end');
+        ring.setAttribute('side', 'double');
+        ring.setAttribute('color', 'orange');
+        ring.setAttribute('radius-inner', .7);
+        ring.setAttribute('radius-outer', .71);
+      
+        // let ring2 = document.createElement('a-ring');
+        // ring.appendChild(ring2);
+        // ring2.setAttribute('id', 'selector-end2');
+        // ring2.setAttribute('side', 'double');
+        // ring2.setAttribute('color', 'yellow');
+        // ring2.setAttribute('radius-inner', .8);
+        // ring2.setAttribute('radius-outer', .81);
+      
+        let groupButton = document.createElement('a-entity')
+        ring.appendChild(groupButton)
+        groupButton.setAttribute('id', 'group-button')
+        groupButton.setAttribute('class', 'interactive menu-button')
+        groupButton.setAttribute('mixin', 'uigroup')
+        groupButton.setAttribute('position', '0 1.5 0')
+
+        var text = createText();
+        groupButton.appendChild(text);
+        // text.setAttribute('class', 'uri');
+        text.setAttribute('value', 'try/catch');
+        text.setAttribute('color', 'white');
+        text.setAttribute('align', 'center');
+        text.setAttribute('side', 'double');
+
+
+        // groupButton.addEventListener('click', actionGroupActivities, { once: true });
+        groupButton.addEventListener('click', wrapActivitiesWithTryCatch, { once: true });
+
+        //we need to delay this action because we're still processing a 'click event'
+        // setTimeout(function(){ alert("Hello"); }, 3000);
+
+        // console.log("ring created on: "+activity.id);
+}
+
+//creates a frame around the start/end activities
+//returns the frame created
+function actionGroupActivities(start, end)
+{
+    //flag to indicate if the second selector exists and needs to be cleaned.
+    //for instance...
+    //  - creating activities from source will use start/end activities
+    //  - user interaction will use selectors to demark range of activities
+    let cleanSelector = !(start && end)
+    let extraWidth = 0
+
+    if(cleanSelector)
+    {
+        //when grouping a selection we graphically want to include start and end activities
+        extraWidth = 2
+
+        start = getSelectedActivityPrimary()
+        end   = getSelectedActivitySecondary()
+    }
+
+    // start = start || getActiveActivity()
+    // end   = end   || document.getElementById('selector-end').parentElement
+ 
+// let first = getEarliestActivity(start, end)
+
+
+    console.log("pretending activities are being grouped.")
+
+    // let activity1 = getActiveActivity()
+    // let activity2 = document.getElementById('selector-end').parentElement
+    let activity1 = start
+    let activity2 = end
+
+    console.log("act1: "+activity1.object3D.position.x)
+    console.log("act2: "+activity2.object3D.position.x)
+
+    let posx = (activity1.object3D.position.x - activity2.object3D.position.x)/2
+    let width = Math.abs(activity1.object3D.position.x - activity2.object3D.position.x)+extraWidth
+    
+    let group = document.createElement('a-plane');
+    activity2.appendChild(group);
+    // ring2.setAttribute('id', 'selection');
+    group.setAttribute('side', 'double');
+    group.setAttribute('color', '#2C3539');
+    group.setAttribute('width', width);
+    group.setAttribute('height', 2);
+    // group.setAttribute('position', posx+" 0 -.1");
+    group.object3D.position.set(
+        posx,
+        0,
+        -.1
+    )
+
+    if(cleanSelector)
+    {
+        activity2.removeChild(document.getElementById('selector-end'))
+    }
+
+    return group
+}
+
+
+function wrapActivitiesWithTryCatch()
+{
+    wrapWithTryCatch()
+}
+
+
+//UNDER CONSTRUCTION
+//function createTryCatch(definition)
+function wrapWithTryCatch(definition)
+{
+    if(!definition)
+    {
+        //default definition if not given
+        definition = new DOMParser().parseFromString('<doTry><log message="try catch sample"/><doCatch><exception>java.io.Exception</exception><log message="got exception"/></doCatch><doFinally><log message="finally section"/></doFinally></doTry>', 'application/xml').documentElement;
+    }
+
+    wrapActivitiesWith(definition)
+}
+
+function wrapActivitiesWith(definition)
+{
+    let wrapActivities = rangeExists()
+
+    //we're about to create multiple activities, so we stop streaming updates until we're done
+    syncEditorEnabled = false;
+
+    //obtain range of activities to work with
+    //(this only makes sense when wrapping activities)
+    let range = getListActivitiesFirstToLast(
+                    getSelectedActivityPrimary(),
+                    getSelectedActivitySecondary()
+                )
+
+    //Given the activities [A1,A2,A3,A4], when wrapping activities [A2,A3] in a try{} statement we should see:
+    //before:  A1 ------> A2 -> A3 ------> A4
+    //after:   A1 -> { -> A2 -> A3 -> } -> A4
+    // A1 is the activity before try{}
+    // A3 is the activity ending try{}
+    let activityBeforeTryCatch = getPreviousActivity(range[0])
+    let activityEndingTryCatch = range[range.length-1]
+    
+
+    refPosition = getPositionInScene(activityBeforeTryCatch)
+
+
+    // create CHOICE start activity
+    let start = createActivity({type: 'try-start', definition: definition, detachable: false});
+
+    //We create an 'end' activity
+    //We need to provide a specific ID for the end activity (with format: "[startId]-end")
+    //Updating the ID from the source definition causes the following error:
+    //  [The document has mutated since the result was returned]
+    //Cloning the object causes the same error.
+    //The workaround is to unmarshal/marshal (passing a whitelist filter of the fields to keep)
+    let definitionUpdate = JSON.parse(JSON.stringify(definition, ["id", "tagName"]))
+
+    // and then update the ID
+    definitionUpdate.id = start.id+"-end"
+
+    //then we can create the end activity with the given ID
+    let end = createActivity({type: 'try-end', definition: definitionUpdate, detachable: false});
+
+    //align choice to preceding activity
+    //this is particularly important to maintain flow in Y coordinate 
+    start.object3D.position.set(
+        refPosition.x+2, //we shift 2
+        refPosition.y,
+        refPosition.z
+    )
+
+    //align choice to preceding activity
+    end.object3D.position.set(
+    //   activityEndingTryCatch.object3D.position.x+2,
+        refPosition.x,
+        refPosition.y,
+        refPosition.z
+    )
+
+    start.setAttribute('radius', '.25')
+    end.setAttribute('radius', '.25')
+
+    //labels for Root activity
+    var text = createText();
+    start.appendChild(text);
+    text.setAttribute('value', 'try');
+    text.setAttribute('color', 'white');
+    text.setAttribute('align', 'center');
+    text.setAttribute('side', 'double');
+
+    //labels for End activity
+    text = createText();
+    end.appendChild(text);
+    text.setAttribute('value', 'end');
+    text.setAttribute('color', 'white');
+    text.setAttribute('align', 'center');
+    text.setAttribute('side', 'double');
+
+    //we keep referece.
+    let orphanLink = detachForwardLink(activityBeforeTryCatch)
+
+     //default value for <otherwise> (no expression)
+    let expression = null;
+
+    //if new segment was injected in between activities
+    //we attach the segment-end to the orphan link
+    if(orphanLink)
+    {
+        attachSourceToLink(start, orphanLink);
+    }
+
+    //insert Start
+    insertActivity(start, activityBeforeTryCatch)
+
+    //connect Start to preceding activity
+    linkActivities(activityBeforeTryCatch, start)
+
+
+    orphanLink = detachForwardLink(activityEndingTryCatch)
+    linkActivities(activityEndingTryCatch, end)
+
+    attachSourceToLink(end, orphanLink);
+
+
+    //insert End Choice
+    insertActivity(end,activityEndingTryCatch)
+          
+    setConfigSelector(end)
+    redrawAllLinks()
+
+    //--------------------
+    let frame = actionGroupActivities(start, end)
+    initialiseTryCatchFrame(frame)
+    //--------------------
+
+    cleanSelectorRange()
+
+    //now we're done, we switch back on, and we sync.
+    syncEditorEnabled = true;
+    syncEditor();
+
+    //we return the 'end' activity
+    //this is necessary to process nested choices (or an inner choice)
+    return end
+}
+
+function initialiseTryCatchFrame(frame)
+{
+    let height = frame.getAttribute('height')
+    let posY   = height/2+.25
+
+    let button = document.createElement('a-plane');
+    frame.appendChild(button);
+    // ring2.setAttribute('id', 'selection');
+    button.setAttribute('side', 'double');
+    button.setAttribute('color', '#18399a')//'#696969');
+    button.setAttribute('width', 1);
+    button.setAttribute('height', .5);
+    button.setAttribute('position', "0 -"+posY+" 0");
+
+    let text = createText();
+    button.appendChild(text);
+    text.setAttribute('value', 'doCatch');
+    text.setAttribute('color', 'white');
+    text.setAttribute('align', 'center');
+    text.setAttribute('side', 'double');
+
+    // let current = getActiveActivity()
+
+    var scale = {x: .8, y: .8, z: .8};
+
+
+    // create CHOICE start activity
+    // let doCatch = createActivity({type: 'catch-start', definition: null, detachable: false, scale: scale})
+
+    // goLive(
+    //     doCatch,
+    //     {x: -2, y: -2, z: 0},//getNextParallelPosition(scene,i,numActivities,0, boxed),
+    //     null, //[rootActivity],
+    //     scale, 
+    //     true, 
+    //     frame); //parent entity
+
+    let activity = createLog({golive: false, scale: scale})
+    activity.setAttribute('golive', true)
+    goLive(
+        activity,
+        {x: -2, y: -2, z: 0},//getNextParallelPosition(scene,i,numActivities,0, boxed),
+        [],//[doCatch], //[rootActivity],
+        scale, 
+        true, 
+        frame); //parent entity
+
+
+    let activity2 = createLog({golive: false, scale: scale})
+    activity2.setAttribute('golive', true)
+    goLive(
+        activity2,
+        {x: 0, y: -2, z: 0},//getNextParallelPosition(scene,i,numActivities,0, boxed),
+        [activity],//null,//[doCatch], //[rootActivity],
+        scale, 
+        true, 
+        frame); //parent entity
+
+    let link = linkActivities(activity, activity2)
+    // redrawLink(link)
+
+    // switchConfigPaneByActivity(current)
+}
+
+
+//============================================================
+//============================================================
+
+
+//Creates a Split code segment
+    //Given the activities [A1,A2]:
+    //before:  A1 -------------------------> A2
+    //after:   A1 -> { -> activities -> } -> A2
+function createSplit(definition)
+{
+    if(!definition)
+    {
+        //default definition if not given
+        definition = new DOMParser().parseFromString('<split><xpath>//foo/bar</xpath><log message="split message"/></split>', 'application/xml').documentElement;
+    }
+
+    //we keep a copy of the full definition
+    let fullDefinition = definition.cloneNode(true)
+
+    //We remove the expression node to leave processing actions only
+    definition.removeChild(definition.children[0])
+
+    //we create the group of activities inside 'split'
+    let splitBox = createActivityGroup('split', 'split', 'end', definition)
+
+    //we obtain the starting activity to configure it
+    let start = document.getElementById(splitBox.getAttribute('group-start'))
+
+    //add expression component (and load definition)
+    start.setAttribute('expression', {position: "0 -0.7 0", configMethod: [updateConfigSplit]})
+    start.components.expression.setDefinition(fullDefinition)
+
+    //As we're creating many boxes and re-positioning, the camera is all over the place
+    //so we reset it where we want it to be 
+    switchConfigPaneByActivity(
+        document.getElementById(splitBox.getAttribute('group-end'))
+    )
+}
+
+//Creates a Try/Catch code segment
+    //Given the activities [A1,A2]:
+    //before:  A1 -------------------------> A2
+    //after:   A1 -> { -> activities -> } -> A2
+function createTryCatch(definition)
+{
+    if(!definition)
+    {
+        //default definition if not given
+        // definition = new DOMParser().parseFromString('<doTry><log message="sample 1"/><doCatch><exception>java.io.Exception</exception><log message="got exception"/></doCatch><doFinally><log message="finally section"/></doFinally></doTry>', 'application/xml').documentElement;
+        definition = new DOMParser().parseFromString('<doTry><log message="try 1"/><log message="try 2"/><doCatch><exception>java.lang.NullPointerException</exception><exception>java.lang.Exception</exception><log message="got exception"/></doCatch><doFinally><log message="finally section"/></doFinally></doTry>', 'application/xml').documentElement;
+    }
+
+    //split definition in separate entities
+    let definitionDoCatch   = definition.querySelector('doCatch')
+    let definitionDoFinally = definition.querySelector('doFinally')
+    definition.removeChild(definitionDoCatch)
+    definition.removeChild(definitionDoFinally)
+
+    //create TRY group
+    let tryBox = createActivityGroup('try', 'try', 'end', definition)
+
+    //obtain frame
+    let tryFrame = tryBox.querySelector('.dnd-handler')
+
+    let width = tryFrame.getAttribute('width')
+
+    //add hide ON/OFF button
+    let groupButton = createButtonReveal()
+    groupButton.setAttribute('position', -(width/2-.5)+' -1 0.1')
+    tryFrame.appendChild(groupButton)
+
+    groupButton.addEventListener('click', function(){
+
+        //obtain parent box
+        let tryBox = this.closest('a-box')
+
+        //find the catch box
+        let catchBox = document.getElementById(tryBox.getAttribute('box-catch'))
+
+        //if catch is visible and we're about the hide it
+        //we also hide the finally box
+        if(catchBox.getAttribute('visible') == true)
+        {
+            //find the finally box
+            let finallyBox = document.getElementById(catchBox.getAttribute('box-finally'))
+
+            //if visible we hide it
+            if(finallyBox.getAttribute('visible') == true){
+                catchBox.querySelector('.menu-button').click()
+            }
+        }
+
+        //reverse visibility
+        let visible = catchBox.getAttribute('visible')
+        catchBox.setAttribute('visible', !visible)
+    });
+
+    //extract catch exceptions
+    let exceptions = definitionDoCatch.querySelectorAll('exception')
+
+    //leave processing actions only
+    for(e of exceptions){
+        definitionDoCatch.removeChild(e)
+    }
+
+    //create 'doCatch' group
+    let catchBox = createActivityGroup('catch', 'catch', 'end', definitionDoCatch, false)
+
+    //indicates it is an unconnected block (does not follow the end-to-end processing path)
+    catchBox.classList.add('standalone')
+
+    //not visible by default
+    catchBox.setAttribute('visible', false)
+
+    //align position with 'doTry' group
+    catchBox.object3D.position.set(
+        tryBox.object3D.position.x,
+        tryBox.object3D.position.y-2,
+        tryBox.object3D.position.z,
+    )
+    catchBox.querySelector('a-plane').setAttribute('color','yellow')
+    catchBox.querySelector('.dnd-handler').classList.remove('interactive')
+
+    //keep reference of catch box
+    tryBox.setAttribute('box-catch', catchBox.id)
+
+
+
+//find start element
+let catchStart = catchBox.querySelector('a-sphere')
+
+//add uri component (and load definition)
+catchStart.setAttribute('exceptions', {position: "0 -0.7 0", configMethod: [updateConfigCatch]})
+// catchStart.components.uri.setDefinition(definition)
+catchStart.components.exceptions.setExceptions(exceptions)
+
+
+
+
+    if(definitionDoFinally)
+    {
+        //obtain frame
+        let catchFrame = catchBox.querySelector('.dnd-handler')
+
+        width = catchFrame.getAttribute('width')
+
+        //add hide ON/OFF button
+        groupButton = createButtonReveal()
+        groupButton.setAttribute('position', -(width/2-.5)+' -1 0.1')
+        catchFrame.appendChild(groupButton)
+
+        groupButton.addEventListener('click', function(){
+            //obtain parent box
+            let tryBox = this.closest('a-box')
+
+            //find the catch box
+            let finallyBox = document.getElementById(tryBox.getAttribute('box-finally'))
+
+            //reverse visibility
+            let visible = finallyBox.getAttribute('visible')
+            finallyBox.setAttribute('visible', !visible)
+        });
+
+        //create 'doCatch' group
+        let finallyBox = createActivityGroup('finally', 'finally', 'end', definitionDoFinally, false)
+
+        //indicates it is an unconnected block (does not follow the end-to-end processing path)
+        finallyBox.classList.add('standalone')
+
+        //not visible by default
+        finallyBox.setAttribute('visible', false)
+
+        //align position with 'doTry' group
+        finallyBox.object3D.position.set(
+            tryBox.object3D.position.x,
+            tryBox.object3D.position.y-4,
+            tryBox.object3D.position.z,
+        )
+        finallyBox.querySelector('a-plane').setAttribute('color','yellow')
+        finallyBox.querySelector('.dnd-handler').classList.remove('interactive')
+
+        //keep reference of catch box
+        catchBox.setAttribute('box-finally', finallyBox.id)
+    }
+
+    //As we're creating many boxes and re-positioning, the camera is all over the place
+    //so we reset it where we want it to be 
+    switchConfigPaneByActivity(
+        document.getElementById(tryBox.getAttribute('group-end'))
+    )
+}
+
+function createButtonReveal()
+{
+    let groupButton = document.createElement('a-entity')
+    // tryFrame.appendChild(groupButton)
+    // groupButton.setAttribute('id', 'group-button')
+    groupButton.setAttribute('class', 'interactive menu-button')
+    groupButton.setAttribute('mixin', 'uigroup')
+    // groupButton.setAttribute('position', -(width/2-.5)+' -1 0.1')
+
+    var arrow = document.createElement('a-triangle');
+    groupButton.appendChild(arrow);
+    arrow.setAttribute("vertex-a","0 -.25 0")
+    arrow.setAttribute("vertex-b","-.25 .25 0")
+    arrow.setAttribute("vertex-c",".25 .25 0")
+    arrow.setAttribute("color","grey")
+    arrow.setAttribute('side', 'double');
+    arrow.setAttribute('scale', '.8 .8 .8')
+
+    groupButton.addEventListener('click', function(){
+
+        let rotation = this.getAttribute('rotation').z 
+
+        if(rotation == 0)
+            rotation = 180
+        else
+            rotation = 0
+
+        this.setAttribute('animation', {property: 'rotation', dur: '100', to: '0 0 '+rotation});
+    });
+
+    return groupButton
+}
+
+
+
+function cleanSelectorRange()
+{
+    let selector = document.getElementById('selector-end')
+
+    if(!selector){
+        return
+    }
+    
+    selector.parentElement.remove(selector)
+}
+
+
+
+
+//This building block is complicated.
+//It aims to deliver on the following bullet points:
+// - create a container (visual and logical) for children activities
+// - freedom to organise internal activities with drag'n'drop
+// - freedom to drag'n'drop the container, and all its children along
+// - automatic container resizing to accommodate children
+//To deliver on all the above, its shape is unintuitive, and is as follows:
+// - The top level container is a-box, invisible and always size 0. (it provides a fixed coordinates reference)
+// - a child 'frame' used to visually contain the activities (it resizes to envelope the activities)
+// - a child 'start' and 'end' activities to envelope the activities (START -> a -> a -> a -> END)
+// - child activities (representing the Camel actions)
+//The 'frame' entity plays the role of the invisible a-box in that when dragged, it actually moves the parent box.
+//When the 'frame' is given the 'dnd-handler' attribute, the drag'n'drop component applies the above behavior.
+function createActivityGroup(groupName, labelStart, labelEnd, definition, connected)
+{
+  var boxed = true
+  var numActivities = 2;
+  var activities = [];
+  var scale = {x: .5, y: .5, z: .5};
+
+  var typeStart = groupName + "-start";
+  var typeEnd   = groupName + "-end";
+
+  var scene = document.getElementById(routes[0]);
+
+  //Groups can be connected or disconnected
+  //e.g. a 'try' group is connected, a 'catch' group is disconnected
+  if(connected == null){
+      connected = true
+  }
+
+
+  var box = document.createElement('a-box')
+  box.classList.add('interactive')
+  var groupId = getUniqueID(groupName+"-box");
+  box.setAttribute('id', groupId)
+  box.setAttribute('opacity', .0)
+  box.setAttribute('transparent', true)
+
+  boxPosition = getNextSequencePosition()
+  box.object3D.position.set(boxPosition.x, boxPosition.y, boxPosition.z);
+
+  box.setAttribute('height', 0)
+  box.setAttribute('width', 0)
+  box.setAttribute('depth', 0.00001)
+//   box.setAttribute('depth', 0)
+  // box.setAttribute('pulse', '')
+  box.setAttribute('dragndrop', '')
+
+  insertActivity(box);
+
+  let source = null
+  let sourceFwdLink = null
+
+  if(connected)
+  {
+    //get reference of activity to follow.
+    source = getActiveActivity();
+
+    //we keep referece.
+    sourceFwdLink = detachForwardLink(source)
+  }
+
+  //create root activity  
+  let rootActivity = createActivity({type: typeStart, scale: scale, detachable: false});
+  rootActivity.removeAttribute('dragndrop')
+
+  //these classes help parenting and redrawing links
+  rootActivity.classList.add('group-start')
+  rootActivity.classList.add('boxed')
+
+  let rootId = rootActivity.getAttribute('id');
+
+//   let rootPos = {x: -1, y: 0, z: 0};
+  let rootPos = {x: 0, y: 0, z: 0};
+
+  let sources = []
+
+  if(connected){
+      sources.push(source)
+  }
+
+  // goLive(rootActivity, rootPos, null, scale, boxed, box);
+  goLive( rootActivity,
+          rootPos,
+          //[source],  //sources to connect the activity, here null (automatic)
+          sources,  //sources to connect the activity, here null (automatic)
+          scale,
+          boxed,
+          box)
+
+
+    // let last = createChildrenActivitiesInGroup(null, rootActivity, definition.children, null)
+    let last = createChildrenActivitiesInGroup(rootActivity, definition.children)
+    activities.push(last)
+
+ 
+  let posClosing = {x: last.object3D.position.x+2, y: 0, z: 0};
+
+
+  //create closing activity
+  var closeActivity = createActivity({type: typeEnd, scale: scale, detachable: false});
+  closeActivity.removeAttribute('dragndrop')
+  
+  //these classes help parenting and redrawing links
+  closeActivity.classList.add('group-end')
+  closeActivity.classList.add('boxed')
+
+  //we make the closing activity to shares ID with starting activity.
+  //the difference between them is the suffix. Example: 'choice-1-start' 'choice-1-end'
+  updateActivityId(closeActivity, rootId.split('start')[0]+"-end");
+
+
+  //labels for Root activity
+  var text = createText();
+  rootActivity.appendChild(text);
+  text.setAttribute('value', labelStart);
+  text.setAttribute('color', 'white');
+  text.setAttribute('side', 'double');
+  text.setAttribute('align', 'center');
+  text.setAttribute('scale', '.9 .9 .9');
+  rootActivity.setAttribute('radius', .25)
+  rootActivity.setAttribute('scale', '1 1 1')
+
+
+  //labels for End activity
+  text = createText();
+  closeActivity.appendChild(text);
+  text.setAttribute('value', labelEnd);
+  text.setAttribute('color', 'white');
+  text.setAttribute('side', 'double');
+  text.setAttribute('align', 'center');
+  text.setAttribute('scale', '1.8 1.8 1.8');
+
+//   goLive(closeActivity, posClosing, activities, scale, boxed, box);
+  goLive(closeActivity, posClosing, activities, scale, false, box);
+
+
+  //only when a forward link existed, we attach it to the end of the group
+  if(sourceFwdLink)
+  {
+    attachSourceToLink(closeActivity, sourceFwdLink);
+  }
+
+  box.setAttribute('group-start', rootActivity.id);
+  box.setAttribute('group-end',   closeActivity.id);
+
+  //is this necessary?
+  scene.setAttribute('lastCreated', closeActivity.id);
+
+
+                let frameWidth = closeActivity.object3D.position.x-rootActivity.object3D.position.x
+
+                let frame = document.createElement('a-plane');
+                box.appendChild(frame);
+                frame.classList.add('interactive')
+                frame.classList.add('dnd-handler')
+                frame.setAttribute('dragndrop','')
+                frame.setAttribute('side', 'double');
+                // frame.setAttribute('color', '#2C3539');
+                frame.setAttribute('width', frameWidth);
+                frame.setAttribute('height', 2);
+                frame.setAttribute('opacity', .1)
+                frame.setAttribute('transparent', true)
+                frame.id = box.id + "-frame"
+
+                // frame.setAttribute('position', posx+" 0 -.1");
+                frame.object3D.position.set(
+                    (rootActivity.object3D.position.x+closeActivity.object3D.position.x)/2,
+                    0,
+                    0
+                )
+
+                // //box label
+                // var text = createText();
+                // frame.appendChild(text);
+                // text.setAttribute('value', "[TRY]");
+                // text.setAttribute('color', 'grey');
+                // text.setAttribute('side', 'double');
+                // text.setAttribute('position', -(frameWidth/2-.5)+' 1 0.1')
+
+
+
+  if(connected){
+    //somehow the link to the multicast is not accurate, need to redraw
+    //anyone wants to review this?
+    redrawLink(getBackwardsLink(rootActivity))
+  }
+
+        //   box.setAttribute('detachable','')
+
+
+  //we try to obtain enveloping frame (if there is one)
+  let groupFrame = getActivityFrame(box)
+
+  //if found, we have 'nested frames'
+  if(groupFrame)
+  {
+    //we position nested frames on top (Z axis) of their parent frame
+    //it's necessay to ensure Drag'n'Drop with work for the child frame
+    frame.object3D.position.set(
+        frame.object3D.position.x,
+        frame.object3D.position.y,
+        frame.object3D.position.z + .01 //on top
+    )
+
+    //we redimension the frame
+    redrawBoxFrame(groupFrame)
+  }
+
+
+//   redrawBox(box, rootActivity, closeActivity)
+
+  return box;
+}
+
+
+//Creates a sequence of linked activities (steps)
+// function createChildrenActivitiesInGroup(expression, refStart, steps, axisY)
+function createChildrenActivitiesInGroup(refStart, steps)
+{
+    //collection of activities created:
+    var branch = []
+
+    setConfigSelector(refStart)
+
+    let lastActivity;
+
+    for(let i=0; i<steps.length; i++)
+    {
+        console.log("step: "+ steps[i].tagName)
+
+        lastActivity = createActivityFromSource(steps[i].tagName, null, {definition: steps[i]})
+
+        //add to collection
+        branch.push(lastActivity);
+    }
+
+    //return last activity created
+    return branch[branch.length-1]
+}
+
+
+function redrawBoxFrame(frame)
+{
+    let rootActivity  = document.getElementById(frame.parentNode.getAttribute('group-start'))
+    let closeActivity = document.getElementById(frame.parentNode.getAttribute('group-end'))
+
+    let width = closeActivity.object3D.position.x - rootActivity.object3D.position.x
+
+    frame.setAttribute('width', width);
+
+    // frame.setAttribute('position', posx+" 0 -.1");
+    frame.object3D.position.set(
+        (rootActivity.object3D.position.x + closeActivity.object3D.position.x)/2,
+        0,
+        0
+    )
+
+    //replace the reveal/hide button in the corner
+    groupButton = frame.querySelector('.menu-button')
+    if(groupButton){
+        groupButton.setAttribute('position', -(width/2-.5)+' -1 0.1')
+    }
+}
+
+//Returns the activity's frame if there is one
+//Only activities within a group have a frame that envelopes them
+//If the activity does not live in a group, it has no frame
+function getActivityFrame(activity)
+{
+    let siblings = activity.parentEl.children
+
+    for(sibling of siblings){
+        if(sibling.localName == 'a-plane'){
+            return sibling
+        }
+    }
+}
+
+
+
+//===========================================
+
+function configCatchPopulateExceptions(divOptions, options)
+{
+    //clean options list
+    divOptions.innerHTML = ""
+
+    for (var name in options){
+        configCatchAddExceptionElements(divOptions, options[name])
+    }
+
+    snippet = `
+        <button type="submit" onclick="configCatchAddExceptionUserAction(this)">add exception...</button>
+    `;
+
+    let button = document.createElement('div');
+    button.innerHTML = snippet
+
+    divOptions.appendChild(button)
+}
+
+function configCatchAddExceptionElements(divOptions, value)
+{
+    // snippet = `
+    //     <label style="width: 15">`+name+`:</label>
+    //     <input type="text" value="`+value+`" size="30" oninput="useEndpointOption(this);syncEditor()">
+    //     <button type="submit" onclick="configEndpointRemoveOption(this)">&cross;</button>
+    // `;
+
+    snippet = `
+        <input type="text" value="`+value+`" size="30" oninput="useCatchException(this);syncEditor()">
+        <button type="submit" onclick="configCatchRemoveException(this)">&cross;</button>
+    `;
+
+    let option = document.createElement('div');
+    option.innerHTML = snippet
+
+    divOptions.appendChild(option)
+}
+
+
+function configCatchAddExceptionUserAction(element)
+{
+    // let name = element.previousElementSibling.value
+
+    // snippet = `
+    //     <label style="width: 15">`+name+`:</label>
+    //     <input type="text" size="30" oninput="useEndpointOption(this);syncEditor()">
+    //     <button type="submit" onclick="configEndpointRemoveOption(this)">&cross;</button>
+    // `;
+
+    snippet = `
+        <input type="text" size="30" oninput="useCatchException(this);syncEditor()">
+        <button type="submit" onclick="configCatchRemoveException(this)">&cross;</button>
+    `;
+
+    let option = document.createElement('div');
+    option.innerHTML = snippet
+
+    element.parentNode.parentNode.insertBefore(option, element.parentNode)
+    // element.parentNode.parentNode.removeChild(element.parentNode)
+
+    option.children[0].select()
+
+    syncEditor()
+}
+
+
+/** 
+ * removes the option from the configuration panel and updates the uri component
+ * @param {HTMLElement} element The option to remove from its parent
+*/
+function configCatchRemoveException(element)
+{
+    //obtain input container
+    let div = element.parentNode
+
+    //obtain index of input (out of all inputs)
+    let index = Array.prototype.indexOf.call(div.parentNode.children, div)
+
+
+    //obtain name of option (without the colon separator)
+    // let option = element.previousElementSibling.textContent.slice(0,-1)
+
+    //setting null deletes the attribute
+    // getActiveActivity().components.uri.setOption(option, null)
+    getActiveActivity().components.exceptions.setException(index, null)
+
+    //remove the option from the configuration panel
+    element.parentNode.parentNode.removeChild(element.parentNode)
+
+    syncEditor()
+}
+
+function useCatchException(input)
+{
+    //obtain input container
+    let div = input.parentNode
+
+    //obtain index of input (out of all inputs)
+    let index = Array.prototype.indexOf.call(div.parentNode.children, div)
+
+    //sets the expression value in the activity
+    // getActiveActivity().components.uri.setOption(input.previousElementSibling.textContent.slice(0,-1), input.value)
+    // getActiveActivity().components.uri.setOption(index, input.value)
+    getActiveActivity().components.exceptions.setException(index, input.value)
+
+    let allExceptions = input.parentNode.parentNode.querySelectorAll('input')
+
+    let labelValue = ""
+
+    for(ex of allExceptions){
+        labelValue = labelValue + ex.value + "\n"
+    }
+
+    // getActiveActivity().components.uri.setTarget(labelValue)
+    // getActiveActivity().components.exceptions.setTarget(labelValue)
+}
+
+function updateConfigCatch(activity)
+{
+    //obtain worked activity
+    var activity = activity || getActiveActivity()
+
+    // if(!activity.components.uri){
+    if(!activity.components.exceptions){
+        return
+    }
+
+    //obtains configuration panel
+    var panel = document.getElementById("config-catch");
+
+    //obtain reference to target input
+    // var targetConfig = panel.getElementsByTagName("input")[0];
+
+    //replace input value using activity values
+    // targetConfig.value = activity.components.uri.getTarget()
+
+    // let options = activity.components.uri.getOptions()
+    let options = activity.components.exceptions.getExceptions()
+
+    // configEndpointPopulateOptions(panel.lastElementChild, options)
+    configCatchPopulateExceptions(panel.lastElementChild, options)
+}
+
+
+//======================================
+
+function copyActivity(activity)
+{
+    //only allow cloning for basic steps
+    if(    activity.localName != 'a-sphere' 
+        || activity.getAttribute('processor-type').endsWith('-start')
+        || activity.getAttribute('processor-type').endsWith('-end')){
+        
+        return
+    }
+
+    let source = {text:"", tab:""};
+    renderActivity(activity, source, null)
+
+    let definition = new DOMParser().parseFromString(source.text, 'application/xml').documentElement;
+  
+    let copy = createActivityFromSource(definition.tagName, null, {definition: definition, golive: false})
+
+    return copy        
+}
+
+
+function cloneActivity(activity)
+{
+    let position = activity.object3D.position.clone()
+
+    let clone = copyActivity(activity)
+
+    if(clone == null){
+        return
+    }
+
+    clone.id = activity.id
+
+    clone.setAttribute('links', activity.getAttribute('links'))
+
+    clone.object3D.position.set(
+        position.x,
+        position.y,
+        position.z,
+    )
+    // let parent = activity.parentNode
+    // parent.removeChild(activity)
+    // parent.appendChild(clone)
+
+    return clone
 }

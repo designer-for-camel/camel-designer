@@ -72,3 +72,11 @@
 - Initial implementation of Camel tracing via Jolokia, and visually displaying results.
 - new 'how-to' guide to help new users getting up to speed
 - fix: issue when saving workspace files. Now only Camel XML should save a '.metadata' file.
+
+## 0.6.0
+
+- Mouse 3D interaction has been rewritten (using raycaster) to accurately pinpoint 3D entities
+- Drag & Drop effect has been rewritten to freely work with entities inside and outside other entities
+- Introduced 'Activity Groups' (sequence of activities forming a unit, e.g. split, loop, etc.)
+- Introduced 'Try-Catch-Finally' definitions to provide initial error handling capabilities.
+- Introduced 'Split' definitions (EIP pattern)  

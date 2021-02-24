@@ -1,24 +1,40 @@
 //Obtains a unique ID that guarantees is not already in use.
+//Base IDs are expected to be given in 2 formats:
+// - Normal activities     (eg. 'log', 'direct', ...)
+// - Group starters/enders (eg. 'multicast-start', 'try-start', ...)
 function getUniqueID(baseUid)
 {
   baseUid = baseUid || "step";
 
   var newUid;
-  if(baseUid.startsWith('choice-'))
-  {
-    //example: 'choice-start' => 'choice-1-start'
-    // newUid = "choice-"+ (++uidCounter) + baseUid.split('choice')[1];
 
-    //example: 'choice-start' => 'choice-1'
-    newUid = "choice-"+ (++uidCounter);
-  }
-  else if(baseUid.startsWith('multicast-'))
+  //WAS
+  // if(baseUid.startsWith('choice-'))
+  // {
+  //   //example: 'choice-start' => 'choice-1-start'
+  //   // newUid = "choice-"+ (++uidCounter) + baseUid.split('choice')[1];
+
+  //   //example: 'choice-start' => 'choice-1'
+  //   newUid = "choice-"+ (++uidCounter);
+  // }
+  // else if(baseUid.startsWith('multicast-'))
+  // {
+  //   //example: 'multicast-start' => 'multicast-1'
+  //   newUid = "multicast-"+ (++uidCounter);
+  // }
+
+  //NOW
+  let baseTokens = baseUid.split('-')
+
+  //if base contains '-' then it is a group (e.g. multicast-start, try-start, ...)
+  if(baseTokens.length > 1)
   {
-    //example: 'multicast-start' => 'multicast-1'
-    newUid = "multicast-"+ (++uidCounter);
+    //we keep first token and add ID
+    newUid = baseTokens[0] + '-' + (++uidCounter)
   }
   else
   {
+    //we add ID
     newUid = baseUid + "-" + (++uidCounter);
   }
 
@@ -57,66 +73,6 @@ function createFrom(metadata)
   from.appendChild(text);
   text.setAttribute('value', metadata.type);
   text.setAttribute('color', '#f49b42');
-  text.setAttribute('position', {x: -0.3, y: 0, z: 0});
-  text.setAttribute('side', 'double');
-
-  return from;
-}
-
-
-function createFrom_original_deprecated(processorType)
-{
-  // give name/id
-  var uid = getUniqueID(processorType);
-  //was
-  //var elementName = processorType+"-"+(++logId);
- 
-  //activity creation
-  var from = document.createElement('a-sphere');
-
-
-
-  //Needed since A-FRAME v1.0.0
-  from.setAttribute('class', 'clickable');
-  // from.setAttribute('class', 'clickable');
-
-  //from.setAttribute(elementName,'');
-  from.setAttribute('id', uid);
-  //was
-  //from.setAttribute('id', elementName);
-  from.setAttribute('start', '');
-  from.setAttribute('processor-type', processorType);
-  from.setAttribute('material', {color: '#52F40C', transparent: true, opacity: 0.5});
-// from.setAttribute('position', fromPos);
-
-  from.setAttribute('radius', .5);
-  from.setAttribute('pulse', '');
-  from.setAttribute('animation', {
-                                  startEvents:'mouseenter',
-                                  pauseEvents:'mouseleave', 
-                                  property: 'scale', 
-                                  dir: 'alternate', 
-                                  dur: '500', 
-                                  to: '1.1 1.1 1.1', 
-                                  loop: 1});
-  from.setAttribute('animation__2', {
-                                  startEvents:'mouseleave',
-                                  property: 'scale',
-                                  dur: '500',
-                                  to: '1.0 1.0 1.0'});
-
-  // var text = document.createElement('a-text');
-  var text = createText();
-
-  from.appendChild(text);
-  // text.setAttribute('value', 'Timer');
-  text.setAttribute('value', processorType);
-
-
-  
-  text.setAttribute('color', '#f49b42');
-  //text.setAttribute('material', {color: 'yellow'});
-  //text.setAttribute('position', {x: -0.3, y: 0, z: 0});
   text.setAttribute('position', {x: -0.3, y: 0, z: 0});
   text.setAttribute('side', 'double');
 
@@ -222,10 +178,26 @@ function createActivity(metadata)
   var scale         = {x: 1, y: 1, z: 1}
   var processorType;
   var detachable = true
+  var golive = true
+  var dragndrop = true
+  var clickable = true
 
-  if('detachable' in metadata)
-  {
+  if('detachable' in metadata){
     detachable = metadata.detachable
+  }
+
+  if('dragndrop' in metadata){
+    dragndrop = metadata.dragndrop
+  }
+
+  if('clickable' in metadata){
+    clickable = metadata.clickable
+  }
+
+  //activity may have been flagged to be manually inserted in the scene (golive = false)
+  //see goLive function
+  if('golive' in metadata){
+    golive = metadata.golive
   }
 
   //definition takes precedence
@@ -268,7 +240,9 @@ function createActivity(metadata)
   configObj = newActivity;
 
   //Needed since A-FRAME v1.0.0
-  newActivity.setAttribute('class', 'clickable');
+  // newActivity.setAttribute('class', 'interactive');
+  newActivity.classList.add('interactive')
+  newActivity.classList.add('configurable')
   newActivity.setAttribute('processor-type', processorType);
 
   //is this necessary?    
@@ -281,34 +255,58 @@ function createActivity(metadata)
 
   newActivity.setAttribute('radius', .5);
   newActivity.setAttribute('scale', scale);
-  newActivity.setAttribute('pulse', '');
-  newActivity.setAttribute('animation', {  startEvents:'mouseenter',
-                                  pauseEvents:'mouseleave',
-                                  property: 'scale',
-                                  dir: 'alternate',
-                                  dur: '500',
-                                  to: animatedScale,
-                                  loop: 5});
+  //newActivity.setAttribute('pulse', '');
+  // newActivity.setAttribute('animation', {  startEvents:'mouseenter',
+  //                                 pauseEvents:'mouseleave',
+  //                                 property: 'scale',
+  //                                 dir: 'alternate',
+  //                                 dur: '500',
+  //                                 to: animatedScale,
+  //                                 loop: 5});
 
-  newActivity.setAttribute('animation__2',{
-                                  startEvents:'mouseleave',
-                                  property: 'scale',
-                                  dur: '500',
-                                  to: scale});
+  // newActivity.setAttribute('animation__2',{
+  //                                 startEvents:'mouseleave',
+  //                                 property: 'scale',
+  //                                 dur: '500',
+  //                                 to: scale});
 
-              if(detachable)
-              {
-                newActivity.setAttribute('detachable','')
-              }
-                      
+  if(detachable){
+    newActivity.setAttribute('detachable','')
+  }
+
+  if(dragndrop){
+    newActivity.setAttribute('dragndrop','')
+  }
+
+  //dragndrop makes it already clickable
+  //it might not be dragndrop but might be clickable (eg 'direct' on a multicast)
+  if(!dragndrop && clickable){
+    newActivity.setAttribute('clickable','')
+  }
+
+  if(golive){
+    newActivity.setAttribute('golive','')
+  }
+
   return newActivity;
 }
 
 
 
-function createLog(definition)
+// function createLog(definition)
+function createLog(metadata)
 {
-  let log = createActivity({type: 'log', definition: definition});
+  //if no metadata is given we initialise it
+  metadata = metadata || {}
+
+  //we ensure type is set
+  metadata.type = 'log'
+
+  //we create the activity
+  let log = createActivity(metadata)
+
+  //was
+  // let log = createActivity({type: 'log', definition: definition});
 
   // Activity label
   var text = createText();
@@ -320,7 +318,7 @@ function createLog(definition)
 
   let defaultMessage = "demo trace "+log.id;
 
-  // label with LOG value
+  // text with actual LOG as configured in Camel
   var label = createText();
   text.appendChild(label);
   label.setAttribute('value', '"'+defaultMessage+'"');
@@ -329,12 +327,13 @@ function createLog(definition)
   label.setAttribute('position', {x: 0, y: -.7, z: 0});
   label.setAttribute('side', 'double');
 
+  //insert activity in the scene
   goLive(log);
 
-  if(definition)
+  if(metadata && metadata.definition)
   {
     //update message shown in label
-    log.getElementsByTagName("a-text")[0].firstChild.setAttribute('value', '"'+definition.getAttribute('message')+'"');
+    log.getElementsByTagName("a-text")[0].firstChild.setAttribute('value', '"'+metadata.definition.getAttribute('message')+'"');
   }
 
   //test
@@ -544,19 +543,29 @@ function createDirect(metadata)
 function createDirectActivity(metadata)
 // function createDirect(metadata)
 {
+  // let params = {};
+  // params.type = 'direct'
+
+  // if(metadata && metadata.scale){
+  //   params.scale = metadata.scale;
+  // }
+  // if(metadata && metadata.definition){
+  //   params.definition = metadata.definition
+  // }
+  // if(metadata && ('detachable' in metadata)){
+  //   params.detachable = metadata.detachable
+  // }
+
   let params = {};
+
+  if(metadata){
+    params = metadata
+  }
+
   params.type = 'direct'
 
-  if(metadata && metadata.scale){
-    params.scale = metadata.scale;
-  }
-  if(metadata && metadata.definition){
-    params.definition = metadata.definition
-  }
-  if(metadata && ('detachable' in metadata)){
-    params.detachable = metadata.detachable
-  }
 
+  
   //create activity
   let activity = createActivity(params);
 
@@ -613,6 +622,14 @@ function createDirectActivity(metadata)
 // Includes the activities into the scene
 function goLive(activity, givenPos, sources, scale, staticLink, parent, handleRewires)
 {
+  //by default activities 'golive' is ON
+  //some activities may have the 'golive' switch OFF (to be inserted manually)
+  if(!activity.hasAttribute('golive'))
+  {
+    //when OFF do nothing
+    return
+  }
+
   //if it's a FROM activity we delegate
   if(activity.hasAttribute('start'))
   {
@@ -628,6 +645,7 @@ function goLive(activity, givenPos, sources, scale, staticLink, parent, handleRe
   //switchConfigPaneByActivity(activity);
   
   syncEditor();
+
 }
 
 //Updates VSCode editor with the changes
@@ -684,8 +702,23 @@ function goLiveTo(to, givenPos, sources, staticLink, parent, handleRewires)
   //obtain reference to attach (wire) to
   sources = sources || [ getActiveActivity() ];
 
-  //scene as default parent if not given
-  parent = parent || scene;
+
+  //determine parent that will own the activity
+  if(parent == null)
+  {
+    //we use the same parent as source, unless it is an end group activity
+    if(sources.length == 1 && !sources[0].getAttribute('processor-type').endsWith('-end')){
+      parent = sources[0].parentNode
+    }
+    else{
+      //scene as default parent if not given
+      parent = parent || scene
+    }
+  }
+
+
+  // //scene as default parent if not given
+  // parent = parent || scene;
 
 
 
@@ -695,9 +728,16 @@ function goLiveTo(to, givenPos, sources, staticLink, parent, handleRewires)
   {
     position = givenPos;
   }
+  else if(sources.length == 1 && !sources[0].getAttribute('processor-type').endsWith('-end')){
+    position = {
+        x: sources[0].object3D.position.x+2,
+        y: sources[0].object3D.position.y,
+        z: 0
+    }
+  } 
   else
   {
-    position = getNextSequencePosition(scene);
+    position = getNextSequencePosition();
   }
 
             // if(staticLink)
@@ -715,13 +755,30 @@ function goLiveTo(to, givenPos, sources, staticLink, parent, handleRewires)
   //to.setAttribute('position', position);
   to.object3D.position.set(position.x, position.y, position.z);
 
+  // if(staticLink)
+  // {
+  //   parent.appendChild(to);
+  // }
+  // else
+  // {
+  //   //otherwise we use insertActivity to maintain order of DOM elements.
+  //   insertActivity(to);
+  // }
 
-  // forEach
-  sources.forEach(item => {
-
+  //loop sources
+  for(item of sources)
+  {
     var link;
 
-    if(processorType == 'multicast-start')
+
+    if(processorType == 'catch-start')
+    {
+      //do nothing
+      //these are standalone activity sequences
+      return
+    }
+    // else if(processorType == 'multicast-start')
+    else if(processorType != 'choice-start' && processorType.endsWith('-start'))
     {
       //for multicast-start the link should not be static
       link = createLink(item, to, false, handleRewires);
@@ -731,16 +788,22 @@ function goLiveTo(to, givenPos, sources, staticLink, parent, handleRewires)
       link = createLink(item, to, staticLink, handleRewires);
     }
 
-    if(parent == null || processorType == "multicast-start")
+    //was
+    //if(parent == null || processorType == "multicast-start")
+    //links to Boxes should not be added to the box 
+    if(processorType.endsWith('-start'))
     {
-      scene.appendChild(link);
+      // scene.appendChild(link);
+      let linkParent = determineLinkParent(item, to, parent)
+      linkParent.appendChild(link)
     }
     else
     {
       parent.appendChild(link);
     }
-  }); // END FOR
+  //}); // END FOR-EACH
 
+  }// END FOR
 
   if(staticLink)
   {
@@ -752,6 +815,15 @@ function goLiveTo(to, givenPos, sources, staticLink, parent, handleRewires)
     insertActivity(to);
   }
 
+  //we try to obtain the group frame (if there is one)
+  let groupFrame = getActivityFrame(to)
+
+  if(groupFrame)
+  {
+    redrawBoxFrame(groupFrame)
+  }
+
+
   switchConfigPaneByActivity(to);
 
   scene.setAttribute("lastCreated", to.id);
@@ -760,6 +832,38 @@ function goLiveTo(to, givenPos, sources, staticLink, parent, handleRewires)
   {
     hintDetachablePending = false
     to.setAttribute('hint', 'message: to detach: SHIFT + CLICK \n to reattach: drag & drop')
+  }
+}
+
+
+//This function evaluates the source and destination to determine
+//the parent that should own the link between the two
+//The destination may yet not be in the scene, hence why its parent needs to be given
+function determineLinkParent(source, destination, destinationParent)
+{
+  //if the parent is not given, we assume the destination is on the scene
+  destinationParent = destinationParent || destination.parentNode
+
+  //this covers the case for same level activities, or activities of the same group
+  if(source.parentNode == destinationParent)
+  {
+    return destinationParent          
+  }
+  //this covers the case for links connecting 2 different groups (group-end ---> group-start)
+  else if(source.classList.contains('group-end') && destination.classList.contains('group-start'))
+  {
+    return source.parentNode.parentNode
+  }
+  //this covers the case for links connecting a group to an activity (group-end ---> activity)
+  else if(source.classList.contains('group-end') && !destination.classList.contains('group-start'))
+  {
+    return destinationParent
+  }
+  //this covers when destination is boxed and source isn't
+  //this covers the case for links connecting an activity to a group (activity ---> group-start)
+  else if(!source.classList.contains('group-end') && destination.classList.contains('group-start'))
+  {
+    return source.parentNode
   }
 }
 
@@ -780,19 +884,24 @@ function createMulticastBox(groupName, labelStart, labelEnd)
   var box = document.createElement('a-box')
 
   //Needed since A-FRAME v1.0.0
-  box.setAttribute('class', 'clickable');
+  // box.setAttribute('class', 'interactive');
+  box.classList.add('interactive')
   var groupId = getUniqueID("multicast-box");
   box.setAttribute('id', groupId)
   box.setAttribute('opacity', .1)
   box.setAttribute('transparent', true)
 
-  boxPosition = getNextSequencePosition(scene, 1, false);
+  box.setAttribute('processor-type','multicast')
+
+  boxPosition = getNextSequencePosition()
+  boxPosition.x += 1
   box.object3D.position.set(boxPosition.x, boxPosition.y, boxPosition.z);
 
   box.setAttribute('height', numActivities)
   box.setAttribute('width', 2)
   box.setAttribute('depth', 0.00001)
-  box.setAttribute('pulse', '')
+  // box.setAttribute('pulse', '')
+  box.setAttribute('dragndrop', '')
 
   //box label
   var text = createText();
@@ -813,7 +922,13 @@ function createMulticastBox(groupName, labelStart, labelEnd)
 
   //create root activity  
   let rootActivity = createActivity({type: typeStart, scale: scale, detachable: false});
+  rootActivity.removeAttribute('dragndrop')
 
+  //these classes help parenting and redrawing links
+  rootActivity.classList.add('group-start')
+  rootActivity.classList.add('boxed')
+  rootActivity.setAttribute('radius', .25)
+  rootActivity.setAttribute('scale', '1 1 1')
 
   let rootId = rootActivity.getAttribute('id');
 
@@ -830,15 +945,18 @@ function createMulticastBox(groupName, labelStart, labelEnd)
   //loop branches
   for(let i=1; i<=numActivities; i++)
   {
-    let activity = createDirectActivity({scale: scale, detachable: false});
+    let activity = createDirectActivity({scale: scale, detachable: false//});
+                                                     , dragndrop: false, clickable: true});
     // let activity = createDirect({scale: scale});
     activity.setAttribute('group', true);
     activity.setAttribute('group-branch',i);
     //activity.setAttribute('scale', scale);
+    // activity.removeAttribute('dragndrop')
       
+
     goLive(
         activity,
-        getNextParallelPosition(scene,i,numActivities,0, boxed),
+        getNextParallelPosition(i,numActivities,0, boxed),
         [rootActivity],
         scale, 
         // null, 
@@ -860,8 +978,14 @@ function createMulticastBox(groupName, labelStart, labelEnd)
 
   //create closing activity
   var closeActivity = createActivity({type: typeEnd, scale: scale, detachable: false});
+  closeActivity.removeAttribute('dragndrop')
 
-  
+  //these classes help parenting and redrawing links
+  closeActivity.classList.add('group-end')
+  closeActivity.classList.add('boxed')
+  closeActivity.setAttribute('radius', .25)
+  closeActivity.setAttribute('scale', '1 1 1')
+
   //we make the closing activity to shares ID with starting activity.
   //the difference between them is the suffix. Example: 'choice-1-start' 'choice-1-end'
   updateActivityId(closeActivity, rootId.split('start')[0]+"-end");
@@ -872,7 +996,8 @@ function createMulticastBox(groupName, labelStart, labelEnd)
   rootActivity.appendChild(text);
   text.setAttribute('value', labelStart);
   text.setAttribute('color', 'white');
-  text.setAttribute('position', {x: -.06*(labelStart.length), y: 0, z: 0}); //centers label based on length
+  // text.setAttribute('position', {x: -.06*(labelStart.length), y: 0, z: 0}); //centers label based on length
+  text.setAttribute('align', 'center')
   text.setAttribute('side', 'double');
 
   //labels for End activity
@@ -880,8 +1005,10 @@ function createMulticastBox(groupName, labelStart, labelEnd)
   closeActivity.appendChild(text);
   text.setAttribute('value', labelEnd);
   text.setAttribute('color', 'white');
-  text.setAttribute('position', {x: -.06*(labelEnd.length), y: 0, z: 0}); //centers lable based on length
+  // text.setAttribute('position', {x: -.06*(labelEnd.length), y: 0, z: 0}); //centers lable based on length
   text.setAttribute('side', 'double');
+  text.setAttribute('align', 'center')
+  text.setAttribute('scale', '.8 .8 .8')
 
   goLive(closeActivity, posClosing, activities, scale, boxed, box);
 
@@ -902,9 +1029,19 @@ function createMulticastBox(groupName, labelStart, labelEnd)
   //anyone wants to review this?
   redrawLink(getBackwardsLink(rootActivity))
 
-
-          box.setAttribute('detachable','')
+          // //experimental
+          // box.setAttribute('detachable','')
   
+
+  //we try to obtain enveloping frame (if there is one)
+  let groupFrame = getActivityFrame(box)
+
+  //if found, we have 'nested frames'
+  if(groupFrame)
+  {
+    //we redimension the frame
+    redrawBoxFrame(groupFrame)
+  }
 
   return box;
 }
@@ -961,7 +1098,7 @@ function createMulticast(definition)
       //   labels[0].setAttribute('value','otherwise');
       //   labels[0].setAttribute('position','0 .5 0');
       //   otherwise.removeChild(labels[1]);
-      //   otherwise.setAttribute('class', 'non-clickable');
+      //   otherwise.setAttribute('class', 'non-interactive');
 
       //   //now we're done, we switch back on, and we sync.
       //   syncEditorEnabled = true;
@@ -1086,6 +1223,8 @@ function createMulticast(definition)
             expression = steps.shift();
           }
 
+// setConfigSelector(start)
+
           //we process the remaining steps 
           let last = createChoiceBranch(expression, start, steps, axisY)
 
@@ -1112,6 +1251,14 @@ function createMulticast(definition)
           }
         }
 
+        //the insert operation upsets the END Y position
+        //we realign START and END activities
+        end.object3D.position.set(
+          end.object3D.position.x,
+          start.object3D.position.y,
+          end.object3D.position.z
+        )
+
         setConfigSelector(end)
         redrawAllLinks()
 
@@ -1128,16 +1275,22 @@ function createMulticast(definition)
       //Visually the result will be a sphere connected to another sphere via a cylinder
       function linkActivities(source, destination)
       {
-        //this is important when source is in a box (e.g. multicast)
-        let sourcePosition = getPositionInScene(source)
+        let sourcePosition = source.object3D.position
+
+        //if activities are at different levels
+        if(source.parentNode != destination.parentNode)
+        {
+          //this is important when source is in a box (e.g. multicast)
+          sourcePosition = getPositionInScene(source)
+        }
 
         //Automatic repositioning, the destination always after the source
         if(destination.object3D.position.x <= sourcePosition.x)
         {
           destination.object3D.position.set(
                 sourcePosition.x + 2,
-                destination.object3D.position.y,
-                destination.object3D.position.z
+                sourcePosition.y,
+                sourcePosition.z
               )
         }
 
@@ -1145,8 +1298,24 @@ function createMulticast(definition)
         var newLink = createLink(source , destination);
 
         //adds link to the scene
-        //source.parentNode.appendChild(newLink);
-        getActivityRoute(source).appendChild(newLink)
+        //when the source is a group start activity
+        if(source.getAttribute('processor-type').endsWith('-start'))
+        {
+          //we determine the parent that should own the link
+          let linkParent = determineLinkParent(source, destination)
+          linkParent.appendChild(newLink)
+        }
+        //when the source is end-of-group, link is owned by box's parent
+        else if(source.classList.contains('group-end')){
+          source.parentNode.parentNode.appendChild(newLink) 
+        }
+        else
+        {
+          //for all other cases we default to the source's parent
+          source.parentNode.appendChild(newLink);
+        }
+
+        return newLink
       }
 
       //Creates a sequence of linked activities (steps)
@@ -1166,7 +1335,7 @@ function createMulticast(definition)
           // {
           //   let steps = branch[i].children
           // }
-          lastActivity = createActivityFromSource(steps[i].tagName, null, steps[i])
+          lastActivity = createActivityFromSource(steps[i].tagName, null, {definition: steps[i]})
 
           // lastActivity = createDirectActivity();
 
@@ -1236,10 +1405,15 @@ function createMulticast(definition)
         if(expression)
         {
           //Needed since A-FRAME v1.0.0
-          cylinder.setAttribute('class', 'clickable');
+          // cylinder.setAttribute('class', 'interactive');
+          cylinder.classList.add('interactive')
+          cylinder.classList.add('configurable')
 
           //animation to suggest it's editable
-          cylinder.setAttribute('pulse', '');
+          // cylinder.setAttribute('pulse', '');
+          // cylinder.setAttribute('dragndrop', '');
+          cylinder.setAttribute('clickable', '');
+          cylinder.setAttribute('choice-expression', '')
           cylinder.setAttribute('animation', {startEvents:'mouseenter',pauseEvents:'mouseleave', property: 'scale', dir: 'alternate', dur: '500', to: '1.1 1.1 1.1', loop: 5});
           cylinder.setAttribute('animation__2', {startEvents:'mouseleave', property: 'scale', dur: '500', to: '1.0 1.0 1.0'}); 
 
@@ -1261,8 +1435,18 @@ function createMulticast(definition)
       //This shape allows interaction not possible with the line alone.
       function createLink(src, dst, staticLink, handleRewires)
       {
-        srcPos = getPositionInScene(src);
-        dstPos = getPositionInScene(dst);
+        //if destination is boxed (follows a boxed source, except end of group)
+        // if(isBoxed(src) && !src.id.endsWith('-end'))
+        // {
+        //   srcPos = src.object3D.position
+        //   dstPos = dst.object3D.position
+        // }
+        // else
+        // {
+        //   srcPos = getPositionInScene(src);
+        //   dstPos = getPositionInScene(dst);
+        // }
+
 
         staticLink = staticLink || false;
 
@@ -1356,7 +1540,7 @@ function detachForwardLink(activity)
   var forwardLink  = null;
 
   //We only look forward links for non-group starter activities
-  if(!activityType.endsWith('-start')) //filters out groups
+  if(activityType != 'choice-start' && activityType != 'multicast-start') //filters out groups
   {
     // forwardLink = getForwardLink(activity);
     forwardLink = getForwardLink(activity);
@@ -1521,7 +1705,8 @@ function deleteConfigActivity()
   let toDelete = getActiveActivity();
 
   //not allowed to delete multicast activities
-  if(isBoxed(toDelete))
+  // if(isBoxed(toDelete))
+  if(isMulticast(toDelete.parentNode))
   {
     return;
   }
@@ -1556,6 +1741,8 @@ function deleteConfigActivity()
   {
       //we rewire
       attachDestinationToLink(next, linkBackwards);
+
+      redrawLink(linkBackwards)
   }
   else
   {
