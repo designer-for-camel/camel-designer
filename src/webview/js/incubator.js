@@ -1315,12 +1315,29 @@ function createTryCatch(definition)
             //if visible we hide it
             if(finallyBox.getAttribute('visible') == true){
                 catchBox.querySelector('.menu-button').click()
-            }
+            }           
         }
 
         //reverse visibility
         let visible = catchBox.getAttribute('visible')
-        catchBox.setAttribute('visible', !visible)
+        visible = !visible
+        catchBox.setAttribute('visible', visible)
+
+        let fromClass = 'interactive'
+        let toClass   = 'interactive-hidden'
+
+        if(visible){
+            fromClass = 'interactive-hidden'
+            toClass   = 'interactive'
+        }
+
+        let interactiveEntities = catchBox.querySelectorAll('.'+fromClass)
+
+        //make all activities static
+        for(entity of interactiveEntities) {
+            entity.classList.replace(fromClass, toClass)
+        }
+
     });
 
     //extract catch exceptions
@@ -1352,6 +1369,11 @@ function createTryCatch(definition)
     //keep reference of catch box
     tryBox.setAttribute('box-catch', catchBox.id)
 
+    //make all activities static
+    let interactiveEntities = catchBox.querySelectorAll('.interactive')
+    for(entity of interactiveEntities) {
+        entity.classList.replace('interactive', 'interactive-hidden')
+    }
 
 
 //find start element
@@ -1386,7 +1408,24 @@ catchStart.components.exceptions.setExceptions(exceptions)
 
             //reverse visibility
             let visible = finallyBox.getAttribute('visible')
-            finallyBox.setAttribute('visible', !visible)
+            visible = !visible
+            finallyBox.setAttribute('visible', visible)
+
+            let fromClass = 'interactive'
+            let toClass   = 'interactive-hidden'
+
+            if(visible){
+                fromClass = 'interactive-hidden'
+                toClass   = 'interactive'
+            }
+
+            let interactiveEntities = finallyBox.querySelectorAll('.'+fromClass)
+
+            //make all activities static
+            for(entity of interactiveEntities) {
+                entity.classList.replace(fromClass, toClass)
+            }
+
         });
 
         //create 'doCatch' group
@@ -1409,6 +1448,12 @@ catchStart.components.exceptions.setExceptions(exceptions)
 
         //keep reference of catch box
         catchBox.setAttribute('box-finally', finallyBox.id)
+
+        //make all activities static
+        interactiveEntities = finallyBox.querySelectorAll('.interactive')
+        for(entity of interactiveEntities) {
+            entity.classList.replace('interactive', 'interactive-hidden')
+        }
     }
 
     //As we're creating many boxes and re-positioning, the camera is all over the place
@@ -1569,7 +1614,7 @@ function createActivityGroup(groupName, labelStart, labelEnd, definition, connec
 
   //create closing activity
   var closeActivity = createActivity({type: typeEnd, scale: scale, detachable: false});
-  closeActivity.removeAttribute('dragndrop')
+//   closeActivity.removeAttribute('dragndrop')
   
   //these classes help parenting and redrawing links
   closeActivity.classList.add('group-end')
@@ -1712,24 +1757,65 @@ function createChildrenActivitiesInGroup(refStart, steps)
 
 function redrawBoxFrame(frame)
 {
-    let rootActivity  = document.getElementById(frame.parentNode.getAttribute('group-start'))
-    let closeActivity = document.getElementById(frame.parentNode.getAttribute('group-end'))
+    // let rootActivity  = document.getElementById(frame.parentNode.getAttribute('group-start'))
+    // let closeActivity = document.getElementById(frame.parentNode.getAttribute('group-end'))
 
-    let width = closeActivity.object3D.position.x - rootActivity.object3D.position.x
+    //obtains activities (for now, not including boxes/groups)
+    let activities = frame.parentNode.querySelectorAll('a-sphere')
 
+    //get START/END activities (first and last)
+    let rootActivity  = activities[0]
+    let closeActivity = activities[activities.length-1]
+
+    //vars for maximum and minimum Y coordinate
+    let maxY = 0
+    let minY = 0
+
+    //find maximum and minimum values
+    for(let i=0; i<activities.length;i++){
+        
+        if(activities[i].object3D.position.y > maxY){
+            maxY = activities[i].object3D.position.y
+            continue
+        }
+        
+        if(activities[i].object3D.position.y < minY){
+            minY = activities[i].object3D.position.y
+            continue
+        }
+    }
+
+    //calculate new height, width and frame Y shift
+    let height = (maxY - minY) + 2
+    let shiftY = (maxY + minY) / 2
+    let width  = closeActivity.object3D.position.x - rootActivity.object3D.position.x
+
+    //setters
     frame.setAttribute('width', width);
+    frame.setAttribute('height', height)
 
     // frame.setAttribute('position', posx+" 0 -.1");
     frame.object3D.position.set(
         (rootActivity.object3D.position.x + closeActivity.object3D.position.x)/2,
-        0,
+        shiftY,
         0
     )
 
-    //replace the reveal/hide button in the corner
+    //reposition the reveal/hide button in the corner
     groupButton = frame.querySelector('.menu-button')
     if(groupButton){
-        groupButton.setAttribute('position', -(width/2-.5)+' -1 0.1')
+        // groupButton.setAttribute('position', -(width/2-.5)+' -1 0.1')
+        groupButton.object3D.position.set(
+            -(width/2-.5),
+            - height/2,
+            0.1
+        )
+
+        // let type = rootActivity.getAttribute('processor-type')
+
+        // if(type == 'try-start'){
+        //     let boxCatch = document.getElementById(frame.parentNode.getAttribute('box-catch'))
+        // }
     }
 }
 

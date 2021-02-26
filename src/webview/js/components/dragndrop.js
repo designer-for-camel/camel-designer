@@ -112,9 +112,9 @@ AFRAME.registerComponent("dragndrop", {
 
         //The center of an entity (in a sphere, the core central point) is the point that defines its position
         //When clicking on an entity, the user rarely hits the bull's eye (the center), so we need to calculate the
-        //translation vector to the center. This will help smooth the Drag'n'Drop effect
+        //translation vector to the center. This will help smoothing the Drag'n'Drop effect
         // A-SPHERE:
-        //|-----------------O-------------.---|
+        //|-----------------o-------------.---|
         //                center        click
         //                  |-translation-|
         this.translation= {x: 0, y: 0}
@@ -124,11 +124,6 @@ AFRAME.registerComponent("dragndrop", {
 
             //if the dragging state has been just added we initialise variables
             if (e.detail == "dragging") {
-                // this.range = 0;
-                // this.dist = this.el.object3D.position
-                // .clone()
-                // .sub(this.el.sceneEl.camera.el.object3D.position)
-                // .length();
                 
                 //when it is in a group and has a frame
                 if(this.groupFrame)
@@ -138,11 +133,8 @@ AFRAME.registerComponent("dragndrop", {
                     this.originalPosY   = this.groupFrame.object3D.position.y
                 }
 
-
                 //we obtain the Raycaster's direction vector
                 this.updateDirection()
-                
-                // let camera = this.el.sceneEl.camera.el
                 
                 //We use the concept of 'similar triangles' to calculate the new coordinates
                 //The Z axis helps us to obtain the factor to use to calculate X and Y
@@ -196,13 +188,49 @@ AFRAME.registerComponent("dragndrop", {
             childShift.y = this.el.parentNode.object3D.position.y
         }
         
+        let posX = this.newposition.x + this.translation.x - childShift.x
+        let posY = this.newposition.y + this.translation.y - childShift.y
+        
+        if(isBoxed(this.el)){
+
+            let end = document.getElementById(this.el.parentNode.getAttribute("group-end"))
+
+            //end activities are allowed to resize width
+            if(this.el == end){
+                posY = 0
+
+            }
+            else if(!this.el.components.detachable || !this.el.components.detachable.detached){
+                //check for X-axis boundaries:
+                //if it reaches a boundary we stop dragging
+                if(posX < 0){
+                    posX = 0
+                    // this.el.removeState("dragging");
+                }
+                else if(posX > end.object3D.position.x){
+                    posX = end.object3D.position.x
+                    // this.el.removeState("dragging");
+                }
+            }
+        }
+
         //keep newly calculated entity's position
         this.target.set(
-            this.newposition.x + this.translation.x - childShift.x,
-            this.newposition.y + this.translation.y - childShift.y,
-            this.newposition.z,
+            posX,
+            posY,
+            this.newposition.z
             )
-        
+
+        //redraw frame (if not detached)
+        if(!this.el.components.detachable || !this.el.components.detachable.detached){
+            //moving a boxed activity might require to resize its frame
+            let frame = getActivityFrame(this.el)
+
+            //if there is a frame then redraw
+            if(frame){
+                redrawBoxFrame(frame)
+            }
+        }
         //this.target.copy(
         //  camera.object3D.position
         //    .clone()
@@ -255,7 +283,7 @@ AFRAME.registerComponent("dragndrop", {
             }
 
             //if not a REST component (they don't have links to update)
-            if(!this.el.hasAttribute('rest-dsl')){
+            if( ! this.el.hasAttribute('rest-dsl')){
                 this.adjustLinks();
             }
         }
