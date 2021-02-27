@@ -105,10 +105,8 @@ AFRAME.registerComponent('detachable', {
         let interactiveEntities = getActivityRoute(activity).querySelectorAll('.interactive')
 
         //make all activities static
-        // for(entity of activity.parentNode.children) {
         for(entity of interactiveEntities) {
             if(entity != activity)
-                // entity.setAttribute('class', 'interactive-frozen')
                 entity.classList.replace('interactive', 'interactive-frozen')
         }
 
@@ -308,7 +306,7 @@ AFRAME.registerComponent('detachable', {
 
             //====================================================
             // POSITION RECALCULATION (part 1/2):
-            // An activity detached/reattached is subject to change is hierarchy position.
+            // An activity detached/reattached is subject to change its hierarchy position.
             // The strategy is: 
             //  - to translate its source position from its container position to its scene position
             //  - to translate its scene position to its destination container position

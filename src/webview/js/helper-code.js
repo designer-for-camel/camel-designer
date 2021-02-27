@@ -536,7 +536,12 @@ thisNode = getNextActivity(start);
 
 function renderRouteActivity(activity, mycode, iterator)
 {
-    renderActivity(activity, mycode, iterator)
+    let last = renderActivity(activity, mycode, iterator)
+
+    if(last){
+        return getNextActivity(last)
+    }
+
     return getNextActivity(activity);
 }
 
@@ -554,20 +559,20 @@ function renderActivity(activity, mycode, iterator) {
                         //    mycode.tab+mycode.tab+'<simple>'+activity.getElementsByTagName('a-text')[0].lastChild.getAttribute('value').slice(1,-1)+'</simple>\n'+
                         //    mycode.tab+mycode.tab+'<simple>'+activity.getElementsByTagName('a-text')[0].lastChild.getAttribute('value').slice(1,-1)+'</simple>\n'+
                         //    mycode.tab+mycode.tab+'<'+activity.attributes.language.value+activity.getLanguageAttributes()+'>'+activity.getElementsByTagName('a-text')[0].lastChild.getAttribute('value').slice(1,-1)+'</'+activity.attributes.language.value+'>\n'+
-                           mycode.tab+mycode.tab+activity.components.expression.getXml()+'\n'+
+                           mycode.tab+'  '+activity.components.expression.getXml()+'\n'+
                            mycode.tab+'</setProperty>\n'
             break;
         case 'header':
             mycode.text += mycode.tab+'<setHeader '+getCamelAttributeHeaderName()+'="'+activity.getElementsByTagName('a-text')[0].firstChild.getAttribute('value').slice(0,-1)+'" id="'+activity.id+'">\n'+
                         //    mycode.tab+mycode.tab+'<simple>'+activity.getElementsByTagName('a-text')[0].lastChild.getAttribute('value').slice(1,-1)+'</simple>\n'+
                         //    mycode.tab+mycode.tab+'<'+activity.attributes.language.value+activity.getLanguageAttributes()+'>'+activity.getElementsByTagName('a-text')[0].lastChild.getAttribute('value').slice(1,-1)+'</'+activity.attributes.language.value+'>\n'+
-                           mycode.tab+mycode.tab+activity.components.expression.getXml()+'\n'+
+                           mycode.tab+'  '+activity.components.expression.getXml()+'\n'+
                            mycode.tab+'</setHeader>\n'
             break;
         case 'body':
             mycode.text += mycode.tab+'<setBody id="'+activity.id+'">\n'+
                         //    mycode.tab+mycode.tab+'<simple>'+activity.getElementsByTagName('a-text')[0].firstChild.getAttribute('value').slice(1,-1)+'</simple>\n'+
-                           mycode.tab+mycode.tab+activity.components.expression.getXml()+'\n'+
+                           mycode.tab+'  '+activity.components.expression.getXml()+'\n'+
                            mycode.tab+'</setBody>\n'
             break;
         case 'direct':
@@ -581,6 +586,32 @@ function renderActivity(activity, mycode, iterator) {
             return getNextActivity(activity);
             //ignore, it's handled by renderChoice
             break;
+
+
+        case 'split-start':
+            mycode.text += mycode.tab+'<split id="'+activity.parentNode.id+'">\n'+
+                           mycode.tab+'  '+activity.components.expression.getXml()+'\n'
+            mycode.tab  += '  '
+            break;
+        case 'split-end':
+            mycode.tab = mycode.tab.slice(0, -2);
+            mycode.text += mycode.tab+'</split>\n'
+            break;
+
+
+        case 'try-start':
+            mycode.text += mycode.tab+'<doTry id="'+activity.parentNode.id+'">\n'//+
+                            // mycode.tab+'  '+activity.components.expression.getXml()+'\n'
+            mycode.tab  += '  '
+            break;
+        case 'try-end':
+            //Here need to generate DO-CATCH code
+
+            mycode.tab = mycode.tab.slice(0, -2);
+            mycode.text += mycode.tab+'</doTry>\n'
+            break;
+
+
         case 'multicast-start':
             // ading the ID for now is problematic, needs to be reviewed first
             mycode.text += mycode.tab+'<multicast strategyRef="demoStrategy" id="'+activity.parentNode.id+'">\n'
