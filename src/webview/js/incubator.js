@@ -1824,11 +1824,13 @@ function redrawBoxFrame(frame)
 //If the activity does not live in a group, it has no frame
 function getActivityFrame(activity)
 {
-    if(!activity || !activity.parentEl){
+    // if(!activity || !activity.parentEl){
+    if(!activity || !activity.parentNode){
         return
     }
 
-    let siblings = activity.parentEl.children
+    // let siblings = activity.parentEl.children
+    let siblings = activity.parentNode.children
 
     for(sibling of siblings){
         if(sibling.localName == 'a-plane'){
