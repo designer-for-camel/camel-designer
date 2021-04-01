@@ -1824,6 +1824,10 @@ function redrawBoxFrame(frame)
 //If the activity does not live in a group, it has no frame
 function getActivityFrame(activity)
 {
+    if(!activity || !activity.parentEl){
+        return
+    }
+
     let siblings = activity.parentEl.children
 
     for(sibling of siblings){
@@ -2029,3 +2033,39 @@ function cloneActivity(activity)
 
     return clone
 }
+
+
+//------------------------
+
+function getStartOfCatch(tryBox)
+{
+    //when given
+    if(tryBox)
+    {
+        //we obtain the catch box
+        let catchBox = document.getElementById(tryBox.getAttribute('box-catch'))
+
+        //return the start element
+        return document.getElementById(catchBox.getAttribute('group-start'))
+    }
+}
+
+function getStartOfFinally(catchBox)
+{
+    //when given
+    if(catchBox)
+    {
+        //we obtain the catch box
+        let finallyBox = document.getElementById(catchBox.getAttribute('box-finally'))
+
+        //if there is one
+        if(finallyBox)
+        {
+            //return the start element
+            return document.getElementById(finallyBox.getAttribute('group-start'))
+        }
+    }
+}
+
+
+

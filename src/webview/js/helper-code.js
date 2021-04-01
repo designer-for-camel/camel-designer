@@ -599,16 +599,60 @@ function renderActivity(activity, mycode, iterator) {
             break;
 
 
+        //Try-Catch statements are handled in the following way:
+        // - on try-start we open the XML tag
+        // - on try-end:
+        //     1) we obtain the catch-start and render 
+        //     2) we obtain the finally-start and render
+        //     3) we close the doTry XML tag
         case 'try-start':
-            mycode.text += mycode.tab+'<doTry id="'+activity.parentNode.id+'">\n'//+
-                            // mycode.tab+'  '+activity.components.expression.getXml()+'\n'
+            mycode.text += mycode.tab+'<doTry id="'+activity.parentNode.id+'">\n'
             mycode.tab  += '  '
             break;
         case 'try-end':
-            //Here need to generate DO-CATCH code
 
+            //obtain CATCH start activity
+            let catchActivity = getStartOfCatch(activity.parentNode)
+
+            do{
+                //render all CATCH activities
+                catchActivity = renderRouteActivity(catchActivity, mycode, null)
+            }
+            while(catchActivity.getAttribute('processor-type') != 'catch-end')
+
+            //close CATCH tag
+            mycode.tab = mycode.tab.slice(0, -2);
+            mycode.text += mycode.tab+'</doCatch>\n'
+
+            //obtain FINALLY start activity
+            let finallyActivity = getStartOfFinally(catchActivity.parentNode)
+
+            //if there is one
+            if(finallyActivity)
+            {
+                do{
+                    //render all FINALLY activities
+                    finallyActivity = renderRouteActivity(finallyActivity, mycode, null)
+                }
+                while(finallyActivity.getAttribute('processor-type') != 'finally-end')
+
+                //close CATCH tag
+                mycode.tab = mycode.tab.slice(0, -2);
+                mycode.text += mycode.tab+'</doFinally>\n'
+            }
+
+            //close TRY tag
             mycode.tab = mycode.tab.slice(0, -2);
             mycode.text += mycode.tab+'</doTry>\n'
+            break;
+
+        case 'catch-start':
+            mycode.text += mycode.tab+'<doCatch id="'+activity.parentNode.id+'">\n'
+            mycode.tab  += '  '
+            break;
+        case 'finally-start':
+            mycode.text += mycode.tab+'<doFinally id="'+activity.parentNode.id+'">\n'
+            mycode.tab  += '  '
             break;
 
 
