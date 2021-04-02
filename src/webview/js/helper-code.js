@@ -657,31 +657,24 @@ function renderActivity(activity, mycode, iterator) {
 
 
         case 'multicast-start':
-            // ading the ID for now is problematic, needs to be reviewed first
+            // adding the ID for now is problematic, needs to be reviewed first
             mycode.text += mycode.tab+'<multicast strategyRef="demoStrategy" id="'+activity.parentNode.id+'">\n'
             // mycode.text += mycode.tab+'<multicast strategyRef="demoStrategy">\n'
             mycode.tab  += '  '
-            // mycode.tab  += '<p>'
 
-    iterator = document.evaluate('//a-box[@id="'+activity.parentNode.id+'"]//a-sphere[@processor-type="direct"]', document, null, XPathResult.ANY_TYPE, null);
+            iterator = document.evaluate('//a-box[@id="'+activity.parentNode.id+'"]//a-sphere[@processor-type="direct"]', document, null, XPathResult.ANY_TYPE, null);
+  
+            let direct = iterator.iterateNext();
+            let lastDirect
 
-                    // activity = iterator.iterateNext();
-
-
-                   let direct = iterator.iterateNext();
-
-
-            // while (processorType != 'multicast-end') {
             while (direct) {
-                    // var next = iterator.iterateNext();
-                    // processorType = next.getAttribute('processor-type');
                     renderRouteActivity(direct, mycode, iterator);
+                    lastDirect = direct
                     direct = iterator.iterateNext();
-
             }
-            //we return the end activity to force closure
-            return getNextActivity(getNextActivity(activity));
-            break;
+
+            //return last multicast activity
+            return lastDirect
         case 'multicast-end':
             mycode.tab = mycode.tab.slice(0, -2);
             mycode.text += mycode.tab+'</multicast>\n'
