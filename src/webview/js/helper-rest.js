@@ -76,7 +76,6 @@ function createRestGroupBox(definition)
     // box.setAttribute('scale', scale)
 
     //ATTENTION: this attribute registers the drag & drop behaviour
-    // box.setAttribute('pulse', '')
     box.classList.add('interactive')
     box.setAttribute('dragndrop','')
 
@@ -270,7 +269,6 @@ function createRestMethod(definition)
   activity.setAttribute('radius', .5);
   // activity.classList.add('clickable')
   activity.setAttribute('clickable', '');
-  // activity.setAttribute('pulse', '');
   // activity.setAttribute('scale', scale);
 
   //metadata info

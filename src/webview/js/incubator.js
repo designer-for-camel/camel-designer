@@ -908,7 +908,7 @@ function setTracingUserAlert(message, disableTracing)
 }
 
 
-
+/*
 function setGroupSelector(activity)
 {
         //Since A-Frame 1.0.0
@@ -953,6 +953,7 @@ function setGroupSelector(activity)
 
         // console.log("ring created on: "+activity.id);
 }
+*/
 
 //creates a frame around the start/end activities
 //returns the frame created
@@ -1236,6 +1237,9 @@ function initialiseTryCatchFrame(frame)
     //after:   A1 -> { -> activities -> } -> A2
 function createSplit(definition)
 {
+    //we're about to create multiple activities, so we stop streaming updates until we're done
+    syncEditorEnabled = false;
+
     if(!definition)
     {
         //default definition if not given
@@ -1263,6 +1267,10 @@ function createSplit(definition)
     switchConfigPaneByActivity(
         document.getElementById(splitBox.getAttribute('group-end'))
     )
+
+  //now we're done, we switch back on, and we sync.
+  syncEditorEnabled = true;
+  syncEditor();
 }
 
 //Creates a Try/Catch code segment
@@ -1271,6 +1279,10 @@ function createSplit(definition)
     //after:   A1 -> { -> activities -> } -> A2
 function createTryCatch(definition)
 {
+    //we're about to create multiple activities, so we stop streaming updates until we're done
+    syncEditorEnabled = false;
+
+
     if(!definition)
     {
         //default definition if not given
@@ -1461,6 +1473,10 @@ catchStart.components.exceptions.setExceptions(exceptions)
     switchConfigPaneByActivity(
         document.getElementById(tryBox.getAttribute('group-end'))
     )
+    
+  //now we're done, we switch back on, and we sync.
+  syncEditorEnabled = true;
+  syncEditor();
 }
 
 function createButtonReveal()
@@ -1558,7 +1574,6 @@ function createActivityGroup(groupName, labelStart, labelEnd, definition, connec
   box.setAttribute('width', 0)
   box.setAttribute('depth', 0.00001)
 //   box.setAttribute('depth', 0)
-  // box.setAttribute('pulse', '')
   box.setAttribute('dragndrop', '')
 
   insertActivity(box);

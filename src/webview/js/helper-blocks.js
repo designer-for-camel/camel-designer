@@ -255,7 +255,7 @@ function createActivity(metadata)
 
   newActivity.setAttribute('radius', .5);
   newActivity.setAttribute('scale', scale);
-  //newActivity.setAttribute('pulse', '');
+
   // newActivity.setAttribute('animation', {  startEvents:'mouseenter',
   //                                 pauseEvents:'mouseleave',
   //                                 property: 'scale',
@@ -900,7 +900,6 @@ function createMulticastBox(groupName, labelStart, labelEnd)
   box.setAttribute('height', numActivities)
   box.setAttribute('width', 2)
   box.setAttribute('depth', 0.00001)
-  // box.setAttribute('pulse', '')
   box.setAttribute('dragndrop', '')
 
   //box label
@@ -1410,7 +1409,6 @@ function createMulticast(definition)
           cylinder.classList.add('configurable')
 
           //animation to suggest it's editable
-          // cylinder.setAttribute('pulse', '');
           // cylinder.setAttribute('dragndrop', '');
           cylinder.setAttribute('clickable', '');
           cylinder.setAttribute('choice-expression', '')

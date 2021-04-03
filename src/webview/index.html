@@ -10,7 +10,8 @@
 
     <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script> -->
     <!-- <script src="https://unpkg.com/aframe-outline@%5E1.1.0/build/aframe-outline.min.js"></script> -->
-    <script src="${srcPathScheme}/node_modules/aframe/dist/aframe-v1.0.4.min.js"></script>
+    <!-- <script src="${srcPathScheme}/node_modules/aframe/dist/aframe-v1.0.4.min.js"></script> -->
+    <script src="${srcPathScheme}/node_modules/aframe/dist/aframe-v1.2.0.min.js"></script>
     <script src="${srcPathScheme}/node_modules/aframe-aabb-collider-component/dist/aframe-aabb-collider-component.min.js"></script>
 
     <!-- local scripts -->
@@ -20,9 +21,11 @@
     <script src="${srcPathScheme}/src/webview/js/helper.js"></script>
 
     <!-- custom aframe components -->
+    <script src="${srcPathScheme}/src/webview/js/components/exceptions.js"></script>
     <script src="${srcPathScheme}/src/webview/js/components/uri.js"></script>
     <script src="${srcPathScheme}/src/webview/js/components/hint.js"></script>
     <script src="${srcPathScheme}/src/webview/js/components/tracing.js"></script>
+    <script src="${srcPathScheme}/src/webview/js/components/dragndrop.js"></script>
     <script src="${srcPathScheme}/src/webview/js/components/expression.js"></script>
     <script src="${srcPathScheme}/src/webview/js/components/detachable.js"></script>
     <script src="${srcPathScheme}/src/webview/js/components/keyboardlistener.js"></script>
@@ -135,6 +138,8 @@
                   <option value="log"     >log</option>
                   <option value="direct"  >call to... (direct)</option>
                   <option value="choice"  >choice</option>
+                  <option value="try-catch"  >try-catch</option>
+                  <option value="split"  >split</option>
                   <option value="parallel">parallel (fork)</option>
                   <option disabled>loop</option>
                   <option disabled>split</option>
@@ -306,12 +311,28 @@
         </div>
       </div>
 
+      <div class="activityconfig" id="config-catch"><br/>
+        <label style="font-size:18px;">Catch exception/s:</label>
+        <!-- <button class="delete" type="submit" onclick="deleteConfigActivity()">delete</button> -->
+        </br></br>
+        <div class="config-catch-options" style="display: inline-block; width: 50; text-align: right;">
+        </div>
+      </div>
     <!-- Spacial scene (A-Frame elements) -->
     <a-scene myoutline cursor="rayOrigin:mouse" raycaster="objects: .interactive, .testcollidable" vr-mode-ui="enabled: false">
 
       <a-assets>
         <img id="routeThumbnail" crossorigin="anonymous" src="${srcPathScheme}/src/media/routes-ring.jpg">
         <img id="camel-icon" crossorigin="anonymous" src="${srcPathScheme}/src/media/camel-origami2.png">
+
+        <a-mixin
+        id="uigroup"
+        geometry="primitive: plane; width: .6; height: 0.6"
+        material="color: grey; shader: flat; opacity: 0.4;"
+        animation__scale="property: scale; to: 1.2 1.2 1.2; dur: 200; startEvents: mouseenter"
+        animation__scale_reverse="property: scale; to: 1 1 1; dur: 200; startEvents: mouseleave"
+       ></a-mixin>
+
       </a-assets>
 
       <a-entity>
