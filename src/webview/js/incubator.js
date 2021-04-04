@@ -1294,7 +1294,9 @@ function createTryCatch(definition)
     let definitionDoCatch   = definition.querySelector('doCatch')
     let definitionDoFinally = definition.querySelector('doFinally')
     definition.removeChild(definitionDoCatch)
-    definition.removeChild(definitionDoFinally)
+    if(definitionDoFinally){
+        definition.removeChild(definitionDoFinally)
+    }
 
     //create TRY group
     let tryBox = createActivityGroup('try', 'try', 'end', definition)
@@ -1325,7 +1327,7 @@ function createTryCatch(definition)
             let finallyBox = document.getElementById(catchBox.getAttribute('box-finally'))
 
             //if visible we hide it
-            if(finallyBox.getAttribute('visible') == true){
+            if(finallyBox && finallyBox.getAttribute('visible') == true){
                 catchBox.querySelector('.menu-button').click()
             }           
         }

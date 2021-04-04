@@ -278,8 +278,12 @@ function createActivityFromSource(type, delay, definition, lastAction) {
             return createActivityDelayed(createKafka, delay, definition.definition, lastAction);            
             // break;
         case 'file':
-            return createActivityDelayed(createFile, delay, definition.definition, lastAction);            
+            return createActivityDelayed(createFile, delay, definition.definition, lastAction);
             // break;
+        case 'split':
+            return createActivityDelayed(createSplit, delay, definition.definition, lastAction);
+        case 'doTry':
+            return createActivityDelayed(createTryCatch, delay, definition.definition, lastAction);
         default:
             //if none of the above, then it's unknown or unsupported yet.
             return createActivityDelayed(createUnknown, delay, definition.definition, lastAction);            
