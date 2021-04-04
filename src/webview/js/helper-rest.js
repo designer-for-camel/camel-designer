@@ -380,7 +380,8 @@ function isRestElement(element)
   //direct activities are a special case, they exist in both views: Routes & REST
   //we need to look at its parent element to resolve the question
   if(type == 'direct'){
-    return isRestElement(element.parentElement);
+    // return isRestElement(element.parentElement);
+    return isRestElement(element.parentNode);
   }
 
   return type.startsWith('rest');

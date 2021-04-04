@@ -569,6 +569,8 @@ function createDirectActivity(metadata)
   //create activity
   let activity = createActivity(params);
 
+      activity.setAttribute('double-click','')
+
   //lower opacity
   activity.setAttribute('opacity', 0.2);
   
