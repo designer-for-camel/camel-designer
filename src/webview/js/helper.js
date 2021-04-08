@@ -38,6 +38,20 @@ function insertActivity(newElement, refActivity)
     parent = refActivity.parentNode;
   }
 
+  //This ensures activities that follow TRY-CATCH-FINALLY groups
+  //are added to the DOM tree after the 3 boxes TRY-CATCH-FINALLY
+  if(refActivity.localName == 'a-box'){
+    let catchId = refActivity.getAttribute('box-catch')
+    if(catchId){
+      refActivity = document.getElementById(catchId)
+
+      let finallyId = refActivity.getAttribute('box-finally')
+      if(finallyId){
+        refActivity = document.getElementById(finallyId)
+      }
+    }
+  }
+
   //insert after reference
   parent.insertBefore(newElement, refActivity.nextSibling);
 

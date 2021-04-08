@@ -1536,7 +1536,7 @@ function cleanSelectorRange()
 // - freedom to organise internal activities with drag'n'drop
 // - freedom to drag'n'drop the container, and all its children along
 // - automatic container resizing to accommodate children
-//To deliver on all the above, its shape is unintuitive, and is as follows:
+//To deliver on all the above, its shape is unintuitive, and is shaped as follows:
 // - The top level container is a-box, invisible and always size 0. (it provides a fixed coordinates reference)
 // - a child 'frame' used to visually contain the activities (it resizes to envelope the activities)
 // - a child 'start' and 'end' activities to envelope the activities (START -> a -> a -> a -> END)
@@ -1771,12 +1771,9 @@ function createChildrenActivitiesInGroup(refStart, steps)
     return branch[branch.length-1]
 }
 
-
+//Resizes the frame ensuring all activities feel visually contained.
 function redrawBoxFrame(frame)
 {
-    // let rootActivity  = document.getElementById(frame.parentNode.getAttribute('group-start'))
-    // let closeActivity = document.getElementById(frame.parentNode.getAttribute('group-end'))
-
     //obtains activities (for now, not including boxes/groups)
     let activities = frame.parentNode.querySelectorAll('a-sphere')
 
@@ -1827,13 +1824,129 @@ function redrawBoxFrame(frame)
             - height/2,
             0.1
         )
-
-        // let type = rootActivity.getAttribute('processor-type')
-
-        // if(type == 'try-start'){
-        //     let boxCatch = document.getElementById(frame.parentNode.getAttribute('box-catch'))
-        // }
     }
+
+    //Identify type of group
+    let groupType = rootActivity.getAttribute("processor-type")
+
+    //Depending on the group type, sibling frames might need to be adjusted
+    //e.g. dragging activities in frames of type try-catch-finally might require to redraw sibling frames
+    switch(groupType){
+        case 'try-start': 
+            redrawFrameTrySiblings(frame, height)
+            break;
+        case 'catch-start': 
+            redrawFrameCatchSiblings(frame, height)
+            break;
+        case 'finally-start':
+            redrawFrameFinallySiblings(frame, height)
+            break;
+        default:
+            return;
+    }
+}
+
+//Repositions TRY sibling frames (affected by TRY size and position changes)
+function redrawFrameTrySiblings(frame, height)
+{
+    //obtain all related group boxes
+    let boxTry     = frame.parentNode
+    let boxCatch   = boxTry.nextSibling
+    let boxFinally = document.getElementById(boxCatch.getAttribute('box-finally'))
+
+    //obtain CATCH variables
+    let frameCatch = boxCatch.querySelector('.dnd-handler')
+    let heightCatch = frameCatch.getAttribute('height')
+
+    //set new CATCH position according to new frame size and position
+    boxCatch.object3D.position.set(
+        boxTry.object3D.position.x,
+        boxTry.object3D.position.y - height/2 + frame.object3D.position.y - heightCatch/2 - frameCatch.object3D.position.y,
+        0
+    )
+
+    if(boxFinally)
+    {
+        //obtain FINALLY variables
+        let frameFinally = boxFinally.querySelector('.dnd-handler')
+        let heightFinally = frameFinally.getAttribute('height')
+    
+        //set FINALLY position according to new frame size and position
+        boxFinally.object3D.position.set(
+            boxTry.object3D.position.x,
+            boxTry.object3D.position.y - height/2 + frame.object3D.position.y - heightCatch/1 - heightFinally/2 - frameFinally.object3D.position.y,
+            0
+        )
+    }
+}
+
+//Repositions CATCH sibling frames (affected by CATCH size and position changes)
+function redrawFrameCatchSiblings(frame, height)
+{
+    //obtain all related group boxes
+    let boxCatch = frame.parentNode
+    let boxTry = boxCatch.previousSibling
+    let boxFinally = document.getElementById(boxCatch.getAttribute('box-finally'))
+
+    //obtain TRY variables
+    let frameTry = boxTry.querySelector('.dnd-handler')
+    let heightTry = frameTry.getAttribute('height')
+
+    //set TRY position according to new frame size and position
+    boxTry.object3D.position.set(
+        boxCatch.object3D.position.x,
+        boxCatch.object3D.position.y + height/2 + frame.object3D.position.y + heightTry/2 - frameTry.object3D.position.y,
+        0
+    )
+
+    if(boxFinally)
+    {
+        //obtain FINALLY variables
+        let frameFinally = boxFinally.querySelector('.dnd-handler')
+        let heightFinally = frameFinally.getAttribute('height')
+    
+        //set FINALLY position according to new frame size and position
+        boxFinally.object3D.position.set(
+            boxCatch.object3D.position.x,
+            boxCatch.object3D.position.y - height/2 + frame.object3D.position.y - heightFinally/2 - frameFinally.object3D.position.y,
+            0
+        )
+    }
+
+    redrawAllLinks()
+}
+
+//Repositions FINALLY sibling frames (affected by FINALLY size and position changes)
+function redrawFrameFinallySiblings(frame, height)
+{
+    //obtain all related group boxes
+    let boxFinally = frame.parentNode
+    let boxCatch   = boxFinally.previousSibling
+    let boxTry     = boxCatch.previousSibling
+
+    //obtain TRY variables
+    let frameTry = boxTry.querySelector('.dnd-handler')
+    let heightTry = frameTry.getAttribute('height')
+
+    //obtain CATCH variables
+    let frameCatch  = boxCatch.querySelector('.dnd-handler')
+    let heightCatch = frameCatch.getAttribute('height')
+
+    //set CATCH position according to new frame size and position
+    boxCatch.object3D.position.set(
+        boxFinally.object3D.position.x,
+        boxFinally.object3D.position.y + height/2 + frame.object3D.position.y + heightCatch/2 - frameCatch.object3D.position.y,
+        0
+    )
+
+    //set TRY position according to new frame size and position
+    boxTry.object3D.position.set(
+        boxFinally.object3D.position.x,
+        boxFinally.object3D.position.y + height/2 + frame.object3D.position.y + heightCatch/1 + heightTry/2 - frameTry.object3D.position.y,
+        0
+    )
+
+    redrawAllLinks()
 }
 
 //Returns the activity's frame if there is one
@@ -2086,6 +2199,11 @@ function getStartOfFinally(catchBox)
     }
 }
 
+
+
+
+
+//======================
 
 function doubleClick(fn, timeout = 500) {
     let last = Date.now();
