@@ -18,6 +18,7 @@ Please bear in mind this *VSCode* extension is in 'early-prototype' phase and is
   - select activities to configure
 * Configuration panels per activity
 * Predefined sets (*Choice* / *Parallel*)
+* Error handling with Try/Catch/Finally statements
 * Open Camel XML files and render visually.
 * Trace live Camel Exchanges
 
@@ -46,11 +47,8 @@ To get more familiar with the available functionality, check the   [*HOW-TO*](./
 
   Pending definition
 
-
 ## Pending code improvements
 
-- Current 'Drag & Drop' in Designer view lacks precision, it's not using a-frame/three.js native mechanisms.
-  Needs to be replaced with native one.
 - Current XML rendering for Camel routes uses 3D objects to navigate.
   Applying an XSLT transform on the HTML nodes might improve the process to rendering the source code. 
 
