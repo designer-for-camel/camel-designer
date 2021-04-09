@@ -80,4 +80,5 @@
 - Double click behaviour has been rewritten to fit with the new mouse interaction.
 - Introduced 'Activity Groups' (sequence of activities forming a unit, e.g. splits, loops, etc.)
 - Introduced 'Try-Catch-Finally' definitions to provide initial error handling capabilities.
-- Introduced 'Split' definitions (EIP pattern)  
+- Introduced 'Split' definitions (EIP pattern)
+- test
