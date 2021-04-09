@@ -64,7 +64,7 @@
 		"jsdom-global": "3.0.2",
 		"mocha": "^6.1.4",
 		"requirejs": "^2.3.6",
-		"three": "^0.117.1",
+		"three": "^0.125.0",
 		"typescript": "^3.3.1",
 		"vscode-test": "^1.0.2",
 		"webgl-mock-threejs": "0.0.1"
@@ -72,8 +72,8 @@
 	"dependencies": {
 		"@types/vscode": "^1.44.0",
 		"aframe-aabb-collider-component": "^3.2.0",
-		"node-fetch": "^2.6.0",
-		"xmldom": "^0.3.0",
+		"node-fetch": "^2.6.1",
+		"xmldom": "^0.5.0",
 		"xpath": "0.0.27"
 	},
 	"repository": {
