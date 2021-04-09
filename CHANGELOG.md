@@ -76,7 +76,8 @@
 ## 0.6.0
 
 - Mouse 3D interaction has been rewritten (using raycaster) to accurately pinpoint 3D entities
-- Drag & Drop effect has been rewritten to freely work with entities inside and outside other entities
-- Introduced 'Activity Groups' (sequence of activities forming a unit, e.g. split, loop, etc.)
+- Drag'n'Drop effect has been rewritten to freely work with entities inside/outside other entities
+- Double click behaviour has been rewritten to fit with the new mouse interaction.
+- Introduced 'Activity Groups' (sequence of activities forming a unit, e.g. splits, loops, etc.)
 - Introduced 'Try-Catch-Finally' definitions to provide initial error handling capabilities.
 - Introduced 'Split' definitions (EIP pattern)  
