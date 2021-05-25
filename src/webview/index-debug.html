@@ -151,6 +151,15 @@
                   <option value="choice"  >choice</option>
         <option value="try-catch"  >try-catch</option>
         <option value="split"  >split</option>
+
+        <!-- <option value="dataformat"  >data-format</option> -->
+        <optgroup label="data-format: ">
+          <option value="base64">base64</option>
+          <option value="jacksonxml">xml (Jackson)</option>
+          <option value="json-jackson">json (Jackson)</option>
+          <option value="dftest">dftest</option>
+        </optgroup>
+
                   <option value="parallel">parallel (fork)</option>
                   <option disabled>loop</option>
                   <option disabled>split</option>
@@ -324,6 +333,24 @@
         </div>
       </div>
 
+      <div class="activityconfig" id="config-dataformat"><br/>
+        <div>
+          <label>Transformation:</label>
+          <select id="select-dataformat" onchange="useDataFormatDirection(this);syncEditor();">
+            <option value="marshal">marshal</option>
+            <option value="unmarshal">unmarshal</option>
+          </select>
+        </div>
+
+        <!-- <label>Transformation:</label> -->
+        <!-- <input type="text" size="50" oninput="useEndpointTarget(this);syncEditor()" id="input-target"> -->
+        <button class="delete" type="submit" onclick="deleteConfigActivity()">delete</button>
+        <!-- </br> -->
+        </br>
+        <div class="config-endpoint-options" style="display: inline-block; width: 50; text-align: right;">
+        </div>
+      </div>
+
       <div class="activityconfig" id="config-catch"><br/>
         <label style="font-size:18px;">Catch exception/s:</label>
         <!-- <button class="delete" type="submit" onclick="deleteConfigActivity()">delete</button> -->
@@ -367,6 +394,13 @@
          animation__scale="property: scale; to: 1.2 1.2 1.2; dur: 200; startEvents: mouseenter"
          animation__scale_reverse="property: scale; to: 1 1 1; dur: 200; startEvents: mouseleave"
         ></a-mixin>
+
+        <a-mixin
+        id="dataformat"
+        geometry="primitive: cone"
+        material="color: grey; shader: flat; opacity: 0.4;"
+        animation__geometry="property: opacity; to 0.0; dur: 2000; startEvents: mouseenter"
+       ></a-mixin>
 
       </a-assets>
 

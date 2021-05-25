@@ -27,7 +27,7 @@ AFRAME.registerComponent('uri', {
         this.attrValue.configMethod[0](this.el)
 
 
-        this.attributes        = {}
+        // this.attributes        = {}
 
     },
 
@@ -41,10 +41,31 @@ AFRAME.registerComponent('uri', {
         {
             let uri = definition.attributes.uri.value.split(":")
 
-            this.scheme = uri[0]
+            // if(uri.length == 2){
+                this.scheme = uri[0]
+            // }
+            // else{
+            //     this.scheme = uri[0]+":"+uri[1]
+            // }
 
             //remove 'scheme' and keep remaining
-            this.defaultUri = uri[1]
+            // this.defaultUri = uri[1]
+            this.defaultUri = uri[uri.length - 1]
+
+            this.schemeSpecificPart = ''
+
+            if(uri.length>2){
+                // this.defaultUri += ":"+uri[2]
+                //set scheme-specific-part
+                //ref: https://datatracker.ietf.org/doc/html/rfc2718#section-1
+                for(let i=1; i<uri.length-1; i++){
+                    this.schemeSpecificPart += uri[i]
+                    if(i < uri.length-2){
+                        this.schemeSpecificPart += ':'
+                    }
+                }
+            }
+
 
             //look at options
             let options = this.defaultUri.split("?")
@@ -113,6 +134,10 @@ AFRAME.registerComponent('uri', {
         }
     },
 
+    getSchemeSpecificPart: function () {
+        return this.schemeSpecificPart
+    },
+
     getValue: function () {
 
         //set target to default value
@@ -134,6 +159,10 @@ AFRAME.registerComponent('uri', {
             options = "?"+options.replace(/&/g,"&amp;")
         }
         
+        if(this.schemeSpecificPart != ''){
+            return this.scheme+":"+this.schemeSpecificPart+":"+target+options
+        }
+
         return this.scheme+":"+target+options
     },
 

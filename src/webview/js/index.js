@@ -1346,6 +1346,12 @@ case 'catch-start':
     updateConfigCatch();
     break;
     
+
+    case 'dataformat':
+      newConfigPane = "config-dataformat";
+      updateConfigEndpointDataformat(activity);
+      break;
+
           case 'to':
               newConfigPane = "config-endpoint-to";
               updateConfigEndpointTo(activity);

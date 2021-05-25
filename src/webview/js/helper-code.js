@@ -284,6 +284,11 @@ function createActivityFromSource(type, delay, definition, lastAction) {
             return createActivityDelayed(createSplit, delay, definition.definition, lastAction);
         case 'doTry':
             return createActivityDelayed(createTryCatch, delay, definition.definition, lastAction);
+
+
+        case 'dataformat':
+            return createActivityDelayed(createDataformat, delay, definition.definition, lastAction);
+
         default:
             //if none of the above, then it's unknown or unsupported yet.
             return createActivityDelayed(createUnknown, delay, definition.definition, lastAction);            
@@ -686,6 +691,13 @@ function renderActivity(activity, mycode, iterator) {
         case 'unknown':
             mycode.text += mycode.tab+activity.getElementsByTagName('a-text')[0].firstChild.getAttribute('value')+'\n'
             break;
+
+
+        case 'dataformat':
+            //assumes activity is an endpoint (<to>) and has URI
+            mycode.text += mycode.tab+'<to uri="'+activity.components.uri.getValue()+'" id="'+activity.id+'"/>\n'
+            break;
+
         case 'to':
             //assumes activity is an endpoint (<to>) and has URI
             mycode.text += mycode.tab+'<to uri="'+activity.components.uri.getValue()+'" id="'+activity.id+'"/>\n'

@@ -142,14 +142,21 @@ function createSelectedOption(event)
         case 'header':   createHeader();     break;        
         case 'body':     createBody();       break;
 
-                        case 'kafka':     createKafka();       break;
-                        case 'file':     createFile();       break;
+        case 'kafka':    createKafka();      break;
+        case 'file':     createFile();       break;
+
+        // case 'dataformat':     createDataformat();       break;
+        case 'base64':       createDataformatWith(event.selectedOptions[0].value);       break;
+        case 'jacksonxml':   createDataformatWith(event.selectedOptions[0].value);       break;
+        case 'json-jackson': createDataformatWith(event.selectedOptions[0].value);       break;
+        case 'dftest':       createDataformat();                                         break;
+
 
         case 'log':      createLog();        break;
         case 'direct':   createDirect();     break;
         case 'choice':   createChoice();     break;
-case 'try-catch':createTryCatch();   break;
-case 'split':    createSplit();      break;
+        case 'try-catch':createTryCatch();   break;
+        case 'split':    createSplit();      break;
         case 'parallel': createMulticast();  break;
 
         case 'rest-group': createRestGroup();  break;
@@ -2262,3 +2269,192 @@ AFRAME.registerComponent('double-click', {
 
     }
 });
+
+
+//=====================
+
+
+function createDataformatWith(dataformat)
+{
+    let definition = new DOMParser().parseFromString('<to uri="dataformat:'+dataformat+':unmarshal"/>', "text/xml").documentElement
+    createDataformat(definition)
+}
+
+
+function createDataformat(definition)
+{
+    // definition = definition || new DOMParser().parseFromString('<to uri="dataformat:base64:marshal"/>', "text/xml").documentElement    
+    definition = definition || new DOMParser().parseFromString(
+        '<marshal>'+
+            '<jacksonxml unmarshalTypeName="org.apache.camel.component.jacksonxml.TestPojoView" jsonView="org.apache.camel.component.jacksonxml.Views$Age"/>'+
+        '</marshal>',
+    "text/xml").documentElement
+
+    // let dataformat = createGenericEndpointTo(definition)
+    let dataformat = createEndpointDataFormat(definition)
+
+    let details = getDataFormatDetails(dataformat)
+
+    dataformat.setAttribute('opacity', 0.2)
+    // shapeA.setAttribute('animation', {property: 'rotation', dur: '5000', from: '0.4', to: '0', dir: 'alternate',loop: true, easing: 'linear'});
+
+    let label = dataformat.querySelector('a-text')
+    label.object3D.position.set(0, -.9, 0)
+    // label.setAttribute('value', '(dataformat)')
+    label.setAttribute('value', details['info'])
+//   text.setAttribute('value', activity.components.uri.getSchemeSpecificPart());
+
+    label.setAttribute('scale', '.8 .8 .8')
+
+    let box1 = document.createElement('a-box')
+    box1.setAttribute('height', 0.5)
+    box1.setAttribute('width', .5)
+    box1.setAttribute('depth', .5)
+    box1.setAttribute('rotation', '0 150 225')
+    box1.setAttribute('color', 'yellow')
+    dataformat.appendChild(box1)
+
+    var text = createText();
+    box1.appendChild(text);
+    // text.setAttribute('value', 'A');
+    text.setAttribute('value', details['in']);
+    // text.setAttribute('color', 'black');
+    text.setAttribute('color', 'green');
+    text.setAttribute('align', 'center');
+    // text.setAttribute('side', 'double');
+    text.object3D.position.set(0,0,.25)
+    text.setAttribute('rotation', '0 0 -45')
+    // text.setAttribute('scale', '1.8 1.8 1.8')
+
+    text = createText();
+    box1.appendChild(text);
+    // text.setAttribute('value', 'B');
+    text.setAttribute('value', details['out']);
+    // text.setAttribute('color', 'white');
+    text.setAttribute('color', 'yellow');
+    text.setAttribute('align', 'center');
+    // text.setAttribute('side', 'double');
+    text.object3D.position.set(0,0,-.26)
+    text.setAttribute('rotation', '0 180 225')
+    // text.setAttribute('scale', '1.8 1.8 1.8')
+
+    box1.setAttribute('animation__rotation', {property: 'rotation', dur: '5000', from: '0 -30 45', to: '0 210 225',loop: true, easing: 'easeInOutQuad', dir: 'alternate'});
+    box1.setAttribute('animation__color',    {property: 'color',    dur: '5000', from: '#FFFF00', to: '#008000',loop: true, easing: 'easeInOutQuad', dir: 'alternate'});
+
+    return dataformat
+}
+
+// function createGenericEndpointTo(definition, type)
+function createEndpointDataFormat(definition)
+{
+  if(definition.nodeName  != 'to'){
+      definition = defineDataFormatAsOneLiner(definition)
+  }
+
+  //default type will be the scheme of the uri (e.g. 'file' in uri="file:name")
+  type = definition.getAttribute('uri').split(":")[0];
+
+  //create
+  let activity = createActivity({type: "dataformat", definition: definition});
+
+  //add uri component (and load definition)
+//   activity.setAttribute('uri', {position: "0 -0.7 0", configMethod: [updateConfigEndpointTo]})
+  activity.setAttribute('uri', {position: "0 -0.7 0", configMethod: [updateConfigEndpointDataformat]})
+  activity.components.uri.setDefinition(definition)
+
+  //this is the label inside the geometry (activity descriptor)
+  var text = createText();
+  activity.appendChild(text);
+  text.setAttribute('value', type);
+//   text.setAttribute('value', activity.components.uri.getSchemeSpecificPart());
+//   text.setAttribute('value', 'dummy');
+  text.setAttribute('color', 'white');
+  text.setAttribute('align', 'center');
+  text.setAttribute('side', 'double');
+
+  goLive(activity);
+
+  return activity
+}
+
+function updateConfigEndpointDataformat(activity)
+{
+    //obtain worked activity
+    var activity = activity || getActiveActivity()
+
+    //obtains configuration panel
+    var panel = document.getElementById("config-dataformat");
+
+    //obtain reference to target input
+    // var targetConfig = panel.getElementsByTagName("input")[0];
+    var targetConfig = panel.getElementsByTagName("select")[0];
+
+    //replace input value using activity values
+    targetConfig.value = activity.components.uri.getTarget()
+    // let tokens = activity.components.uri.getTarget().split(':')
+    // targetConfig.value = activity.components.uri.getTarget().split(':')[1]
+    // targetConfig.value = activity.components.uri.getSchemeSpecificPart()
+
+    let options = activity.components.uri.getOptions()
+
+    configEndpointPopulateOptions(panel.lastElementChild, options)
+}
+
+function useDataFormatDirection(input)
+{
+    var activity = getActiveActivity()
+
+    //sets the expression value in the activity
+    // getActiveActivity().components.uri.setTarget(input.value+':'+activity.components.uri.getTarget())
+    activity.components.uri.setTarget(input.value)
+
+    let label = activity.querySelector('a-text')
+    label.setAttribute('value', getDataFormatDetails(activity)['info'])
+}
+
+function getDataFormatDetails(dataformat)
+{
+    let type = dataformat.components.uri.getSchemeSpecificPart()
+    let dir  = dataformat.components.uri.getTarget()
+
+    switch(type){
+        case 'base64':
+            if(dir == 'marshal'){
+                return {info:'(String to Base64)', in: 'str', out: 'B64'}
+            }
+            else{
+                return {info:'(Base64 to String)', in: 'B64', out: 'str'}
+                // return '(Base64 to String)'
+            }
+        ;
+
+        case 'jacksonxml':
+            if(dir == 'marshal'){
+                return {info:'(Java to XML)', in: 'Java',   out: 'XML'}
+            }
+            else{
+                return {info:'(XML to Java)', in: 'XML', out: 'Java', }
+            }
+        ;
+
+        case 'json-jackson':
+            if(dir == 'marshal'){
+                return {info:'(Java to JSON)', in: 'Java',   out: 'JSON'}
+            }
+            else{
+                return {info:'(JSON to Java)', in: 'JSON', out: 'Java', }
+            }
+        ;
+    }
+}
+
+function defineDataFormatAsOneLiner(definition)
+{
+    let direction = definition.nodeName
+
+    let dataFormatType = definition.firstChild.nodeName
+
+    // let oneLiner = "dataformat:"+dataFormatType+":"+direction
+
+    return new DOMParser().parseFromString('<to uri="dataformat:'+dataFormatType+':'+direction+'">', "text/xml").documentElement
+}
