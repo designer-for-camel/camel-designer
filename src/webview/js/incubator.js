@@ -2448,13 +2448,37 @@ function getDataFormatDetails(dataformat)
     }
 }
 
+//This function translates DataFormat definitions from:
+//  from: <marhal><(type)></marhal>
+//  to:   <to uri="dataformat:type:marshal"...
+//Both definitions are equivalent, but the second is defined as a one line endpoint definition
 function defineDataFormatAsOneLiner(definition)
 {
-    let direction = definition.nodeName
+    //keeps marhal/unmarshal instruction
+    let direction      = definition.nodeName
 
+    //keeps the dataformat in use
     let dataFormatType = definition.firstChild.nodeName
 
-    // let oneLiner = "dataformat:"+dataFormatType+":"+direction
+    //keeps all attributes defined
+    let attributes = definition.firstChild.attributes
 
-    return new DOMParser().parseFromString('<to uri="dataformat:'+dataFormatType+':'+direction+'">', "text/xml").documentElement
+    //variable to keep the URI options for 1 line definition
+    let options = ""
+    if(attributes.length > 0){
+        options = "?"
+    }
+
+    //translate attributes to URI options
+    for(let i=0; i<attributes.length; i++){
+        if(i==0){
+            options += attributes[i].name + "=" +attributes[i].value
+        }
+        else{
+            options += "&amp;"+attributes[i].name + "=" +attributes[i].value
+        }
+    }
+
+    //returns DataFormat definition as a one line definition
+    return new DOMParser().parseFromString('<to uri="dataformat:'+dataFormatType+':'+direction+options+'">', "text/xml").documentElement
 }
