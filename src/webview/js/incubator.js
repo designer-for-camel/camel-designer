@@ -2340,6 +2340,7 @@ function createDataformat(definition)
 
     box1.setAttribute('animation__rotation', {property: 'rotation', dur: '5000', from: '0 -30 45', to: '0 210 225',loop: true, easing: 'easeInOutQuad', dir: 'alternate'});
     box1.setAttribute('animation__color',    {property: 'color',    dur: '5000', from: '#FFFF00', to: '#008000',loop: true, easing: 'easeInOutQuad', dir: 'alternate'});
+    // box1.setAttribute('animation__color',    {property: 'color',    dur: '5000', from: '#FFFF00', to: '#FF0000',loop: true, easing: 'easeInOutQuad', dir: 'alternate'});
 
     return dataformat
 }
@@ -2458,10 +2459,10 @@ function defineDataFormatAsOneLiner(definition)
     let direction      = definition.nodeName
 
     //keeps the dataformat in use
-    let dataFormatType = definition.firstChild.nodeName
+    let dataFormatType = definition.firstElementChild.nodeName
 
     //keeps all attributes defined
-    let attributes = definition.firstChild.attributes
+    let attributes = definition.firstElementChild.attributes
 
     //variable to keep the URI options for 1 line definition
     let options = ""

@@ -140,6 +140,13 @@
                   <option value="choice"  >choice</option>
                   <option value="try-catch"  >try-catch</option>
                   <option value="split"  >split</option>
+
+                  <optgroup label="data-format: ">
+                    <option value="base64">base64</option>
+                    <option value="jacksonxml">xml/java (Jackson)</option>
+                    <option value="json-jackson">json/java (Jackson)</option>
+                    <option value="dftest">dftest</option>
+                  </optgroup>
                   <option value="parallel">parallel (fork)</option>
                   <option disabled>loop</option>
                   <option disabled>split</option>
@@ -311,6 +318,20 @@
         </div>
       </div>
 
+      <div class="activityconfig" id="config-dataformat"><br/>
+        <div>
+          <label>Transformation:</label>
+          <select id="select-dataformat" onchange="useDataFormatDirection(this);syncEditor();">
+            <option value="marshal">marshal</option>
+            <option value="unmarshal">unmarshal</option>
+          </select>
+        </div>
+        <button class="delete" type="submit" onclick="deleteConfigActivity()">delete</button>
+        </br>
+        <div class="config-endpoint-options" style="display: inline-block; width: 50; text-align: right;">
+        </div>
+      </div>
+      
       <div class="activityconfig" id="config-catch"><br/>
         <label style="font-size:18px;">Catch exception/s:</label>
         <!-- <button class="delete" type="submit" onclick="deleteConfigActivity()">delete</button> -->

@@ -286,7 +286,10 @@ function createActivityFromSource(type, delay, definition, lastAction) {
             return createActivityDelayed(createTryCatch, delay, definition.definition, lastAction);
 
 
+        //The following 3 types adhere to DataFormats
         case 'dataformat':
+        case 'marshal':
+        case 'unmarshal':
             return createActivityDelayed(createDataformat, delay, definition.definition, lastAction);
 
         default:
