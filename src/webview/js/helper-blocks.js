@@ -1763,3 +1763,108 @@ function deleteConfigActivity()
 
   syncEditor();
 }
+
+
+
+//====================================
+// DATAFORMAT CONSTRUCT
+//====================================
+
+
+//Function to create a DataFormat given its type as a String
+//Examples of argument values are: "base64", "jaxb", "jacksonxml", etc
+function createDataformatWith(dataformat)
+{
+    let definition = new DOMParser().parseFromString('<to uri="dataformat:'+dataformat+':unmarshal"/>', "text/xml").documentElement
+    createDataformat(definition)
+}
+
+//Creates a DataFormat given a parsed XML definition
+function createDataformat(definition)
+{
+    // definition = definition || new DOMParser().parseFromString('<to uri="dataformat:base64:marshal"/>', "text/xml").documentElement    
+    definition = definition || new DOMParser().parseFromString(
+        '<marshal>'+
+            '<jacksonxml unmarshalTypeName="org.apache.camel.component.jacksonxml.TestPojoView" jsonView="org.apache.camel.component.jacksonxml.Views$Age"/>'+
+        '</marshal>',
+    "text/xml").documentElement
+
+    //create activity
+    let dataformat = createEndpointDataFormat(definition)
+    dataformat.setAttribute('opacity', 0.2)
+
+    //obtain specific dataformat details
+    let details = getDataFormatDetails(dataformat)
+
+    //this is the label to clarify the in/out data types (e.g from XML to Java object)
+    var label = createText();
+    dataformat.appendChild(label);
+    label.setAttribute('color', 'white');
+    label.setAttribute('align', 'center');
+    label.setAttribute('side', 'double');
+    label.setAttribute('value', details['info'])
+    label.setAttribute('scale', '.8 .8 .8')
+    label.object3D.position.set(0, -.7, 0)
+
+    //this is the rotating/color-changing box
+    let box1 = document.createElement('a-box')
+    box1.setAttribute('height', 0.5)
+    box1.setAttribute('width', .5)
+    box1.setAttribute('depth', .5)
+    box1.setAttribute('rotation', '0 150 225')
+    box1.setAttribute('color', 'yellow')
+    dataformat.appendChild(box1)
+
+    //this is the one of the labels in the box
+    var text = createText();
+    box1.appendChild(text);
+    text.setAttribute('value', details['in']);
+    text.setAttribute('color', 'green');
+    text.setAttribute('align', 'center');
+    text.object3D.position.set(0,0,.25)
+    text.setAttribute('rotation', '0 0 -45')
+
+    //this is the other of the labels in the box
+    text = createText();
+    box1.appendChild(text);
+    text.setAttribute('value', details['out']);
+    text.setAttribute('color', 'yellow');
+    text.setAttribute('align', 'center');
+    text.object3D.position.set(0,0,-.26)
+    text.setAttribute('rotation', '0 180 225')
+
+    //these are the box animations
+    box1.setAttribute('animation__rotation', {property: 'rotation', dur: '5000', from: '0 -30 45', to: '0 210 225',loop: true, easing: 'easeInOutQuad', dir: 'alternate'});
+    box1.setAttribute('animation__color',    {property: 'color',    dur: '5000', from: '#FFFF00', to: '#008000',loop: true, easing: 'easeInOutQuad', dir: 'alternate'});
+    // box1.setAttribute('animation__color',    {property: 'color',    dur: '5000', from: '#FFFF00', to: '#FF0000',loop: true, easing: 'easeInOutQuad', dir: 'alternate'});
+
+    return dataformat
+}
+
+//Creates the DataFormat activity
+//DataFormats might be defined in XML with:
+// 1) the 'marshal/unmarshal' tag
+// 2) as a component endpoint with <to uri="dataformat:...">
+//This function will standardise to the second definition type, translating 1) into 2) if necessary
+function createEndpointDataFormat(definition)
+{
+    //translate definition when relevant
+    if(definition.nodeName  != 'to'){
+        definition = defineDataFormatAsOneLiner(definition)
+    }
+
+    //create activity
+    let activity = createActivity({type: "dataformat", definition: definition});
+
+    //add uri component (and load definition)
+    activity.setAttribute('uri', {position: "0 -.9 0", configMethod: [updateConfigEndpointDataformat]})
+    activity.components.uri.setDefinition(definition)
+
+    goLive(activity);
+
+    return activity
+}
+
+//====================================
+// END OF DATAFORMAT CONSTRUCT
+//====================================

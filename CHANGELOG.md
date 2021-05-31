@@ -81,3 +81,9 @@
 - Introduced 'Activity Groups' (sequence of activities forming a unit, e.g. splits, loops, etc.)
 - Introduced 'Try-Catch-Finally' definitions to provide initial error handling capabilities.
 - Introduced 'Split' definitions (EIP pattern)
+
+## 0.X.Y
+
+- Added DataFormat constructs (code generation defaults to the DataFormat endpoint definition)
+- fix: position coordinates (JSON metadata) of activities was no longer being persisted. Now resolved.
+- fix: code changes broke the correct URI option parameters handling causing configuration values losses

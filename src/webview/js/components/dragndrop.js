@@ -31,6 +31,7 @@ AFRAME.registerComponent("clickable", {
         this.mouseupHandler = e =>  {
                                         if (this.el.is("dragging")) {
                                             this.el.removeState("dragging");
+                                            syncMetadata()
                                         }
                                     }
 

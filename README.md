@@ -11,16 +11,18 @@ Please bear in mind this *VSCode* extension is in 'early-prototype' phase and is
 ## Feature highlights
 
 * Easy visual design of processing flows
-* Organise activities with drag & drop
+* Organise activities and groups with drag & drop
 * REST definitions
 * Click in the text editor to navigate:
   - switch between routes
   - select activities to configure
 * Configuration panels per activity
 * Predefined sets (*Choice* / *Parallel*)
+* DataFormat definitions
 * Error handling with Try/Catch/Finally statements
 * Open Camel XML files and render visually.
 * Trace live Camel Exchanges
+* Support for Spring-XML/Blueprint-XML/Camel-K/Camel-2/Camel-3
 
 
 ## Using the extension
@@ -65,7 +67,6 @@ To get more familiar with the available functionality, check the   [*HOW-TO*](./
 
 - Code synchronisation between editor and designer is to be completed. Changes on designer will reflect on the editor but changes in the editor will not reflect on the designer view.
 - add/delete activities mid-flow not always possible, review needed.
-- adding steps from start not working
 - Only limited Camel blocks are supported, more will be implemented. For now, unsupported blocks will show red and a question mark. 
 
 </br>
