@@ -253,10 +253,10 @@ AFRAME.registerComponent('detachable', {
             activity.removeEventListener('hitclosest', detachable.joinHighlight);
             activity.removeEventListener('hitclosestclear', detachable.joinClear);
 
-            //remove collision detectioon
+            //remove collision detection
             activity.removeAttribute('aabb-collider')
         
-            //obtain necessray artifacts
+            //obtain necessary artifacts
             let link = detachable.linkDetected
             let source = document.getElementById(link.getAttribute('source'))
    
@@ -347,6 +347,9 @@ AFRAME.registerComponent('detachable', {
                 destination.parentNode.insertBefore(clone, destination)
                 destination.parentNode.appendChild(newLink);
             }
+
+            //set configuration panel
+            switchConfigPaneByActivity(clone)
 
             //====================================================
             // POSITION RECALCULATION (part 2/2):

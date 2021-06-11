@@ -48,11 +48,13 @@ AFRAME.registerComponent("clickable", {
                                         e.stopPropagation()
                                     }
 
-                                    //This is a global variable
-                                    //We should do better
-                                    // configObj = this.el
-
-                                    switchConfigPaneByActivity(this.el);
+                                    //This check prevents an error thrown when detaching/reattaching activities
+                                    //When reattaching, we let the 'detachable' component to pick the config panel (not here)
+                                    //the click event was sourced on the original activity
+                                    //but when reattaching the source activity is replaced with its clone, and no longer usable
+                                    if(document.body.contains(this.el)){
+                                        switchConfigPaneByActivity(this.el);
+                                    }
                                 }
 
         //set up event listeners

@@ -371,27 +371,33 @@ function updateConfigEndpointTo(activity)
 function createKafka(definition)
 {
     definition = definition || new DOMParser().parseFromString('<to uri="kafka:topic1?brokers=YOUR_BROKER_SERVICE_URI&amp;autoOffsetReset=earliest"/>', "text/xml").documentElement
-    return createGenericEndpointTo(definition)
+    // return createGenericEndpointTo(definition)
+    return createGenericEndpointTo({definition: definition})
 }
 
 function createFile(definition)
 {
     definition = definition || new DOMParser().parseFromString('<to uri="file:directory?fileName=YOUR_FILE_NAME"/>', "text/xml").documentElement
-    return createGenericEndpointTo(definition)
+    // return createGenericEndpointTo(definition)
+    return createGenericEndpointTo({definition: definition})
 }
 
 // function createGenericEndpointTo(definition, type)
 function createGenericEndpointTo(definition)
 {
   //default type will be the scheme of the uri (e.g. 'file' in uri="file:name")
-  type = definition.getAttribute('uri').split(":")[0];
+//   type = definition.getAttribute('uri').split(":")[0];
+  type = definition.definition.getAttribute('uri').split(":")[0];
 
   //create
-  let activity = createActivity({type: "to", definition: definition});
+//   let activity = createActivity({type: "to", definition: definition});
+  definition.type = 'to'
+  let activity = createActivity(definition);
 
   //add uri component (and load definition)
   activity.setAttribute('uri', {position: "0 -0.7 0", configMethod: [updateConfigEndpointTo]})
-  activity.components.uri.setDefinition(definition)
+//   activity.components.uri.setDefinition(definition)
+  activity.components.uri.setDefinition(definition.definition)
 
   //this is the label inside the geometry (activity descriptor)
   var text = createText();
@@ -2207,69 +2213,6 @@ function getStartOfFinally(catchBox)
 }
 
 
-
-
-/*
-//======================
-
-function doubleClick(fn, timeout = 500) {
-    let last = Date.now();
-
-    return function(e) {
-        const now = Date.now();
-        const diff = now - last;
-
-        console.log('single');
-
-        if (diff < timeout) {
-            fn(e);
-
-            console.log('double');
-        }
-
-        last = now;
-    }
-};
-
-AFRAME.registerComponent('double-click', {
-
-    init: function() {
-        // this.el.sceneEl.canvas.addEventListener('click', doubleClick(this.onDoubleClick.bind(this)));
-        this.el.addEventListener('click', doubleClick(this.onDoubleClick.bind(this)));
-    },
-
-    onDoubleClick: function() {
-
-        var camera = document.getElementById("main-camera");
-
-        //listens to animation end
-        camera.addEventListener('animationcomplete', function enterDirect() {
-
-          //delete listener
-          this.removeEventListener('animationcomplete', enterDirect);
-
-          //delete animation
-          this.removeAttribute('animation');
-
-          //to switch route:
-          // 1) obtain the target 'uri' the direct activity points to
-          // 2) find the route that contains the direct (target)
-          let targetUri = getSelectedActivityPrimary().querySelector(".uri").getAttribute('value')
-          let routeId = findRouteIdFromDirectUri(targetUri)
-
-          //jump to route
-          nextRoute(routeId);
-        });
-
-        //obtain the absolute position to provide a target for the camera
-        let target = getPositionInScene(this.el)
-
-        //animation starts from this moment
-        camera.setAttribute('animation', {property: 'position', dur: '1500', to: target, loop: false});
-
-    }
-});
-*/
 
 //Updates UI configuration panel with DataFormat activity data
 function updateConfigEndpointDataformat(activity)

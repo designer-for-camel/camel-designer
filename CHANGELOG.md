@@ -37,8 +37,8 @@
 - Initial implementation to provide help adding expression variables in configuration panels
 - Progress done with functionality on 'from' activities
 - Introduction to the concept of predefined 'kits' (blocks with multiple activities)
-    - json to xml
-    - xml to json
+  - json to xml
+  - xml to json
 - fix: can delete activity that follows 'from'
 - code rewrite to define a reusable 'expression' component
 - code rewrite to define a reusable 'expression' configuration panel
@@ -82,8 +82,14 @@
 - Introduced 'Try-Catch-Finally' definitions to provide initial error handling capabilities.
 - Introduced 'Split' definitions (EIP pattern)
 
-## 0.X.Y
+## 0.x.y
 
-- Added DataFormat constructs (code generation defaults to the DataFormat endpoint definition)
+- Added DataFormat constructs (code generation defaults to the DataFormat endpoint definition). DataFormats included:
+  - Base64 ↔ String
+  - XML ↔ Java object (_Jackson_ lib.)
+  - JSON ↔ Java object  (_Jackson_ lib.)
+
 - fix: position coordinates (JSON metadata) of activities was no longer being persisted. Now resolved.
 - fix: code changes broke the correct URI option parameters handling causing configuration values losses
+- fix: detach/reattach action was throwing an exception. Now resolved 
+- fix: detach/reattach action wasn't working for certain activities 

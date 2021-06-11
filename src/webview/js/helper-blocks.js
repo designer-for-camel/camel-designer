@@ -500,12 +500,17 @@ function createUnknown(definition)
 
 function createBody(definition)
 {
-  //let activity = createTo('body');
-  let activity = createActivity({type: 'body', definition: definition});
+  //default definition if not provided
+  definition = definition || {definition: new DOMParser().parseFromString('<setBody><simple>hello world2</simple></setBody>', "text/xml").documentElement}
+
+  // let activity = createActivity({type: 'body', definition: definition});
+  definition.type = 'body'
+  let activity = createActivity(definition);
 
   //add expression component (and load definition)
   activity.setAttribute('expression', {position: "0 -0.7 0", configMethod: [updateConfigBody]})
-  activity.components.expression.setDefinition(definition)
+  // activity.components.expression.setDefinition(definition)
+  activity.components.expression.setDefinition(definition.definition)
 
   //this is the label inside the geometry (activity descriptor)
   var text = createText();
