@@ -266,22 +266,24 @@ function createActivityFromSource(type, delay, definition, lastAction) {
             return createActivityDelayed(createMulticast, delay, definition.definition, lastAction);            
             // break;
         case 'setProperty':
-            return createActivityDelayed(createProperty, delay, definition.definition, lastAction);            
+            // return createActivityDelayed(createProperty, delay, definition.definition, lastAction);            
+            return createActivityDelayed(createProperty, delay, definition, lastAction);            
             // break;
         case 'setHeader':
-            return createActivityDelayed(createHeader, delay, definition.definition, lastAction);            
+            // return createActivityDelayed(createHeader, delay, definition.definition, lastAction);            
+            return createActivityDelayed(createHeader, delay, definition, lastAction);            
             // break;
         case 'setBody':
             // return createActivityDelayed(createBody, delay, definition.definition, lastAction);            
             return createActivityDelayed(createBody, delay, definition, lastAction);            
             // break;
+
         case 'kafka':
-            // return createActivityDelayed(createKafka, delay, definition.definition, lastAction);            
-            // break;
         case 'file':
-            // return createActivityDelayed(createFile, delay, definition.definition, lastAction);
+        case 'ftp':
+        case 'pdf':
             return createActivityDelayed(createGenericEndpointTo, delay, definition, lastAction);
-            // break;
+            
         case 'split':
             return createActivityDelayed(createSplit, delay, definition.definition, lastAction);
         case 'doTry':

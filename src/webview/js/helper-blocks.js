@@ -345,19 +345,28 @@ function createLog(metadata)
 //creates a setProperty activity
 function createProperty(definition)
 {
-  var property = createNameValuePair('property', definition);
+  //default definition if not provided
+  definition = definition || {definition: new DOMParser().parseFromString('<setProperty name="myproperty"><simple>dummy</simple></setProperty>', "text/xml").documentElement}
+
+  //activity type
+  definition.type = 'property'
+
+  // var property = createNameValuePair('property', definition);
+  var property = createNameValuePair(definition);
 
   if(definition)
   {
     //obtain name value
-    var propertyName = definition.getAttribute(getCamelAttributePropertyName())
+    // var propertyName = definition.getAttribute(getCamelAttributePropertyName())
+    var propertyName = definition.definition.getAttribute(getCamelAttributePropertyName())
 
     //if null, try switching Camel version
     if(propertyName == null)
     {
       console.warn('Could not find setProperty attribute "'+getCamelAttributePropertyName()+'", switching Camel version...')
       switchCamelVersion()
-      propertyName = definition.getAttribute(getCamelAttributePropertyName())
+      // propertyName = definition.getAttribute(getCamelAttributePropertyName())
+      propertyName = definition.definition.getAttribute(getCamelAttributePropertyName())
     }
 
     property.getElementsByTagName("a-text")[0].firstChild.setAttribute('value', propertyName+':');
@@ -370,19 +379,29 @@ function createProperty(definition)
 //creates a setHeader activity
 function createHeader(definition)
 {
-  var header = createNameValuePair('header', definition);
+  //default definition if not provided
+  definition = definition || {definition: new DOMParser().parseFromString('<setHeader name="myheader"><simple>dummy</simple></setHeader>', "text/xml").documentElement}
+
+  //activity type
+  definition.type = 'header'
+
+
+  // var header = createNameValuePair('header', definition);
+  var header = createNameValuePair(definition);
 
   if(definition)
   {
     //obtain name value
-    var headerName = definition.getAttribute(getCamelAttributeHeaderName())
+    // var headerName = definition.getAttribute(getCamelAttributeHeaderName())
+    var headerName = definition.definition.getAttribute(getCamelAttributeHeaderName())
 
     //if null, try switching Camel version
     if(headerName == null)
     {
       console.warn('Could not find setHeader attribute "'+getCamelAttributeHeaderName()+'", switching Camel version...')
       switchCamelVersion()
-      headerName = definition.getAttribute(getCamelAttributeHeaderName())
+      // headerName = definition.getAttribute(getCamelAttributeHeaderName())
+      headerName = definition.definition.getAttribute(getCamelAttributeHeaderName())
     }
 
     header.getElementsByTagName("a-text")[0].firstChild.setAttribute('value', headerName+':');
@@ -392,16 +411,19 @@ function createHeader(definition)
   return header
 }
 
-function createNameValuePair(setterType, definition)
+// function createNameValuePair(setterType, definition)
+function createNameValuePair(definition)
 {
   //let activity = createTo(setterType);
-  let activity = createActivity({type: setterType, definition: definition});
+  // let activity = createActivity({type: setterType, definition: definition});
+  let activity = createActivity(definition);
 
   //add expression component (and load definition)
   activity.setAttribute('expression', {position: "0 -1 0", configMethod: [updateConfigNameValuePair]})
-  activity.components.expression.setDefinition(definition)
+  // activity.components.expression.setDefinition(definition)
+  activity.components.expression.setDefinition(definition.definition)
 
-  if(!definition)
+  if(!definition.definition)
   {
     //default expression if not defined
     activity.components.expression.setValue("dummy")
@@ -410,7 +432,8 @@ function createNameValuePair(setterType, definition)
   //create activity label
   var text = createText();
   activity.appendChild(text);
-  text.setAttribute('value', setterType);
+  // text.setAttribute('value', setterType);
+  text.setAttribute('value', definition.type);
   text.setAttribute('color', 'white');
   text.setAttribute('align', 'center');
   text.setAttribute('side', 'double');

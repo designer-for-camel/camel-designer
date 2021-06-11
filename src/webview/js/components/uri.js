@@ -16,7 +16,13 @@ AFRAME.registerComponent('uri', {
         //label to display the expression value set for the activity
         this.label = createText();
         this.el.appendChild(this.label);
-        this.label.setAttribute('value', this.defaultUri);
+
+        if(this.scheme != 'ftp'){
+            this.label.setAttribute('value', this.defaultUri);
+        }
+        else{
+            this.label.setAttribute('value', this.schemeSpecificPart+':'+this.defaultUri);
+        }
         this.label.setAttribute('color', 'white');
         this.label.setAttribute('align', 'center');
         this.label.setAttribute('position', this.attrValue.position);
@@ -159,7 +165,7 @@ AFRAME.registerComponent('uri', {
             options = "?"+options.replace(/&/g,"&amp;")
         }
         
-        if(this.schemeSpecificPart != ''){
+        if(this.schemeSpecificPart != '' && this.scheme != 'ftp'){
             return this.scheme+":"+this.schemeSpecificPart+":"+target+options
         }
 

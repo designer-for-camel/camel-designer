@@ -88,8 +88,9 @@
   - Base64 ↔ String
   - XML ↔ Java object (_Jackson_ lib.)
   - JSON ↔ Java object  (_Jackson_ lib.)
-
+- new FTP endpoint to read/write data from/to a remote FTP server 
+- new PDF endpoint to create documents in PDF format 
 - fix: position coordinates (JSON metadata) of activities was no longer being persisted. Now resolved.
 - fix: code changes broke the correct URI option parameters handling causing configuration values losses
-- fix: detach/reattach action was throwing an exception. Now resolved 
-- fix: detach/reattach action wasn't working for certain activities 
+- fix: detach/reattach action throwing an exception. Now resolved 
+- fix: detach/reattach action not working for all activities. Now resolved

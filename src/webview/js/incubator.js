@@ -124,6 +124,7 @@ function createSelectedFrom(event)
         case 'timer':  createTimer();       break;
         case 'kafka':  createKafkaStart();  break;
         case 'file':   createFileStart();   break;
+        case 'ftp':    createFtpStart();    break;
     }
     
     event.selectedIndex = 0
@@ -144,6 +145,8 @@ function createSelectedOption(event)
 
         case 'kafka':    createKafka();      break;
         case 'file':     createFile();       break;
+        case 'ftp':      createFTP();        break;
+        case 'pdf':      createPDF();        break;
 
         // case 'dataformat':     createDataformat();       break;
         case 'base64':       createDataformatWith(event.selectedOptions[0].value);       break;
@@ -382,6 +385,18 @@ function createFile(definition)
     return createGenericEndpointTo({definition: definition})
 }
 
+function createFTP(definition)
+{
+    definition = definition || new DOMParser().parseFromString('<to uri="ftp://demoserver:21/directoryName?passiveMode=true&amp;username=YOUR_USERNAME&amp;password=YOUR_PASSWORD"/>', "text/xml").documentElement
+    return createGenericEndpointTo({definition: definition})
+}
+
+function createPDF(definition)
+{
+    definition = definition || new DOMParser().parseFromString('<to uri="pdf:create"/>', "text/xml").documentElement
+    return createGenericEndpointTo({definition: definition})
+}
+
 // function createGenericEndpointTo(definition, type)
 function createGenericEndpointTo(definition)
 {
@@ -528,6 +543,15 @@ function createKafkaStart(definition)
 function createFileStart(definition)
 {
     definition = definition || new DOMParser().parseFromString('<from uri="file:directory1"/>', "text/xml").documentElement
+    return createGenericEndpointFrom(definition)
+}
+
+
+function createFtpStart(definition)
+{
+    // definition = definition || new DOMParser().parseFromString('<from uri="file:directory1"/>', "text/xml").documentElement
+    definition = definition || new DOMParser().parseFromString('<from uri="ftp://demoserver:21/directoryName?username=YOUR_USERNAME&amp;password=YOUR_PASSWORD"/>', "text/xml").documentElement
+
     return createGenericEndpointFrom(definition)
 }
 
