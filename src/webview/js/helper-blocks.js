@@ -345,19 +345,17 @@ function createLog(metadata)
 //creates a setProperty activity
 function createProperty(definition)
 {
-  //default definition if not provided
-  definition = definition || {definition: new DOMParser().parseFromString('<setProperty name="myproperty"><simple>dummy</simple></setProperty>', "text/xml").documentElement}
+  //default definition if not provided (note there's no propertyName given to force a default value)
+  definition = definition || {definition: new DOMParser().parseFromString('<setProperty><simple>dummy</simple></setProperty>', "text/xml").documentElement}
 
   //activity type
   definition.type = 'property'
 
-  // var property = createNameValuePair('property', definition);
   var property = createNameValuePair(definition);
 
   if(definition)
   {
     //obtain name value
-    // var propertyName = definition.getAttribute(getCamelAttributePropertyName())
     var propertyName = definition.definition.getAttribute(getCamelAttributePropertyName())
 
     //if null, try switching Camel version
@@ -365,12 +363,13 @@ function createProperty(definition)
     {
       console.warn('Could not find setProperty attribute "'+getCamelAttributePropertyName()+'", switching Camel version...')
       switchCamelVersion()
-      // propertyName = definition.getAttribute(getCamelAttributePropertyName())
       propertyName = definition.definition.getAttribute(getCamelAttributePropertyName())
     }
 
-    property.getElementsByTagName("a-text")[0].firstChild.setAttribute('value', propertyName+':');
-    //property.getElementsByTagName("a-text")[0].lastChild.setAttribute('value', '"'+definition.firstElementChild.innerHTML+'"');
+    //if property name is not given, we leave the default one from 'createNameValuePair' 
+    if(propertyName != null){
+      property.getElementsByTagName("a-text")[0].firstChild.setAttribute('value', propertyName+':');
+    }
   }
 
   return property
@@ -379,20 +378,17 @@ function createProperty(definition)
 //creates a setHeader activity
 function createHeader(definition)
 {
-  //default definition if not provided
-  definition = definition || {definition: new DOMParser().parseFromString('<setHeader name="myheader"><simple>dummy</simple></setHeader>', "text/xml").documentElement}
+  //default definition if not provided (note there's no headerName given to force a default value)
+  definition = definition || {definition: new DOMParser().parseFromString('<setHeader><simple>dummy</simple></setHeader>', "text/xml").documentElement}
 
   //activity type
   definition.type = 'header'
 
-
-  // var header = createNameValuePair('header', definition);
   var header = createNameValuePair(definition);
 
   if(definition)
   {
     //obtain name value
-    // var headerName = definition.getAttribute(getCamelAttributeHeaderName())
     var headerName = definition.definition.getAttribute(getCamelAttributeHeaderName())
 
     //if null, try switching Camel version
@@ -400,27 +396,24 @@ function createHeader(definition)
     {
       console.warn('Could not find setHeader attribute "'+getCamelAttributeHeaderName()+'", switching Camel version...')
       switchCamelVersion()
-      // headerName = definition.getAttribute(getCamelAttributeHeaderName())
       headerName = definition.definition.getAttribute(getCamelAttributeHeaderName())
     }
 
-    header.getElementsByTagName("a-text")[0].firstChild.setAttribute('value', headerName+':');
-    //header.getElementsByTagName("a-text")[0].lastChild.setAttribute('value', '"'+definition.firstElementChild.innerHTML+'"');
+    //if header name is not given, we leave the default one from 'createNameValuePair' 
+    if(headerName != null){
+      header.getElementsByTagName("a-text")[0].firstChild.setAttribute('value', headerName+':');
+    }
   }
 
   return header
 }
 
-// function createNameValuePair(setterType, definition)
 function createNameValuePair(definition)
 {
-  //let activity = createTo(setterType);
-  // let activity = createActivity({type: setterType, definition: definition});
   let activity = createActivity(definition);
 
   //add expression component (and load definition)
   activity.setAttribute('expression', {position: "0 -1 0", configMethod: [updateConfigNameValuePair]})
-  // activity.components.expression.setDefinition(definition)
   activity.components.expression.setDefinition(definition.definition)
 
   if(!definition.definition)
@@ -432,7 +425,6 @@ function createNameValuePair(definition)
   //create activity label
   var text = createText();
   activity.appendChild(text);
-  // text.setAttribute('value', setterType);
   text.setAttribute('value', definition.type);
   text.setAttribute('color', 'white');
   text.setAttribute('align', 'center');
@@ -524,7 +516,7 @@ function createUnknown(definition)
 function createBody(definition)
 {
   //default definition if not provided
-  definition = definition || {definition: new DOMParser().parseFromString('<setBody><simple>hello world2</simple></setBody>', "text/xml").documentElement}
+  definition = definition || {definition: new DOMParser().parseFromString('<setBody><simple>hello world</simple></setBody>', "text/xml").documentElement}
 
   // let activity = createActivity({type: 'body', definition: definition});
   definition.type = 'body'

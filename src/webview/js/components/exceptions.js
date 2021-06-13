@@ -1,7 +1,7 @@
 
 /*
-* This (a-frame) component adheres URI manipulation functionality to activities (a-entity)
-* URIs are defined as: 'scheme:target?options' (e.g. uri="file:directory?fileName=sample")
+* This (a-frame) component adheres 'exception' clauses to activities (a-entity)
+* Typical activities with this component are the likes of 'doCatch' in TRY-CATCH-FINALLY statements
 * The component creates a visible label with [target] and loads the [options] as component attributes
 */
 AFRAME.registerComponent('exceptions', {

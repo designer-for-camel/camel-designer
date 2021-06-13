@@ -283,7 +283,7 @@ function createActivityFromSource(type, delay, definition, lastAction) {
         case 'ftp':
         case 'pdf':
             return createActivityDelayed(createGenericEndpointTo, delay, definition, lastAction);
-            
+
         case 'split':
             return createActivityDelayed(createSplit, delay, definition.definition, lastAction);
         case 'doTry':
@@ -665,6 +665,14 @@ function renderActivity(activity, mycode, iterator) {
         case 'catch-start':
             mycode.text += mycode.tab+'<doCatch id="'+activity.parentNode.id+'">\n'
             mycode.tab  += '  '
+
+            let exceptions = activity.components.exceptions.getExceptions()
+
+            // for(let i=0; i<exceptions.length; i++){
+            for(key in exceptions){
+                mycode.text += mycode.tab+'<exception>'+exceptions[key]+'</exception>\n'
+            }
+
             break;
         case 'finally-start':
             mycode.text += mycode.tab+'<doFinally id="'+activity.parentNode.id+'">\n'
