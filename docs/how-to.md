@@ -6,6 +6,7 @@ This section describes how to perform some of the most common user actions with 
  - [Define REST definitions](#define-rest-definitions)
  - [Navigate the code](#navigate-the-code)
  - [Organise activities](#organise-activities)
+ - [Working with Groups](#working-with-groups)
  - [Trace Camel Exchanges](#trace-camel-exchanges)
 
 <br>
@@ -98,6 +99,42 @@ There are two ways for users to organise the code.
 The animation below illustrates how to detach/attach activities:
 
 ![Navigation](images/readme/vs-extension-attach-detach.gif)  
+
+<br>
+
+## Working with Groups
+
+Certain EIP patterns may contain activities inside a *Group*, for example the *Split* pattern. Visually, these groups are represented in *Camel Designer* as boxes containing activities.
+
+You can interact with *Groups* in a number of ways to organise activities. In summary, these are possible user actions at your disposal:
+ - Add new activities within a group
+ - Move the entire group of activities with a drag'n'drop action.
+ - Attach/detach activities in and out of the group
+ - Drag'n'drop activities within a group. The group box will automatically re-adjust
+ - Delete group activities
+ - Manually extend/retract the group's width by dragging the end edge activity. 
+
+<br>
+
+The animation below illustrates how to interact with a group of activities:
+
+![Groups](images/readme/vs-extension-groups.gif)  
+
+<br>
+
+## Working with Try-Catch blocks
+
+Camel Designer includes *Try-Catch* definitions (mapping to Camel's DSL *Try-Catch-Finally* blocks). They are visually represented as a collection of *Groups* (see section: [Working with Groups](#working-with-groups)), one for *Try* activities, a second one for *Catch* activities, and a final one for *Finally* activities .
+
+To prevent a visual overload, by default *Camel Designer* hides the *Catch* and *Finally* groups. The user can hide/reveal these groups by clicking the deploy/undeploy buttons.
+
+You can interact with *Try-Catch* blocks as you would with generic groups, for example by adding/deleting/moving activities.
+
+To define the exceptions to catch, click on the *Catch* activity (*Catch* group), and configure it by adding/deleting the relevant Java exceptions.
+
+The animation below illustrates how to interact with a *Try-Catch* blocks:
+
+![Exceptions](images/readme/vs-extension-exceptions.gif)  
 
 <br>
 
