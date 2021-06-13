@@ -7,6 +7,7 @@ This section describes how to perform some of the most common user actions with 
  - [Navigate the code](#navigate-the-code)
  - [Organise activities](#organise-activities)
  - [Working with Groups](#working-with-groups)
+ - [Working with Try-Catch blocks](#working-with-try-catch-blocks)
  - [Trace Camel Exchanges](#trace-camel-exchanges)
 
 <br>
