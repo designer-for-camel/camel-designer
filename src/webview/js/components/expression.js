@@ -44,8 +44,14 @@ AFRAME.registerComponent('expression', {
                 this.attributes[defAttributes[i].name] = defAttributes[i].value
             }
 
-            //default expression
-            this.defaultExpression = definition.firstElementChild.innerHTML;
+            //for some languages, expressions are loaded from attributes
+            if(this.language == "tokenize"){
+                this.defaultExpression = this.attributes.token
+            }
+            else{
+                //default expression
+                this.defaultExpression = definition.firstElementChild.innerHTML;
+            }
         }
     },
               
@@ -57,6 +63,10 @@ AFRAME.registerComponent('expression', {
         if(this.label)
         {
             this.label.setAttribute('value', '"'+expression+'"')
+            
+            if(this.language == "tokenize"){
+                this.attributes.token = expression
+            }
         }
         else
         {
@@ -109,8 +119,15 @@ AFRAME.registerComponent('expression', {
             attributesXml+= ' '+key+'="'+this.attributes[key]+'"'
         }
 
-        //xml expression (i.e. <xpath saxon="true">/data</xpath>)
-        return '<'+this.language+attributesXml+'>'+this.getValue()+'</'+this.language+'>'
+        if(this.language == "tokenize"){
+            //xml expression (i.e. <tokenize token="tkn"/>)
+            return '<'+this.language+attributesXml+'/>'
+        }
+        else{
+            //xml expression (i.e. <xpath saxon="true">/data</xpath>)
+            return '<'+this.language+attributesXml+'>'+this.getValue()+'</'+this.language+'>'
+        }
+
     }
 
     // update: function () {},

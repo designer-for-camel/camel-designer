@@ -1444,22 +1444,47 @@ case 'catch-start':
         //obtain worked activity
         var activity = activity || getActiveActivity()
 
-        if(activity.getAttribute('processor-type') != 'body')
-        {
-          return
+        //activity type
+        let type = activity.getAttribute('processor-type')
+
+        //only activities sharing the same config panel can proceed
+        switch (type) {
+
+          //allowed activities
+          case 'body':
+          case 'split-start':
+            break;
+        
+          //not allowed (end of processing)
+          default:
+            return;
         }
 
-        //obtains panel elements
-        var element = document.getElementById("set-body");
+        //need to check component exists
+        //at creation time, the activity may not have yet the component attached
+        if(activity.components.expression){
 
-        //prepare panel elements
-        loadExpressionConfiguration(element, activity)
+          //obtains panel elements
+          var element = document.getElementById("set-body");
 
-        //obtain reference to input
-        var expressionConfig = element.getElementsByClassName("expression")[0].getElementsByTagName("input")[0];
+          //prepare panel elements
+          loadExpressionConfiguration(element, activity)
 
-        //replace input value using activity values
-        expressionConfig.value = activity.components.expression.getValue()
+          //obtain reference to input
+          var expressionConfig = element.getElementsByClassName("expression")[0].getElementsByTagName("input")[0];
+
+          //replace input value using activity values
+          expressionConfig.value = activity.components.expression.getValue()
+
+          //some activities are not allowed to be deleted
+          if(type == "split-start"){
+            element.getElementsByClassName("delete")[0].disabled = true
+          }
+          else{
+            element.getElementsByClassName("delete")[0].disabled = false
+          }
+        }
+
       }
 
       //===============================================

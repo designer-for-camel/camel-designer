@@ -19,7 +19,9 @@ function useExpressionLanguage(event, activity)
     if(event.selectedOptions[0].text == "xpath")
     {
         let checked = ""
-        if(attributes && attributes.saxon == "true")
+
+        //careful here, attribute might be set on UI (boolean) or read from code (string)
+        if(attributes && (attributes.saxon == true || attributes.saxon == "true"))
         {
             checked = " checked"
         }

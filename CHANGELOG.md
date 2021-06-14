@@ -82,7 +82,7 @@
 - Introduced 'Try-Catch-Finally' definitions to provide initial error handling capabilities.
 - Introduced 'Split' definitions (EIP pattern)
 
-## 0.x.y
+## 0.7.0
 
 - Added DataFormat constructs. \
 DataFormats included:
