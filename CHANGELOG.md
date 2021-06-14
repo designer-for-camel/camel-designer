@@ -107,3 +107,7 @@ DataFormats included:
 ## 0.7.1
 
 - minor packaging version tag
+
+## 0.7.2
+
+- no functionality updates. Resolving publishing issues. 
