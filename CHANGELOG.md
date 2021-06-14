@@ -84,15 +84,22 @@
 
 ## 0.x.y
 
-- Added DataFormat constructs (code generation defaults to the DataFormat endpoint definition). DataFormats included:
-  - Base64 ↔ String
-  - XML ↔ &#8646; Java object (_Jackson_ lib.)
-  - JSON ↔ Java object  (_Jackson_ lib.)
-- new FTP endpoint to read/write data from/to a remote FTP server 
-- new PDF endpoint to create documents in PDF format 
-- fix: position coordinates (JSON metadata) of activities was no longer being persisted. Now resolved.
-- fix: code changes broke the correct URI option parameters handling causing configuration values losses
-- fix: detach/reattach action throwing an exception. Now resolved 
-- fix: detach/reattach action not working for all activities. Now resolved
-- fix: code generator missing catch exceptions. Now resolved
+- Added DataFormat constructs. \
+DataFormats included:
+
+  |  |  |  | (library) |
+  |:------:|:-:|-----------|:-------:|
+  |   XML  | ⇆ | Java object | Jackson |
+  |  JSON  | ⇆ | Java object | Jackson |
+  | Base64 | ⇆ |    String   |         |
+
+<br>
+
+- New FTP endpoint to read/write data from/to a remote FTP server 
+- New PDF endpoint to create documents in PDF format 
+- Fix: position coordinates (JSON metadata) of activities was no longer being persisted. Now resolved.
+- Fix: code changes broke the correct URI option parameters handling causing configuration values losses
+- Fix: detach/reattach action throwing an exception. Now resolved 
+- Fix: detach/reattach action not working for all activities. Now resolved
+- Fix: code generator missing catch exceptions. Now resolved
 - *How-To* documentation now includes *Groups* and *Try-Catch* blocks
