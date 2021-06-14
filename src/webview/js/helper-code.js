@@ -294,7 +294,7 @@ function createActivityFromSource(type, delay, definition, lastAction) {
         case 'dataformat':
         case 'marshal':
         case 'unmarshal':
-            return createActivityDelayed(createDataformat, delay, definition.definition, lastAction);
+            return createActivityDelayed(createDataformat, delay, definition, lastAction);
 
         default:
             //if none of the above, then it's unknown or unsupported yet.

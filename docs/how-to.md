@@ -125,7 +125,7 @@ The animation below illustrates how to interact with a group of activities:
 
 ## Working with Try-Catch blocks
 
-Camel Designer includes *Try-Catch* definitions (mapping to Camel's DSL *Try-Catch-Finally* blocks). They are visually represented as a collection of *Groups* (see section: [Working with Groups](#working-with-groups)), one for *Try* activities, a second one for *Catch* activities, and a final one for *Finally* activities .
+Camel Designer includes *Try-Catch* definitions (mapping to Camel's DSL *Try-Catch-Finally* blocks). They are visually represented as a collection of *Groups* (see section: [Working with Groups](#working-with-groups)), one for *Try* activities, a second one for *Catch* activities, and a final one for *Finally* activities.
 
 To prevent a visual overload, by default *Camel Designer* hides the *Catch* and *Finally* groups. The user can hide/reveal these groups by clicking the deploy/undeploy buttons.
 

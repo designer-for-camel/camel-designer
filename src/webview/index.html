@@ -115,9 +115,9 @@
           <option value="timer">timer</option>
           <option value="kafka">kafka</option>
           <option value="file">file</option>
+          <option value="ftp">ftp</option>
           <option disabled>jms</option>
           <option disabled>http</option>
-          <option disabled>ftp</option>
           <option disabled>...</option>
         </select>
       </p>
@@ -146,7 +146,6 @@
                     <option value="base64">base64</option>
                     <option value="jacksonxml">xml/java (Jackson)</option>
                     <option value="json-jackson">json/java (Jackson)</option>
-                    <option value="dftest">dftest</option>
                   </optgroup>
                   <option value="parallel">parallel (fork)</option>
                   <option disabled>loop</option>
@@ -163,10 +162,11 @@
                       <option value="direct"  >call to... (direct)</option>
                       <option value="kafka">kafka</option>
                       <option value="file">file</option>
+                      <option value="ftp">ftp</option>
+                      <option value="pdf">pdf</option>
                       <option disabled>jms</option>
                       <option disabled>kafka</option>
                       <option disabled>http</option>
-                      <option disabled>ftp</option>
                       <option disabled>...</option>
                     </select>
                   </p>
@@ -281,6 +281,7 @@
                 <option value="constant">constant</option>
                 <option value="xpath">xpath</option>
                 <option value="method">method</option>
+                <option value="tokenize">tokenize</option>
               </select>
               <div class="attributes" onchange="useExpressionAttribute(event);syncEditor();"></div>
             </div>

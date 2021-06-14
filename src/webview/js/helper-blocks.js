@@ -1796,18 +1796,18 @@ function deleteConfigActivity()
 function createDataformatWith(dataformat)
 {
     let definition = new DOMParser().parseFromString('<to uri="dataformat:'+dataformat+':unmarshal"/>', "text/xml").documentElement
-    createDataformat(definition)
+    createDataformat({definition: definition})
 }
 
 //Creates a DataFormat given a parsed XML definition
 function createDataformat(definition)
 {
     // definition = definition || new DOMParser().parseFromString('<to uri="dataformat:base64:marshal"/>', "text/xml").documentElement    
-    definition = definition || new DOMParser().parseFromString(
+    definition = definition || {definition: new DOMParser().parseFromString(
         '<marshal>'+
             '<jacksonxml unmarshalTypeName="org.apache.camel.component.jacksonxml.TestPojoView" jsonView="org.apache.camel.component.jacksonxml.Views$Age"/>'+
         '</marshal>',
-    "text/xml").documentElement
+    "text/xml").documentElement}
 
     //create activity
     let dataformat = createEndpointDataFormat(definition)
@@ -1869,16 +1869,17 @@ function createDataformat(definition)
 function createEndpointDataFormat(definition)
 {
     //translate definition when relevant
-    if(definition.nodeName  != 'to'){
-        definition = defineDataFormatAsOneLiner(definition)
+    if(definition.definition.nodeName  != 'to'){
+        definition.definition = defineDataFormatAsOneLiner(definition.definition)
     }
 
     //create activity
-    let activity = createActivity({type: "dataformat", definition: definition});
+    definition.type = "dataformat"
+    let activity = createActivity(definition);
 
     //add uri component (and load definition)
     activity.setAttribute('uri', {position: "0 -.9 0", configMethod: [updateConfigEndpointDataformat]})
-    activity.components.uri.setDefinition(definition)
+    activity.components.uri.setDefinition(definition.definition)
 
     goLive(activity);
 

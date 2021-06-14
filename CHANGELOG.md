@@ -94,3 +94,5 @@
 - fix: code changes broke the correct URI option parameters handling causing configuration values losses
 - fix: detach/reattach action throwing an exception. Now resolved 
 - fix: detach/reattach action not working for all activities. Now resolved
+- fix: code generator missing catch exceptions. Now resolved
+- *How-To* documentation now includes *Groups* and *Try-Catch* blocks

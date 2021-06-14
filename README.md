@@ -39,15 +39,7 @@ To start using the extension and generate your Camel definitions:
 
 ## How-To guide
 
-To get more familiar with the available functionality, check the   [*HOW-TO*](./docs/how-to.md) guide which includes step by step details and helpful animations.
-
-## Requirements
-
-  Pending definition
-
-## Extension Settings
-
-  Pending definition
+To get more familiar with the available functionality, check the [*HOW-TO*](./docs/how-to.md) guide which includes step by step details and helpful animations.
 
 ## Pending code improvements
 
@@ -56,12 +48,9 @@ To get more familiar with the available functionality, check the   [*HOW-TO*](./
 
 ## List of future candidate features
 
-- create Transform activity (idea: box and triangle morphing)
 - option to create 2/3/4 ways in choices and forks
 - possibility to add comments
-- align VR/mouse controllers
-- option on/off to move/work
-- navigation buttons (e.g. left/right with slide animations effect) 
+- scrolling controls, zoom in/out controls, general UI improvements 
 
 ## Known Issues
 
