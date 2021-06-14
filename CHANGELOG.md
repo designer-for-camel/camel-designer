@@ -103,3 +103,7 @@ DataFormats included:
 - Fix: detach/reattach action not working for all activities. Now resolved
 - Fix: code generator missing catch exceptions. Now resolved
 - *How-To* documentation now includes *Groups* and *Try-Catch* blocks
+
+## 0.7.1
+
+- minor packaging version tag
