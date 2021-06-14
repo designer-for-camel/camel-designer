@@ -86,7 +86,7 @@
 
 - Added DataFormat constructs (code generation defaults to the DataFormat endpoint definition). DataFormats included:
   - Base64 ↔ String
-  - XML ↔ Java object (_Jackson_ lib.)
+  - XML ↔ &#8646; Java object (_Jackson_ lib.)
   - JSON ↔ Java object  (_Jackson_ lib.)
 - new FTP endpoint to read/write data from/to a remote FTP server 
 - new PDF endpoint to create documents in PDF format 
