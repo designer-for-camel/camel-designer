@@ -139,6 +139,12 @@ function activate(context) {
               vscode.window.showErrorMessage(message.payload);
               return;
 
+            case 'configuration-load':
+              console.log('loading extension configuration')
+              let customComponents = vscode.workspace.getConfiguration('cameldesigner').custom.components
+              currentPanel.webview.postMessage({ command: 'configuration-load' , payload: customComponents});
+              return
+
             case 'atlasmap-start':
               console.log('starting AtlasMap');
               vscode.window.showErrorMessage(message.payload);

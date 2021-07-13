@@ -33,7 +33,7 @@
     <script src="js/helper.js"></script>
 
     <!-- custom aframe components -->
-<script src="js/components/exceptions.js"></script>
+    <script src="js/components/exceptions.js"></script>
     <script src="js/components/uri.js"></script>
     <script src="js/components/hint.js"></script>
     <script src="js/components/tracing.js"></script>
@@ -45,6 +45,7 @@
 
     <!-- experimental -->
     <script src="js/incubator.js"></script>
+    <script src="js/ui/menu.js"></script>
 
     <!-- Fonts to work with off-line -->
     <script>
@@ -425,4 +426,20 @@
 	  </a-scene>
 
   </body>
+
+  <script>
+
+      var scene = document.querySelector('a-scene');
+
+      if (scene.hasLoaded) {
+        run();
+      } else {
+        scene.addEventListener('loaded', run);
+      }
+
+      function run () {
+        createMenu3D()
+      }
+
+  </script>
 </html>

@@ -217,6 +217,15 @@
                   setTracingUserAlert(message.payload, true)
 
                   break;
+
+              case 'configuration-load':
+                
+                  //run UI initialisation with configuration data
+                  createMenu3D(message.payload)
+                  importSourceCode();
+
+
+                  break;
           }
         });
 
@@ -252,6 +261,7 @@
           element[0].firstChild.disabled = !enabled;
       }
 
+      //toggles buttons ON/OFF in the UI interface
       function enableToButtons(enabled)
       {
           let opacity;
@@ -269,21 +279,38 @@
           //When first 'from' activity is created, we enable consumer buttons
           var element = document.getElementsByClassName("consumer");
           for(let i=0; i<element.length; i++) {
-            element[i].style.opacity = opacity;
-            element[i].firstElementChild.disabled = !enabled;
+
+            //toggles buttons ON/OFF (3D menu A-Frame entities)
+            if(element[i].classList.contains('menu-button')){
+              setButtonEnabled(element[i], enabled)
+            }
+            else{
+              //toggles buttons ON/OFF (2D menu HTML elements)
+              element[i].style.opacity = opacity;
+              element[i].firstElementChild.disabled = !enabled; 
+            }
           }
 
           //UX buttons for consumers are disabled to start with
           //When first 'from' activity is created, we enable consumer buttons
           var element = document.getElementsByClassName("setter");
           for(let i=0; i<element.length; i++) {
-            element[i].style.opacity = opacity;
-            element[i].firstElementChild.disabled = !enabled;
+
+            //toggles buttons ON/OFF (3D menu A-Frame entities)
+            if(element[i].classList.contains('menu-button')){
+              setButtonEnabled(element[i], enabled)
+            }
+            else{
+              //toggles buttons ON/OFF (2D menu HTML elements)
+              element[i].style.opacity = opacity;
+              element[i].firstElementChild.disabled = !enabled;
+            }
           }
 
           // enableCallDirect(callDirectEnabled);
       }
 
+      //toggles buttons ON/OFF in the UI interface
       function enableFromButtons(enabled)
       {
           let opacity;
@@ -301,12 +328,20 @@
           //When first 'from' activity is created, we enable consumer buttons
           var element = document.getElementsByClassName("producer");
           for(let i=0; i<element.length; i++) {
-            element[i].style.opacity = opacity;
-            element[i].firstElementChild.disabled = !enabled;
+
+            //toggles buttons ON/OFF (3D menu A-Frame entities)
+            if(element[i].classList.contains('menu-button')){
+              setButtonEnabled(element[i], enabled)
+            }
+            else{
+              //toggles buttons ON/OFF (2D menu HTML elements)
+              element[i].style.opacity = opacity;
+              element[i].firstElementChild.disabled = !enabled;
+            }
           }
-      
       }
 
+      //toggles buttons ON/OFF in the UI interface
       function enableRestButtons(enabled)
       {
         let opacity;
@@ -322,23 +357,38 @@
 
         let restIsEmpty = (document.getElementById('rest-definitions').children.length == 0)
 
-        //toggles buttons ON/OFF
+        //toggles buttons ON/OFF (2D menu HTML elements)
         var element = document.querySelector(".rest").firstElementChild
         element.parentElement.style.opacity = opacity;
         element.disabled = !enabled
 
+        //toggles buttons ON/OFF (3D menu A-Frame entities)
+        element = document.getElementsByClassName("rest menu-button")[0];
+        if(element){
+          setButtonEnabled(element, enabled)
+        }
+
         if(enabled)
         {
+          //toggles buttons ON/OFF (2D menu HTML elements)
           for(let i=0; i<element.length-3; i++) {
-            
             //Mechanism to keep REST methods disabled until a REST group has been created.
             //(i=0 is the label, i=1 is the group button, i>1 are the method buttons)
-            if(i<2)
-            {
+            if(i<2){
               continue;
             }
-
             element[i].disabled = restIsEmpty;
+          }
+
+          //toggles buttons ON/OFF (3D menu A-Frame entities)
+          element = document.getElementsByClassName("rest menu-button");
+          for(let i=0; i<element.length; i++) {
+            //Mechanism to keep REST methods disabled until a REST group has been created.
+            //(i=0 is the label, i=1 is the group button, i>1 are the method buttons)
+            if(i<2){
+              continue;
+            }
+            setButtonEnabled(element[i], !restIsEmpty)
           }
         }
       }
@@ -405,7 +455,12 @@
 
         // initCameraFocus();
         // addDebugGrid();
-        importSourceCode();
+
+        //this is now happening after the menu3D is created
+        //otherwise the menus are not properly in sync with the code
+        // importSourceCode();
+
+        loadExtensionConfiguration();
       }
 
       //intended to be invoked to VS-code at start-up time
@@ -413,6 +468,13 @@
       {
         vscodePostMessage('importCamelDefinition');
       }
+
+      //intended to be invoked to VS-code at start-up time
+      function loadExtensionConfiguration()
+      {
+        vscodePostMessage('configuration-load');
+      }
+
 
       function resetCameraToDefault()
       {

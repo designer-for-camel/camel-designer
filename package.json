@@ -46,6 +46,30 @@
 					"when": "false"
 				}
 			]
+		},
+		"configuration":{
+			"title": "Camel Designer",
+			"properties": {
+
+				"cameldesigner.custom.components": {
+					"type": "object",
+					"default": { 
+						"producers": [
+							{
+								"label":    "custom ftp",
+								"function": "createFtpStart"                
+							}
+						],
+						"consumers": [
+							{
+								"label":    "log-test",
+								"function": "createLog"                
+							}
+						]
+					},
+					"description": "Extends Camel Designer with your custom defined components."
+				}
+			}
 		}
 	},
 	"scripts": {

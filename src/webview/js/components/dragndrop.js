@@ -101,7 +101,14 @@ AFRAME.registerComponent("dragndrop", {
 
         // this.range = 0;
         // this.dist = 0;
-        
+
+        //is this entity attached to the camera?
+        //Normally entities are not attached to the camera, but 3D menus are.
+        //this helps with calculations to move the entity
+        this.isCameraChild = (this.el.parentElement == this.el.sceneEl.camera.el)
+
+        //Groups have a frame (a-plane) as background
+        //the frame helps visualise the group and helps the dnd the entire group
         this.isGroupFrame = this.el.classList.contains('dnd-handler')
         
         //we keep a reference to the frame
@@ -110,8 +117,9 @@ AFRAME.registerComponent("dragndrop", {
             this.groupFrame = getActivityFrame(this.el)
         }
 
-        //used to set the new position where to move the entity 
-        this.newposition= {x: 0, y: 0, z: 0}
+        //variable where to calculate the new position where to move the entity 
+        //Z coordinate: for process actions z=0, for 3D menus (attached to camera) z!=0 
+        this.newposition= {x: 0, y: 0, z: this.el.object3D.position.z}
 
         //The center of an entity (in a sphere, the core central point) is the point that defines its position
         //When clicking on an entity, the user rarely hits the bull's eye (the center), so we need to calculate the
@@ -141,7 +149,13 @@ AFRAME.registerComponent("dragndrop", {
                 
                 //We use the concept of 'similar triangles' to calculate the new coordinates
                 //The Z axis helps us to obtain the factor to use to calculate X and Y
-                let relation = -(this.el.sceneEl.camera.el.object3D.position.z / this.direction.z)
+                let relation
+                if(this.isCameraChild){
+                    relation = this.el.object3D.position.z / this.direction.z
+                }
+                else{
+                    relation = -(this.el.sceneEl.camera.el.object3D.position.z / this.direction.z)
+                }
 
                 //variable to take in consideration inner coordinates (entities inside entities)
                 let childShift = {x: 0, y: 0}
@@ -175,8 +189,14 @@ AFRAME.registerComponent("dragndrop", {
     updateTarget: function() {
         
         //Recalculate the relationship factor
-        let relation = -(this.el.sceneEl.camera.el.object3D.position.z / this.direction.z)
-        
+        let relation
+        if(this.isCameraChild){
+            relation = this.el.object3D.position.z / this.direction.z
+        }
+        else{
+            relation = -(this.el.sceneEl.camera.el.object3D.position.z / this.direction.z)
+        }
+
         //Calculate the new coordinates
         this.newposition.x = this.direction.x * relation
         this.newposition.y = this.direction.y * relation

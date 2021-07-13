@@ -174,20 +174,32 @@ function createSelectedOption(event)
 }
 
 /**
- * Generates a set of Camel actions
+ * Generates a set of Camel actions (aka Kits)
+ * The event carries the kit ID
  */
 function createPredefinedSet(event)
+{
+    console.log("predefined set: "+event.selectedOptions[0].text)
+    
+    createPredefinedSetWithId(event.selectedOptions[0].value)
+    
+    //reset selection to default (menu title)
+    event.selectedIndex = 0
+}
+
+/**
+ * Generates a set of Camel actions (aka Kits)
+ * The ID identifies the Kit to generate
+ */
+function createPredefinedSetWithId(id)
 {
     //While building the Visual elements, TextEditor<=>VisualEditor comms need to stop, 
     syncStartUpEnabled = true;
 
-
-    console.log("predefined set: "+event.selectedOptions[0].text)
-
     //boolean to decide if set needs to be built
-    let createSet = !Boolean(findRouteIdFromDirectUri(event.selectedOptions[0].value))
+    let createSet = !Boolean(findRouteIdFromDirectUri(id))
 
-    switch(event.selectedOptions[0].value){
+    switch(id){
         case 'xpath-json-to-xml':
             createPredefinedSetJson2xmlXpath(createSet)
             break;
@@ -206,8 +218,6 @@ function createPredefinedSet(event)
             break;
     }
     
-    //reset selection to default (menu title)
-    event.selectedIndex = 0
 
     //Once finished, we need to sync the changes, (new ID values may have been applied)
     syncStartUpEnabled = false;
