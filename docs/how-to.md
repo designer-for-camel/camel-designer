@@ -242,7 +242,7 @@ You should find the following configuration block:
 
    ![Settings](images/how-to/config-settings.jpg)  
 
-Click the link: `Edit in settings.json` \
+Click the link: <u>`Edit in settings.json`</u> \
 You should find the following property with default configuration (empty producers/consumers):
 
 ```json
@@ -273,6 +273,16 @@ As an example on how to extend the menu with a new component, let's add the foll
     ]
 }
 ```
+> **Attention:** \
+Ensure that producers (`from...`) are configured with the function `createCustomEndpointFrom`. Doing otherwise will lead to buggy behaviour in Camel Designer   
+
+> **Attention:** \
+Ensure that consumers (`to...`) are configured with the function `createCustomEndpointTo`. Doing otherwise will lead to buggy behaviour in Camel Designer
+
+<br>
+
+> **Note:** \
+For changes to activate, save the configuration changes, and then close and reopen *Camel Designer*.
 
 The above configuration will add a new producer in the `from...` drop down menu and a new consumer in the `to...` drop down menu
 as shown below:
