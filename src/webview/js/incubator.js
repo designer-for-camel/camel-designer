@@ -2289,7 +2289,7 @@ function useDataFormatDirection(input)
 //Returns information details relevant to the type of DataFormat given
 function getDataFormatDetails(dataformat)
 {
-    let type = dataformat.components.uri.getSchemeSpecificPart()
+    let type = dataformat.components.uri.getDataFormat()
     let dir  = dataformat.components.uri.getTarget()
 
     switch(type){

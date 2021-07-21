@@ -358,9 +358,10 @@
         let restIsEmpty = (document.getElementById('rest-definitions').children.length == 0)
 
         //toggles buttons ON/OFF (2D menu HTML elements)
-        var element = document.querySelector(".rest").firstElementChild
-        element.parentElement.style.opacity = opacity;
-        element.disabled = !enabled
+        // var element = document.querySelector(".rest").firstElementChild
+        // element.parentElement.style.opacity = opacity;
+        // element.disabled = !enabled
+        let element
 
         //toggles buttons ON/OFF (3D menu A-Frame entities)
         element = document.getElementsByClassName("rest menu-button")[0];

@@ -199,6 +199,13 @@ function createRouteDefinitions(routes)
                 createFileStart(definition);
                 break;
             default:
+
+                //we might have a custom configured producer
+                if(customConfiguredProducers.includes(type)){
+                    createGenericEndpointFrom(definition);  
+                    break;          
+                }
+
                 //if none of the above, then it's unknown or unsupported yet.
                 createUnknown(definition);
                 break;
@@ -297,6 +304,12 @@ function createActivityFromSource(type, delay, definition, lastAction) {
             return createActivityDelayed(createDataformat, delay, definition, lastAction);
 
         default:
+
+            //we might have a custom configured consumer
+            if(customConfiguredConsumers.includes(type)){
+                return createActivityDelayed(createGenericEndpointTo, delay, definition, lastAction);            
+            }
+
             //if none of the above, then it's unknown or unsupported yet.
             return createActivityDelayed(createUnknown, delay, definition.definition, lastAction);            
             // break;

@@ -120,7 +120,7 @@
       <!-- <p class="rest">rest</p> -->
 
       <!-- FROMs -->
-      <p class="producer">
+      <!-- <p class="producer">
         <select class="button" onchange="createSelectedFrom(this)">
           <option>from...</option>
           <option value="direct">direct</option>
@@ -132,20 +132,20 @@
           <option disabled>http</option>
           <option disabled>...</option>
         </select>
-      </p>
+      </p> -->
 
           <!-- SETTERs -->
-          <p class="setter">
+          <!-- <p class="setter">
             <select class="button" onchange="createSelectedOption(this)">
               <option>set...</option>
               <option value="property">property</option>
               <option value="header">header</option>
               <option value="body">body</option>
             </select>
-          </p>
+          </p> -->
 
               <!-- EIPs -->
-              <p class="consumer">
+              <!-- <p class="consumer">
                 <select class="button" onchange="createSelectedOption(this)">
                   <option>eip...</option>
                   <option value="log"       >log</option>
@@ -166,10 +166,10 @@
                   <option disabled>filter</option>
                   <option disabled>...</option>
                 </select>
-              </p>
+              </p> -->
 
                   <!-- TOs -->
-                  <p class="consumer to">
+                  <!-- <p class="consumer to">
                     <select class="button" onchange="createSelectedOption(this)">
                       <option>to...</option>
                       <option value="direct"  >call to... (direct)</option>
@@ -182,10 +182,10 @@
                       <option disabled>http</option>
                       <option disabled>...</option>
                     </select>
-                  </p>
+                  </p> -->
 
                       <!-- KIT -->
-                      <p class="consumer kit">
+                      <!-- <p class="consumer kit">
                         <select class="button" onchange="createPredefinedSet(this)">
                           <option>kit...</option>
 
@@ -196,10 +196,10 @@
                           <option value="df-json-to-xml">json-to-xml (dataFormat)</option>
                           <option value="df-xml-to-json">xml-to-json (dataFormat)</option>
                         </select>
-                      </p>
+                      </p> -->
 
                           <!-- REST -->
-                          <p class="rest">
+                          <!-- <p class="rest">
                             <select class="button" id="select-palette"  onchange="createSelectedOption(this)">
                               <option>rest...</option>
                               <option class="rest group" value="rest-group">new group...</option>
@@ -210,7 +210,7 @@
                               <option disabled>PATCH</option>
                               <option disabled>OPTIONS</option>
                             </select>
-                          </p>
+                          </p> -->
 
       <!-- Camel Components & composites -->
       <!-- <p class="producer timer"><button class="button"  onclick="createTimer()">timer</button></p>
@@ -407,6 +407,32 @@
         <a-camera id="main-camera" look-controls-enabled="false">
           <!-- <a-text value="Prototype\nunder construction" align="center" scale="20 20 20" color="yellow" opacity=".3" position="5 13 -27" side="double"></a-text>  -->
           
+          <!-- <a-entity
+            geometry="primitive: plane; width: 4; height: auto"
+            material="color: blue"
+            text="value: This text will be 4 units wide."
+            position="0 0 -3">
+          </a-entity>
+
+          <a-entity
+            geometry="primitive: plane; height: auto"
+            material="color: blue"
+            text="width: 1; align: center; value: This text will be 4 units wide."
+            position="0 -.5 -3">
+          </a-entity>
+
+
+        <a-entity
+        position="0 .7 -3"
+        geometry="primitive: plane; width: 1"
+        material="color: red">
+          <a-text width="1" wrap-count="10" value="0000000000000000000000000000000000000000000" align="center" scale="1 1 1" color="green" opacity=".3" side="double"></a-text> 
+
+        </a-entity> -->
+
+
+
+
         </a-camera>
       </a-entity>
 

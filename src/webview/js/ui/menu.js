@@ -5,15 +5,32 @@
 //   - https://jsfiddle.net/cpg890nm/1/
 
 
-function appendLabel(parent, text){
+//Global variable
+var customConfiguredProducers = []
+var customConfiguredConsumers = []
+
+function appendLabel(parent, text, count){
+
+    let wrapCount = count || 10
+
+    if(!count && text.length > 10){
+        wrapCount = text.length
+    }
+
     let label = createText()
     label.setAttribute('value', text);
+    label.setAttribute('width', parent.getAttribute('width'));
+    label.setAttribute('wrap-count', wrapCount);
+    // label.setAttribute('height', parent.getAttribute('height'));
     label.setAttribute('color', 'lightgray');
     label.setAttribute('align', 'center');
     label.setAttribute('side', 'double');
-    label.setAttribute('scale', '.7 .7 .7');
+    // label.setAttribute('scale', '.7 .7 .7');
     label.setAttribute('position', '0 0 .01');
     parent.appendChild(label)
+
+    // console.log('width: '+ label.getAttribute('width')+', text: '+text)
+    // console.log('button width: '+ parent.getAttribute('width'))
 }
 
 
@@ -50,7 +67,12 @@ function createMenuButton(menu, configuration)
     groupButton.setAttribute('animation__scale_reverse', {property: 'opacity', dur: '0', to: '.4',   startEvents: 'mouseleave'});
 
     appendLabel(groupButton, menu.name)
+    // groupButton.setAttribute('text', 'side: double;color: white;value: '+menu.name)
 
+    // var text = document.createElement('a-text');
+    // text.setAttribute('value', menu.name)
+    // groupButton.appendChild(text)
+    // console.log('text width: '+ text.getAttribute('width'))
 
     let menuContainer = document.createElement('a-entity')
     // menuContainer.id = 'menu-1'
@@ -107,15 +129,14 @@ function createMenuOption(container, menu, axisX)
 
     axisX = axisX || 0
 
+
     let menuItem = document.createElement('a-box')
-    // menuItem.setAttribute('depth', '.1')
-    menuItem.setAttribute('depth', '.05')    
-    // menuItem.setAttribute('width', '2')
-    // menuItem.setAttribute('height', '.5')
+    menuItem.setAttribute('depth', '.05')
     menuItem.setAttribute('width', '1')
     menuItem.setAttribute('height', '.3')
     menuItem.setAttribute('color', 'grey')
     menuItem.setAttribute('opacity', '.4')
+    
     // menuItem.setAttribute('animation__scale',         {property: 'position', dur: 100, to: '0 '+position+' .1', startEvents: 'mouseenter'});
     // menuItem.setAttribute('animation__scale_reverse', {property: 'position', dur: 100, to: '0 '+position+' 0',   startEvents: 'mouseleave'});
     menuItem.setAttribute('animation__scale',         {property: 'position', dur: 0, to: axisX+' '+position+' .05', startEvents: 'mouseenter'});
@@ -133,7 +154,17 @@ function createMenuOption(container, menu, axisX)
     // if(typeof(menu) == 'string'){
     if(menu.function){
         // appendLabel(menuItem, menu)
-        appendLabel(menuItem, menu.label)
+        appendLabel(menuItem, menu.label, menu.labelWrapCount)
+
+        if(menu.function == "createCustomEndpointTo"){
+            let scheme = menu.arguments[0].split(":")[0]
+            customConfiguredConsumers.push(scheme)
+        }
+        else if(menu.function == "createCustomEndpointFrom"){
+            let scheme = menu.arguments[0].split(":")[0]
+            customConfiguredProducers.push(scheme)
+        }
+        
 
 
         menuItem.addEventListener('click', function(){
@@ -171,6 +202,8 @@ function createMenuOption(container, menu, axisX)
             // createMenuOption(subContainer, menu[x], x)
             // createMenuOption(subContainer, menu.submenu[option], menu.submenu[option].label)
             createMenuOption(subContainer, menu.submenu[option])
+            // createMenuOption(subContainer, menu.submenu[option], menu.submenu[option].labelWrapCount)
+
         }
 
         menuItem.appendChild(subContainer)
@@ -204,14 +237,22 @@ function createMenuOption(container, menu, axisX)
 
 function createMenu3D(configuration)
 {
-    //this line simulates the configuration the User can customise from 
+
+    //comment/uncomment for testing
+    //this block simulates the configuration the User can customise in 
     //settings.json in VSCode (see package.json > configuration)
     configuration = configuration ||    { 
                                             "producers": [
                                                 {
                                                     "label":    "ftp-custom-code",
                                                     "function": "createFtpStart"                
-                                                }
+                                                },
+
+                                                {
+                                                    "label":    "netty http",
+                                                    "function": "createCustomEndpointFrom",
+                                                    "arguments": ['netty-http:myPath?myOption=myValue']
+                                                },
                                                 
                                             ],
                                             "consumers": [
@@ -229,8 +270,19 @@ function createMenu3D(configuration)
                                                     "function": "createCustomEndpointTo",
                                                     "arguments": ['netty-http:myPath?myOption=myValue']
                                                 },
+                                                {
+                                                    "label":    "test HTTP",
+                                                    "function": "createCustomEndpointTo",
+                                                    "arguments": ['test-http:localhost:10000?option1=value1']
+                                                },
+                                                {
+                                                    "label":    "Sergio HTTP",
+                                                    "function": "createCustomEndpointTo",
+                                                    "arguments": ['test-http:sergioserver:8888?option1=value1']
+                                                },
                                             ]
                                         }
+
 
     let defMenuFrom = 
     {
@@ -309,7 +361,7 @@ function createMenu3D(configuration)
                 function: 'createSplit',                
             },
             {
-                label:    'dataformat',
+                label:    'dataformat >',
                 submenu: [
                     {
                         label:    'base64',
@@ -317,12 +369,16 @@ function createMenu3D(configuration)
                         arguments: ['base64']            
                     },
                     {
-                        label:    'jacksonxml',
+                        // label:    'xml/java (Jackson)',
+                        label:    'xml/java',
+                        // labelWrapCount: 14,
                         function: 'createDataformatWith',
                         arguments: ['jacksonxml']            
                     },
                     {
-                        label:    'json-jackson',
+                        // label:    'json/java\n(Jackson)',
+                        label:    'json/java',
+                        // labelWrapCount: 14,
                         function: 'createDataformatWith',
                         arguments: ['json-jackson']            
                     },
@@ -372,22 +428,26 @@ function createMenu3D(configuration)
         enabled: false, 
         menu: [
             {
-                label:    'json > xml (xpath)',
+                label:    'json > xml\n(xpath)',
+                labelWrapCount: 16,
                 function: 'createPredefinedSetWithId',                
                 arguments: 'xpath-json-to-xml',
             },
             {
-                label:    'xml > json (xpath)',
+                label:    'xml > json\n(xpath)',
+                labelWrapCount: 16,
                 function: 'createPredefinedSetWithId',                
                 arguments: 'xpath-xml-to-json',
             },
             {
-                label:    'json > xml (dataformat)',
+                label:    'json > xml\n(dataformat)',
+                labelWrapCount: 16,
                 function: 'createPredefinedSetWithId',                
                 arguments: 'df-json-to-xml',
             },
             {
-                label:    'xml > json (dataformat)',
+                label:    'xml > json\n(dataformat)',
+                labelWrapCount: 16,
                 function: 'createPredefinedSetWithId',                
                 arguments: 'df-xml-to-json',
             },
@@ -449,7 +509,8 @@ console.log("frame dimensions: " + height +" "+width);
     handle.id = 'handle'
     handle.setAttribute('radius', '.05')
     handle.setAttribute('height', '.3')
-    handle.setAttribute('color', 'darkgrey')
+    // handle.setAttribute('color', 'darkgrey')
+    handle.setAttribute('color', '#454545')
     // handle.setAttribute('opacity', '.6')
     // handle.setAttribute('position', '-2 2 -4')
     handle.setAttribute('position', -width/2+' '+height/2+' -4')
@@ -464,8 +525,12 @@ console.log("frame dimensions: " + height +" "+width);
     //     let config = vscode.workspace.getConfiguration('cameldesigner').producers
     // }
 
-    let producers = configuration.producers || []
-    let consumers = configuration.consumers || []
+    // let producers = configuration.producers || []
+    // let consumers = configuration.consumers || []
+
+    console.log("config: "+configuration)
+    let producers = (configuration && configuration.producers) ? configuration.producers : []
+    let consumers = (configuration && configuration.consumers) ? configuration.consumers : []
 
     let menuFrom = createMenuButton(defMenuFrom, producers)
     menuFrom.setAttribute('position', '.5 0 0')
@@ -486,27 +551,50 @@ console.log("frame dimensions: " + height +" "+width);
     menuREST.setAttribute('position', '5.5 0 0')
 
 
-    handle.appendChild(menuFrom)
-    handle.appendChild(menuSet)
-    handle.appendChild(menuEIP)
-    handle.appendChild(menuTo)
-    handle.appendChild(menuKit)
-    handle.appendChild(menuREST)
+    let menu3D = document.createElement("a-entity")
+    // menu3D.setAttribute('position', '.1 0 0')
+
+    menu3D.appendChild(menuFrom)
+    menu3D.appendChild(menuSet)
+    menu3D.appendChild(menuEIP)
+    menu3D.appendChild(menuTo)
+    menu3D.appendChild(menuKit)
+    menu3D.appendChild(menuREST)
+
+    handle.setAttribute('rotation', '90 0 0')
+    menu3D.setAttribute('rotation', '-90 0 0')
+
+    handle.setAttribute('radius', '.15')
+    handle.setAttribute('height', '.051')
+
+    handle.appendChild(menu3D)
 
 
 
-    // camera.appendChild(menuButton)
-    // father.appendChild(handle)
-    // camera.appendChild(father)
+
+    let hint = document.createElement("a-entity")
+
+    hint.setAttribute('hint', 'message: Drag the menu from\nthe round shape')
+    hint.setAttribute('rotation', '-90 0 0')
+    handle.appendChild(hint)
+    hint.setAttribute('scale', '.5 .5 .5')
+
+
+
     camera.appendChild(handle)
 }
 
 
+function createCustomEndpointFrom(uri)
+{
+    definition = new DOMParser().parseFromString(`<from uri="${uri}"/>`, "text/xml").documentElement
+    // return createGenericEndpointFrom({definition: definition})
+    return createGenericEndpointFrom(definition)
+}
 
-// function createTestComp1(definition)
+
 function createCustomEndpointTo(uri)
 {
-    // definition = definition || new DOMParser().parseFromString('<to uri="test1:atest"/>', "text/xml").documentElement
     definition = new DOMParser().parseFromString(`<to uri="${uri}"/>`, "text/xml").documentElement
     return createGenericEndpointTo({definition: definition})
 }

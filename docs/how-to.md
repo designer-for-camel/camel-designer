@@ -9,6 +9,7 @@ This section describes how to perform some of the most common user actions with 
  - [Working with Groups](#working-with-groups)
  - [Working with Try-Catch blocks](#working-with-try-catch-blocks)
  - [Trace Camel Exchanges](#trace-camel-exchanges)
+ - [Extend menu options](#extend-menu-options)
 
 <br>
 
@@ -214,5 +215,74 @@ The example below illustrates how to do so, based on a Fuse Spring Boot (v1) ins
     If the Java process is configured as above and running locally where VSCode is running, then the default URL would be valid:
 
        http://localhost:10001/hawtio/jolokia
+
+<br>
+
+## Extend menu options
+
+Camel Designer comes with a predefined set of menu actions the user can choose from. You start defining Camel routes by selecting a consumer component, for example a Timer component, and then you use other menu drop down lists to select EIP patterns or producer components.
+
+At the moment Camel Designer is very limited in palette options while in 'prototype' version. You can however extend Camel Designer with custom configurations to create your own consumers and producers, and have them available in the menus.
+
+You edit Camel Designer's configuration from VSCode's settings. To open your user and workspace settings, use the following VS Code menu command:
+
+ - On Windows/Linux - File > Preferences > Settings
+ 
+    You can also open the Settings editor from the Command Palette (<kbd>Shift</kbd>+<kbd>Ctrl</kbd>+<kbd>P</kbd>) with Preferences: Open Settings or use the keyboard shortcut (<kbd>Ctrl</kbd>+<kbd>,</kbd>).
+ 
+ - On macOS - Code > Preferences > Settings
+ 
+    You can also open the Settings editor from the Command Palette (<kbd>Shift</kbd>+<kbd>⌘</kbd>+<kbd>P</kbd>) with Preferences: Open Settings or use the keyboard shortcut (<kbd>⌘</kbd>+<kbd>,</kbd>).
+
+The action above opens the UI settings in VSCode. Find the configuration section for *Camel Designer* under:
+
+ - Extensions > Camel Designer
+
+You should find the following configuration block:
+
+   ![Settings](images/how-to/config-settings.jpg)  
+
+Click the link: `Edit in settings.json` \
+You should find the following property with default configuration (empty producers/consumers):
+
+```json
+"cameldesigner.custom.components": {
+
+    "producers": [],
+    "consumers": []
+},
+```
+
+As an example on how to extend the menu with a new component, let's add the following configuration entities:
+
+```json
+{
+    "producers": [
+        {
+            "label":    "my-timer",
+            "function": "createTimer"                
+        }       
+    ],
+    "consumers": [
+        {
+            "label":    "netty http",
+            "function": "createCustomEndpointTo",
+            "arguments": ["netty-http:myPath?myOption=myValue"]
+        }
+    ]
+}
+```
+
+The above configuration will add a new producer in the `from...` drop down menu and a new consumer in the `to...` drop down menu
+as shown below:
+
+   ![Producer](images/how-to/config-producer.jpg)    ![Consumer](images/how-to/config-consumer.jpg)   
+
+
+If we create a route using the newly created components Camel Designer should render the following flow:
+
+   ![Flow](images/how-to/config-example-flow.jpg)  
+
+
 ---
 

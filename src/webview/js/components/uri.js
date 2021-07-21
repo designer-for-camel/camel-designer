@@ -16,13 +16,7 @@ AFRAME.registerComponent('uri', {
         //label to display the expression value set for the activity
         this.label = createText();
         this.el.appendChild(this.label);
-
-        if(this.scheme != 'ftp'){
-            this.label.setAttribute('value', this.defaultUri);
-        }
-        else{
-            this.label.setAttribute('value', this.schemeSpecificPart+':'+this.defaultUri);
-        }
+        this.label.setAttribute('value', this.defaultUri);
         this.label.setAttribute('color', 'white');
         this.label.setAttribute('align', 'center');
         this.label.setAttribute('position', this.attrValue.position);
@@ -32,10 +26,9 @@ AFRAME.registerComponent('uri', {
         //config info needs to be reloaded
         this.attrValue.configMethod[0](this.el)
 
-
         // this.attributes        = {}
-
     },
+
 
     setDefinition: function(definition) {
 
@@ -45,45 +38,25 @@ AFRAME.registerComponent('uri', {
 
         if(definition)
         {
-            let uri = definition.attributes.uri.value.split(":")
+            //helper variable
+            let uri = definition.attributes.uri.value
 
-            // if(uri.length == 2){
-                this.scheme = uri[0]
-            // }
-            // else{
-            //     this.scheme = uri[0]+":"+uri[1]
-            // }
+            //set scheme
+            this.scheme = uri.split(":",1)
 
-            //remove 'scheme' and keep remaining
-            // this.defaultUri = uri[1]
-            this.defaultUri = uri[uri.length - 1]
+            //set specific part
+            //as in:
+            //https://datatracker.ietf.org/doc/html/rfc2396#section-3
+            let schemeSpecificPart = uri.substring(uri.indexOf(':') + 1)
 
-            this.schemeSpecificPart = ''
-
-            if(uri.length>2){
-                // this.defaultUri += ":"+uri[2]
-                //set scheme-specific-part
-                //ref: https://datatracker.ietf.org/doc/html/rfc2718#section-1
-                for(let i=1; i<uri.length-1; i++){
-                    this.schemeSpecificPart += uri[i]
-                    if(i < uri.length-2){
-                        this.schemeSpecificPart += ':'
-                    }
-                }
-            }
-
-
-            //look at options
-            let options = this.defaultUri.split("?")
-
-            //if there are options
-            if(options.length > 1)
-            {
-                //keep path value (before question mark)
-                this.defaultUri = options[0]
+            //helper variable
+            let splits = schemeSpecificPart.split("?")
+                
+            //keep options
+            if(splits.length > 1){
 
                 //split options
-                options = options[1].split("&");
+                let options = splits[1].split("&");
 
                 //loops over options
                 for(let i=0; i<options.length; i++)
@@ -94,11 +67,34 @@ AFRAME.registerComponent('uri', {
                     this.attributes[option[0]] = option[1]
                 }
             }
+
+            //depending on the scheme, the scheme-specific-part is handled differently
+            //references:
+            // - https://datatracker.ietf.org/doc/html/rfc2396#section-3
+            // - https://o.quizlet.com/gqkLbD7xAh6QHGPysKPw6A.png
+            if(this.scheme == "dataformat"){
+
+                let path = splits[0]
+
+                splits = path.split(":")
+
+                this.dataFormatType   = splits[0]
+                this.dataFormatAction = splits[1]
+                this.defaultUri       = this.dataFormatAction; 
+            }
+            else{
+                let hierarchicalPart  = splits[0]
+                this.defaultUri       = hierarchicalPart;
+            }
         }
     },
-              
+
     getDefinition: function () {
       return this.definition
+    },
+
+    getDataFormat: function () {
+        return this.dataFormatType
     },
 
     getTarget: function () {
@@ -107,6 +103,11 @@ AFRAME.registerComponent('uri', {
         if(this.label)
         {
             return this.label.getAttribute('value')
+        }
+
+        //for dataformats we return the action (marshal/unmarshal)
+        if(this.scheme == "dataformat"){
+            return this.dataFormatAction
         }
 
         //otherwise return default one (init might not have yet run)
@@ -140,10 +141,6 @@ AFRAME.registerComponent('uri', {
         }
     },
 
-    getSchemeSpecificPart: function () {
-        return this.schemeSpecificPart
-    },
-
     getValue: function () {
 
         //set target to default value
@@ -165,8 +162,8 @@ AFRAME.registerComponent('uri', {
             options = "?"+options.replace(/&/g,"&amp;")
         }
         
-        if(this.schemeSpecificPart != '' && this.scheme != 'ftp'){
-            return this.scheme+":"+this.schemeSpecificPart+":"+target+options
+        if(this.scheme == 'dataformat'){
+            return this.scheme+":"+this.dataFormatType+":"+target+options
         }
 
         return this.scheme+":"+target+options
