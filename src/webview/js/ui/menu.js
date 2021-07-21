@@ -139,8 +139,8 @@ function createMenuOption(container, menu, axisX)
     
     // menuItem.setAttribute('animation__scale',         {property: 'position', dur: 100, to: '0 '+position+' .1', startEvents: 'mouseenter'});
     // menuItem.setAttribute('animation__scale_reverse', {property: 'position', dur: 100, to: '0 '+position+' 0',   startEvents: 'mouseleave'});
-    menuItem.setAttribute('animation__scale',         {property: 'position', dur: 0, to: axisX+' '+position+' .05', startEvents: 'mouseenter'});
-    menuItem.setAttribute('animation__scale_reverse', {property: 'position', dur: 0, to: axisX+' '+position+' 0',   startEvents: 'mouseleave'});    
+    menuItem.setAttribute('animation__stickout',         {property: 'position', dur: 0, to: axisX+' '+position+' .05', startEvents: 'mouseenter'});
+    menuItem.setAttribute('animation__stickout_reverse', {property: 'position', dur: 0, to: axisX+' '+position+' 0',   startEvents: 'mouseleave'});    
     menuItem.setAttribute('position', '0 '+position+' 0')
 
 
@@ -573,8 +573,9 @@ console.log("frame dimensions: " + height +" "+width);
 
 
     let hint = document.createElement("a-entity")
-
-    hint.setAttribute('hint', 'message: Drag the menu from\nthe round shape')
+    // hint.setAttribute('hint', 'message: Drag the menu from\nthe round shape')
+    hint.setAttribute('hint', 'message: Drag the menu from the round shape')
+    // hint.setAttribute('hint', 'message: Drag the menu from\nthe round shapegdgdf dfgdfgd dsfgdfgdfg dfgdfg ')
     hint.setAttribute('rotation', '-90 0 0')
     handle.appendChild(hint)
     hint.setAttribute('scale', '.5 .5 .5')
@@ -584,14 +585,12 @@ console.log("frame dimensions: " + height +" "+width);
     camera.appendChild(handle)
 }
 
-
 function createCustomEndpointFrom(uri)
 {
     definition = new DOMParser().parseFromString(`<from uri="${uri}"/>`, "text/xml").documentElement
     // return createGenericEndpointFrom({definition: definition})
     return createGenericEndpointFrom(definition)
 }
-
 
 function createCustomEndpointTo(uri)
 {
