@@ -259,15 +259,16 @@ As an example on how to extend the menu with a new component, let's add the foll
 {
     "producers": [
         {
-            "label":    "my-timer",
-            "function": "createTimer"                
-        }       
+            "label":    "demo http",
+            "function": "createCustomEndpointFrom",
+            "arguments": ["demo-http:localhost:8080/demo/service?matchOnUriPrefix=true"]
+        }        
     ],
     "consumers": [
         {
-            "label":    "netty http",
+            "label":    "demo http",
             "function": "createCustomEndpointTo",
-            "arguments": ["netty-http:myPath?myOption=myValue"]
+            "arguments": ["demo-http:somehost:8000/somepath?someOption=someValue"]
         }
     ]
 }
