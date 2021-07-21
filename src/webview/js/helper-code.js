@@ -200,8 +200,8 @@ function createRouteDefinitions(routes)
                 break;
             default:
 
-                //we might have a custom configured producer
-                if(customConfiguredProducers.includes(type)){
+                //we might have a custom configured consumer
+                if(customConfiguredConsumers.includes(type)){
                     createGenericEndpointFrom(definition);  
                     break;          
                 }
@@ -305,8 +305,8 @@ function createActivityFromSource(type, delay, definition, lastAction) {
 
         default:
 
-            //we might have a custom configured consumer
-            if(customConfiguredConsumers.includes(type)){
+            //we might have a custom configured producer
+            if(customConfiguredProducers.includes(type)){
                 return createActivityDelayed(createGenericEndpointTo, delay, definition, lastAction);            
             }
 

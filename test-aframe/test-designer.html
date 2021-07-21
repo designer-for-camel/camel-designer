@@ -75,6 +75,7 @@
       <!-- <p class="rest">rest</p> -->
 
       <!-- FROMs -->
+      <!-- <p class="producer"> -->
       <p class="producer">
         <select class="button" onchange="createSelectedFrom(this)">
           <option>from...</option>
@@ -100,7 +101,7 @@
           </p>
 
               <!-- EIPs -->
-              <p class="consumer">
+              <p class="producer">
                 <select class="button" onchange="createSelectedOption(this)">
                   <option>eip...</option>
                   <option value="log"     >log</option>
@@ -115,7 +116,7 @@
               </p>
 
                   <!-- TOs -->
-                  <p class="consumer to">
+                  <p class="producer to">
                     <select class="button" onchange="createSelectedOption(this)">
                       <option>to...</option>
                       <option value="direct"  >call to... (direct)</option>
@@ -130,7 +131,7 @@
                   </p>
 
                       <!-- KIT -->
-                      <p class="consumer kit">
+                      <p class="producer kit">
                         <select class="button" onchange="createPredefinedSet(this)">
                           <option>kit...</option>
                           <option value="xpath-json-to-xml">json-to-xml (xpath)</option>

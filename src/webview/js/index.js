@@ -275,9 +275,9 @@
             opacity = .2;
           }
 
-          //UX buttons for consumers are disabled to start with
-          //When first 'from' activity is created, we enable consumer buttons
-          var element = document.getElementsByClassName("consumer");
+          //UX buttons for producers are disabled to start with
+          //When first 'from' activity is created, we enable producer buttons
+          var element = document.getElementsByClassName("producer");
           for(let i=0; i<element.length; i++) {
 
             //toggles buttons ON/OFF (3D menu A-Frame entities)
@@ -291,8 +291,8 @@
             }
           }
 
-          //UX buttons for consumers are disabled to start with
-          //When first 'from' activity is created, we enable consumer buttons
+          //UX buttons for producers are disabled to start with
+          //When first 'from' activity is created, we enable producer buttons
           var element = document.getElementsByClassName("setter");
           for(let i=0; i<element.length; i++) {
 
@@ -324,9 +324,10 @@
             opacity = .2;
           }
 
-          //UX buttons for consumers are disabled to start with
-          //When first 'from' activity is created, we enable consumer buttons
-          var element = document.getElementsByClassName("producer");
+          //UX buttons for producers are disabled to start with
+          //When first 'from' activity is created, we enable producer buttons
+          // var element = document.getElementsByClassName("producer");
+          var element = document.getElementsByClassName("consumer");
           for(let i=0; i<element.length; i++) {
 
             //toggles buttons ON/OFF (3D menu A-Frame entities)

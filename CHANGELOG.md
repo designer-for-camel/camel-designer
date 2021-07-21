@@ -111,3 +111,10 @@ DataFormats included:
 ## 0.7.2
 
 - no functionality updates. Resolving publishing issues. 
+
+## 0.8.0
+
+- New 3D menu to create activities replaces the previous HTML menu
+- Camel Designer activities can now be extended with custom consumers/producers (editing VSCode settings).
+- *How-To* documentation includes '*Extend menu options*' to explain how to include custom consumers/producers
+- Hints (helper notes) can now be removed with a click action 

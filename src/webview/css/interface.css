@@ -117,7 +117,7 @@ p {
     z-index: 1;
 }
 
-.producer {
+.consumer {
     left: 20px;
 }  
 
@@ -126,7 +126,7 @@ p {
     opacity: .2;
 }  
 
-.consumer {
+.producer {
     left: 230px;
     opacity: .2;
 }

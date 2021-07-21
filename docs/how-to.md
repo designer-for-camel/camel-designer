@@ -220,7 +220,11 @@ The example below illustrates how to do so, based on a Fuse Spring Boot (v1) ins
 
 ## Extend menu options
 
-Camel Designer comes with a predefined set of menu actions the user can choose from. You start defining Camel routes by selecting a consumer component, for example a Timer component, and then you use other menu drop down lists to select EIP patterns or producer components.
+Camel Designer comes with a predefined set of menu actions the user can choose from. You start defining Camel routes by selecting a consumer component, for example a *Timer* component, and then you use other menu drop down lists to select EIP patterns or producer components.
+
+> *Note*: \
+**Consumer** components in *Camel* are starting activities, they 'consume' incoming events traversing the entire *Camel* route. \
+**Producer** components in *Camel* are mid-flow activities, they typically 'produce' outgoing events, like HTTP requests to external endpoints.
 
 At the moment Camel Designer is very limited in palette options while in 'prototype' version. You can however extend Camel Designer with custom configurations to create your own consumers and producers, and have them available in the menus.
 
@@ -248,8 +252,8 @@ You should find the following property with default configuration (empty produce
 ```json
 "cameldesigner.custom.components": {
 
-    "producers": [],
-    "consumers": []
+    "consumers": [],
+    "producers": []
 },
 ```
 
@@ -257,14 +261,14 @@ As an example on how to extend the menu with a new component, let's add the foll
 
 ```json
 {
-    "producers": [
+    "consumers": [
         {
             "label":    "demo http",
             "function": "createCustomEndpointFrom",
             "arguments": ["demo-http:localhost:8080/demo/service?matchOnUriPrefix=true"]
         }        
     ],
-    "consumers": [
+    "producers": [
         {
             "label":    "demo http",
             "function": "createCustomEndpointTo",
@@ -274,26 +278,27 @@ As an example on how to extend the menu with a new component, let's add the foll
 }
 ```
 > **Attention:** \
-Ensure that producers (`from...`) are configured with the function `createCustomEndpointFrom`. Doing otherwise will lead to buggy behaviour in Camel Designer   
+Ensure that consumers (`from...`) are configured with the function `createCustomEndpointFrom`. Doing otherwise will lead to buggy behaviour in Camel Designer   
 
 > **Attention:** \
-Ensure that consumers (`to...`) are configured with the function `createCustomEndpointTo`. Doing otherwise will lead to buggy behaviour in Camel Designer
+Ensure that producers (`to...`) are configured with the function `createCustomEndpointTo`. Doing otherwise will lead to buggy behaviour in Camel Designer
 
 <br>
 
 > **Note:** \
 For changes to activate, save the configuration changes, and then close and reopen *Camel Designer*.
 
-The above configuration will add a new producer in the `from...` drop down menu and a new consumer in the `to...` drop down menu
+The above configuration will add a new consumer in the `from...` drop down menu and a new producer in the `to...` drop down menu
 as shown below:
 
-   ![Producer](images/how-to/config-producer.jpg)    ![Consumer](images/how-to/config-consumer.jpg)   
+![Consumer](images/how-to/config-consumer.jpg)   ![Producer](images/how-to/config-producer.jpg)   
 
 
 If we create a route using the newly created components Camel Designer should render the following flow:
 
    ![Flow](images/how-to/config-example-flow.jpg)  
 
+<br>
 
 ---
 

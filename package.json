@@ -54,9 +54,9 @@
 				"cameldesigner.custom.components": {
 					"type": "object",
 					"default": { 
-						"producers": [
-						],
 						"consumers": [
+						],
+						"producers": [
 						]
 					},
 					"description": "Extends Camel Designer with your custom defined components."
