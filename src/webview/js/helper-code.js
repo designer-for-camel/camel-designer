@@ -426,7 +426,7 @@ function getCamelSource()
 
 function renderCamelContext(mycode) {
 
-    mycode.text +=  '<'+getCamelSourceEnvelope()+' id="camel" '+getCamelNamespace()+'>\n\n'
+    mycode.text +=  '<'+getCamelSourceEnvelope()+' id="camel" '+getCamelNamespace()+' streamCache="true">\n\n'
     mycode.tab += '  '
 
     renderCamelRestDsl(mycode);
@@ -450,7 +450,7 @@ function renderCamelRestDsl(mycode) {
         //only once
         if(!restConfiguration)
         {
-            mycode.text +=  mycode.tab+'<restConfiguration component="servlet" apiContextPath="/openapi.json"/>\n\n';
+            mycode.text +=  mycode.tab+'<restConfiguration component="servlet" apiContextPath="/openapi.json" contextPath="camel" apiContextRouteId="rest1"/>\n\n';
             // mycode.text +=  mycode.tab+'<rest path="/" id="'+thisNode.id+'">\n';
             // mycode.tab+= '  '
             restConfiguration = true;
@@ -465,11 +465,15 @@ function renderCamelRestDsl(mycode) {
         //loop over methods
         methods.forEach(
             function renderCamelRestDslMethod(value) {
+
+                let method = value.getAttribute("method")
+                let type = (method == 'get') ? '' : ' type="String"'
+
                 let uri = value.children[1].getAttribute("value");
                 if(uri)
-                    mycode.text += mycode.tab+'<'+value.getAttribute("method")+' uri="'+uri+'" id="'+value.id+'">\n'
+                    mycode.text += mycode.tab+'<'+value.getAttribute("method")+' uri="'+uri+'" id="'+value.id+'"'+type+'>\n'
                 else
-                    mycode.text += mycode.tab+'<'+value.getAttribute("method")+' id="'+value.id+'">\n'
+                    mycode.text += mycode.tab+'<'+value.getAttribute("method")+' id="'+value.id+'"'+type+'>\n'
                 mycode.tab += '  '
 
                 let direct = getRestMethodDirectActivity(value);

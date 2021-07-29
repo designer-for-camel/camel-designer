@@ -357,6 +357,12 @@ function createMenu3D(configuration)
                 label:    'parallel',
                 function: 'createMulticast',                
             },
+
+            // {
+            //     label:    "pipeline",
+            //     function: "createPipeline"                
+            // }
+
         ]
     }
 

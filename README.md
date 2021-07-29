@@ -13,15 +13,15 @@ Please bear in mind this *VSCode* extension is in 'early-prototype' phase and is
 * Easy visual design of processing flows
 * Organise activities and groups with drag & drop
 * REST definitions
-* Click in the text editor to navigate:
+* Click in the text editor to:
   - switch between routes
   - select activities to configure
-* Configuration panels per activity
-* Predefined sets (*Choice* / *Parallel*)
+* Predefined EIPs (e.g. *Choice* / *Split*)
 * DataFormat definitions
 * Error handling with Try/Catch/Finally statements
 * Open Camel XML files and render visually.
 * Trace live Camel Exchanges
+* Extend *Camel Designer* with new custom consumers/producers
 * Support for Spring-XML/Blueprint-XML/Camel-K/Camel-2/Camel-3
 
 

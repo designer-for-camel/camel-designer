@@ -117,4 +117,9 @@ DataFormats included:
 - New 3D menu to create activities replaces the previous HTML menu
 - Camel Designer activities can now be extended with custom consumers/producers (editing VSCode settings).
 - *How-To* documentation includes '*Extend menu options*' to explain how to include custom consumers/producers
-- Hints (helper notes) can now be removed with a click action 
+- Hints (helper notes) can now be removed with a click action
+
+## 0.8.1
+
+- CamelContext now includes the attribute `streamCache="true"` (this helps on demos when body contains a stream)
+- REST methods (except `GET`) now include the default attribute `type="String"` (allows Swagger to display an text input)

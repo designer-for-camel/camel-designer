@@ -2356,3 +2356,50 @@ function defineDataFormatAsOneLiner(definition)
     //returns DataFormat definition as a one line definition
     return new DOMParser().parseFromString('<to uri="dataformat:'+dataFormatType+':'+direction+options+'">', "text/xml").documentElement
 }
+
+
+//==================================
+
+
+//Creates a Split code segment
+    //Given the activities [A1,A2]:
+    //before:  A1 -------------------------> A2
+    //after:   A1 -> { -> activities -> } -> A2
+    function createPipeline(definition)
+    {
+        //we're about to create multiple activities, so we stop streaming updates until we're done
+        syncEditorEnabled = false;
+    
+        if(!definition)
+        {
+            //default definition if not given
+            // definition = new DOMParser().parseFromString('<pipeline><log message="split message"/></pipeline>', 'application/xml').documentElement;
+            definition = new DOMParser().parseFromString('<pipeline></pipeline>', 'application/xml').documentElement;
+        }
+    
+        //we keep a copy of the full definition
+        let fullDefinition = definition.cloneNode(true)
+    
+        //We remove the expression node to leave processing actions only
+        // definition.removeChild(definition.children[0])
+    
+        //we create the group of activities inside 'split'
+        let pipelineBox = createActivityGroup('pipeline', 'pipe-\nline', 'end', definition)
+    
+        //we obtain the starting activity to configure it
+        let start = document.getElementById(pipelineBox.getAttribute('group-start'))
+    
+        //add expression component (and load definition)
+        start.setAttribute('expression', {position: "0 -0.7 0", configMethod: [updateConfigSplit]})
+        start.components.expression.setDefinition(fullDefinition)
+    
+        //As we're creating many boxes and re-positioning, the camera is all over the place
+        //so we reset it where we want it to be 
+        switchConfigPaneByActivity(
+            document.getElementById(pipelineBox.getAttribute('group-end'))
+        )
+    
+      //now we're done, we switch back on, and we sync.
+      syncEditorEnabled = true;
+      syncEditor();
+    }
