@@ -225,7 +225,6 @@
         <!-- <img id="routeThumbnail-temp2" src="../media/routes-ring.jpg"> -->
       </div>
 
-
       <!-- Configuration Panel -->
       <div class="activityconfig" id="introconfig" style="visibility: visible;"><br/>
         <font size="6">Configuration Pane</font>
@@ -343,7 +342,7 @@
         </div>
       </div>
     <!-- Spacial scene (A-Frame elements) -->
-    <a-scene myoutline cursor="rayOrigin:mouse" raycaster="objects: .interactive, .testcollidable" vr-mode-ui="enabled: false">
+    <a-scene id="thescene" myoutline cursor="rayOrigin:mouse" raycaster="objects: .interactive, .testcollidable" vr-mode-ui="enabled: false">
 
       <a-assets>
         <img id="routeThumbnail" crossorigin="anonymous" src="${srcPathScheme}/src/media/routes-ring.jpg">
@@ -360,7 +359,7 @@
 
       </a-assets>
 
-      <a-entity>
+      <a-entity id="rig">
         <a-camera id="main-camera" look-controls-enabled="false">
           <a-text value="Prototype\nunder construction" align="center" scale="20 20 20" color="yellow" opacity=".3" position="5 13 -27" side="double" font="${srcPathScheme}/src/webview/fonts/Roboto-msdf.json"></a-text>
           
