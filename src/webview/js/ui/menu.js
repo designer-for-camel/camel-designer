@@ -33,9 +33,12 @@ function appendLabel(parent, text, count){
 
 function createMenuButton(menu, configuration)
 {
+    let menuCount = Object.entries(menu.menu).length
+
     //create button entity
     let groupButton = document.createElement('a-box')
-    groupButton.id = 'menu-main'
+    // groupButton.id = 'menu-main'
+    groupButton.id = 'menu-'+ menu.name
 
     //add classes
     groupButton.classList.add(menu.class)
@@ -59,6 +62,11 @@ function createMenuButton(menu, configuration)
     menuContainer.setAttribute('position', '0 -.3 0')
     menuContainer.setAttribute('visible', false)
 
+    let menuBackdrop = document.createElement('a-plane')
+    menuBackdrop.setAttribute('height', menuCount*.3+.3)
+    menuBackdrop.setAttribute('position', '0 '+(-(menuCount*.3/2))+' -0.0')
+    menuBackdrop.id = menu.name + '-backdrop'
+
     //Create each menu option
     for (var item in menu.menu) {
         createMenuOption(menuContainer, menu.menu[item])
@@ -73,7 +81,11 @@ function createMenuButton(menu, configuration)
     groupButton.appendChild(menuContainer)
 
     //menu event listener
-    groupButton.addEventListener('mouseenter', function(){
+    groupButton.addEventListener('raycaster-intersected', function(e){
+
+        if(this != e.target) {return}
+
+        console.log('raycaster-intersected: this: '+this.id+ ' target: '+e.target.id)
 
         let container = document.getElementById(menu.name)
 
@@ -84,8 +96,22 @@ function createMenuButton(menu, configuration)
         }
     });
 
+
     //menu event listener
-    groupButton.addEventListener('mouseleave', function(e){
+    groupButton.addEventListener('raycaster-intersected-cleared', function(e){
+        
+        console.log('raycaster-intersected-cleared: this:'+this.id+ ' target: '+e.target.id)
+            
+        let intersectedEls = e.detail.el.components.raycaster.intersectedEls
+
+        if(intersectedEls.length != 0 &&
+            (
+                e.target.contains(intersectedEls[0]) || 
+                intersectedEls[0].contains(e.target) ||
+                ( e.target.parentElement == intersectedEls[0].parentElement)
+            )
+        ) {return}
+
 
         let container = document.getElementById(menu.name)
 
@@ -96,7 +122,13 @@ function createMenuButton(menu, configuration)
         container.setAttribute('visible', false)
     });
 
-    return groupButton
+    //we force menu buttons to have different parents
+    //this helps handling the different menu activations
+    let menuRootEntity = document.createElement('a-entity')
+    menuRootEntity.appendChild(groupButton)
+
+    // return groupButton
+    return menuRootEntity
 }
 
 function createMenuOption(container, menu, axisX)
@@ -115,6 +147,7 @@ function createMenuOption(container, menu, axisX)
     menuItem.setAttribute('animation__stickout',         {property: 'position', dur: 0, to: axisX+' '+position+' .05', startEvents: 'mouseenter'});
     menuItem.setAttribute('animation__stickout_reverse', {property: 'position', dur: 0, to: axisX+' '+position+' 0',   startEvents: 'mouseleave'});    
     menuItem.setAttribute('position', '0 '+position+' 0')
+    menuItem.id = 'menu-button-'+menu.label
 
     if(menu.class){
         menuItem.classList.add(menu.class)
@@ -164,6 +197,10 @@ function createMenuOption(container, menu, axisX)
         subContainer.setAttribute('position', '1 0 0')
         subContainer.setAttribute('visible', false)
     
+        let subBackdrop = document.createElement('a-plane')
+        subBackdrop.setAttribute('position', '1 0 0')
+        subBackdrop.classList.add('interactive')
+
         //create submenu options
         for (option in menu.submenu) {
             createMenuOption(subContainer, menu.submenu[option])
@@ -173,7 +210,8 @@ function createMenuOption(container, menu, axisX)
         menuItem.appendChild(subContainer)
 
         //event listener for submenu option
-        menuItem.addEventListener('mouseenter', function(){
+        menuItem.addEventListener('raycaster-intersected', function(e){
+        
             let container = document.getElementById(menuId)
     
             container.setAttribute('visible', 'true')
@@ -184,15 +222,38 @@ function createMenuOption(container, menu, axisX)
         });
     
         //event listener for submenu option
-        menuItem.addEventListener('mouseleave', function(e){
+        menuItem.addEventListener('raycaster-intersected-cleared', function(e){
+
+            //when raycaster clears, we need to determine if we keep the menu container visible or not.
+            //we should keep the sub-container active, only if the raycaster points to one of the sub-container's menu options.
+            //so... when the raycaster points to something else...
+            if(e.detail.el.components.raycaster.intersectedEls.length != 0) { 
+                
+                //we look at the item the laser is pointing at (first of the list if multiple)
+                let laserAtItem = e.detail.el.components.raycaster.intersectedEls[0]
+
+                //if indeed a genuine sub-option, we should keep the menu visible
+                //(because: option > sub-container > sub-option)
+                if(laserAtItem.parentElement.parentElement == this)
+                {
+                    //it's important to stop propagation
+                    //otherwise this would be problematic on nested sub-menus
+                    e.stopPropagation()
+
+                    //do nothing (leave menu as is)
+                    return
+                }
+            }
+     
+            //at this stage we consider the menu container should be deactivated (not visible/interactive)
             let container = document.getElementById(menuId)
-    
+
             for(option of container.children){
                 option.classList.remove('interactive')
             }
     
             container.setAttribute('visible', false)
-        });
+        }); 
     }
 }
 
@@ -351,6 +412,52 @@ function createMenu3D(configuration)
                         function: 'createDataformatWith',
                         arguments: ['json-jackson']            
                     },
+
+/*
+                    //These are for testing purposes
+                    //These are sub-menus inside submenus to validate mouse navigation -
+                    //displays correct visual behaviour
+                    {
+                        label:    '2-dataformat >',
+                        submenu: [
+                            {
+                                label:    '2-base64',
+                                function: 'createDataformatWith',
+                                arguments: ['base64']            
+                            },
+                            {
+                                label:    '2-xml/java',
+                                function: 'createDataformatWith',
+                                arguments: ['jacksonxml']            
+                            },
+                            {
+                                label:    '2-json/java',
+                                function: 'createDataformatWith',
+                                arguments: ['json-jackson']            
+                            },
+                        ]             
+                    },
+                    {
+                        label:    '3-dataformat >',
+                        submenu: [
+                            {
+                                label:    '3-base64',
+                                function: 'createDataformatWith',
+                                arguments: ['base64']            
+                            },
+                            {
+                                label:    '3-xml/java',
+                                function: 'createDataformatWith',
+                                arguments: ['jacksonxml']            
+                            },
+                            {
+                                label:    '3-json/java',
+                                function: 'createDataformatWith',
+                                arguments: ['json-jackson']            
+                            },
+                        ]             
+                    },
+*/
                 ]             
             },
             {
@@ -426,6 +533,18 @@ function createMenu3D(configuration)
                 function: 'createPredefinedSetWithId',                
                 arguments: 'df-xml-to-json',
             },
+
+/*
+            //These are options to test VR mode
+            {
+                label:    'enter/exit VR',
+                function: 'tempVR'
+            },
+            {
+                label:    'reset RIG',
+                function: 'tempResetCamera'
+            },
+*/
         ]
     }
 
@@ -461,6 +580,17 @@ function createMenu3D(configuration)
         ]
     }
 
+    //MENU POSITIONING:
+    //    (see comments on head of function)
+    //References:
+    //Resources on how to obtain A-Frame canvas dimensions:
+    //   - https://stackoverflow.com/questions/44974596/how-to-fit-a-plane-to-the-a-canvas
+    //   - http://irfu.cea.fr/Projets/PYMSES/_images/pymses_pespective_camera.png
+    //   - https://jsfiddle.net/cpg890nm/1/
+
+    //the menu positioning depends on the view mode (VR on/off)
+    let vrModeActive = document.getElementById("thescene").is('vr-mode')
+
     //keep reference to camera
     var camera = document.getElementById("main-camera");
 
@@ -474,8 +604,14 @@ function createMenu3D(configuration)
     var width = height * cam.aspect;
 
     //calculate percentage position where the menu will be placed
-    height = height * .6
-    width = width * .8
+    if(vrModeActive){
+        height = height/2 * .5
+        width = width/2 * .2
+    }
+    else{
+        height = height * .6
+        width = width * .8   
+    }
 
     // console.log("frame dimensions: " + height +" "+width);
 
@@ -485,7 +621,14 @@ function createMenu3D(configuration)
     handle.setAttribute('color', '#454545')
     handle.setAttribute('radius', '.15')
     handle.setAttribute('height', '.051')
-    handle.setAttribute('position', -width/2+' '+height/2+' -4')
+
+    if(vrModeActive){
+        handle.setAttribute('position', -width/2+' '+height/2+' -3')
+        handle.setAttribute('scale', '.5 .5 .5')
+    }
+    else{
+        handle.setAttribute('position', -width/2+' '+height/2+' -4')
+    }
 
     //make interactive
     handle.classList.add('interactive')
@@ -566,4 +709,23 @@ function setButtonEnabled(button, enabled){
         button.setAttribute('color', '#181818')
         button.setAttribute('opacity', '.6')
     } 
+}
+
+//for VR testing
+function tempResetCamera(){
+    document.getElementById('rig').setAttribute('position', '0 0 8')
+}
+
+//for VR testing
+function tempVR(){
+
+    let scene = document.getElementById('thescene')
+    
+    if(scene.is('vr-mode')){
+        scene.exitVR()
+    }
+    else{
+        scene.enterVR()
+        // tempResetCamera()
+    }
 }

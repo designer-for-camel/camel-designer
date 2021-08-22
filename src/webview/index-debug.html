@@ -17,10 +17,11 @@
     <script src="https://unpkg.com/aframe-aabb-collider-component@3.2.0/dist/aframe-aabb-collider-component.min.js"></script> -->
 
     <!-- <script src="../../node_modules/aframe/dist/aframe-v1.0.4.min.js"></script> -->
-    <script src="../../node_modules/aframe/dist/aframe-v1.2.0.min.js"></script>
-    <!-- <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script> -->
+    <!-- <script src="../../node_modules/aframe/dist/aframe-v1.2.0.min.js"></script> -->
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
 
-    <script src="../../node_modules/aframe-aabb-collider-component/dist/aframe-aabb-collider-component.min.js"></script>
+    <!-- <script src="../../node_modules/aframe-aabb-collider-component/dist/aframe-aabb-collider-component.min.js"></script> -->
+    <script src="https://unpkg.com/aframe-aabb-collider-component@3.2.0/dist/aframe-aabb-collider-component.min.js"></script>
     <!-- <script src="https://unpkg.com/aframe-event-set-component@4.0.1/dist/aframe-event-set-component.js"></script> -->
 
     <!-- <script src="https://unpkg.com/aframe-outline@%5E1.1.0/build/aframe-outline.min.js"></script> -->
@@ -358,7 +359,7 @@
       </div>
 
     <!-- Spacial scene (A-Frame elements) -->
-    <a-scene myoutline cursor="rayOrigin:mouse" raycaster="objects: .interactive, .testcollidable" vr-mode-ui="enabled: false" screenshot="width: 512; height: 256;">
+    <a-scene id="thescene" myoutline cursor="rayOrigin:mouse" raycaster="objects: .interactive, .testcollidable" vr-mode-ui="enabled: true" screenshot="width: 512; height: 256;">
 
       <a-assets>
 
@@ -402,39 +403,19 @@
 
       </a-assets>
 
-      <a-entity>
+      <a-entity id="rig">
         <!-- <a-camera id="main-camera" look-controls-enabled="false" fov=100> -->
-        <a-camera id="main-camera" look-controls-enabled="false">
-          <!-- <a-text value="Prototype\nunder construction" align="center" scale="20 20 20" color="yellow" opacity=".3" position="5 13 -27" side="double"></a-text>  -->
-          
-          <!-- <a-entity
-            geometry="primitive: plane; width: 4; height: auto"
-            material="color: blue"
-            text="value: This text will be 4 units wide."
-            position="0 0 -3">
-          </a-entity>
-
-          <a-entity
-            geometry="primitive: plane; height: auto"
-            material="color: blue"
-            text="width: 1; align: center; value: This text will be 4 units wide."
-            position="0 -.5 -3">
-          </a-entity>
+        <a-camera id="main-camera" look-controls-enabled="false"></a-camera>
 
 
-        <a-entity
-        position="0 .7 -3"
-        geometry="primitive: plane; width: 1"
-        material="color: red">
-          <a-text width="1" wrap-count="10" value="0000000000000000000000000000000000000000000" align="center" scale="1 1 1" color="green" opacity=".3" side="double"></a-text> 
-
-        </a-entity> -->
+        <a-entity laser-controls="hand: left" ></a-entity>
+        <a-entity id="myvrcontroller" laser-controls="hand: right" raycaster="objects: .interactive"></a-entity>
+            
 
 
-
-
-        </a-camera>
       </a-entity>
+
+
 
       <!-- Entity to accommodate route definitions -->
       <a-entity id="route-definitions" keyboardlistener>

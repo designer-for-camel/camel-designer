@@ -715,7 +715,13 @@ function resetDesigner()
     
     //Camera default position in axis
     cameraY = 0;
-    cameraZ = 7;
+
+    if(document.getElementById("thescene").is('vr-mode')){
+        cameraZ = 8
+    }
+    else{
+        cameraZ = 7
+    }
 
     routes = ["route1"];
 //   this.routes = ["resetDesigner"];

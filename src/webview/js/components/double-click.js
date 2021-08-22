@@ -28,7 +28,8 @@ AFRAME.registerComponent('double-click', {
 
     onDoubleClick: function() {
 
-        var camera = document.getElementById("main-camera");
+        // var camera = document.getElementById("main-camera");
+        var camera = document.getElementById("rig");
 
         //listens to animation end
         camera.addEventListener('animationcomplete', function enterDirect() {

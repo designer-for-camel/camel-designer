@@ -480,7 +480,8 @@
 
       function resetCameraToDefault()
       {
-        var camera = document.getElementById("main-camera");
+        // var camera = document.getElementById("main-camera");
+        var camera = document.getElementById("rig");
         
         // camera.setAttribute("position", "0 0 7");
 
@@ -719,7 +720,8 @@ let configObj = getActiveActivity()
       function triggerRouteSwitch(activity)
       {
         // reference to camera
-        var camera = document.getElementById("main-camera");
+        // var camera = document.getElementById("main-camera");
+        var camera = document.getElementById("rig");
 
         //add listener for animation end
         camera.addEventListener('animationcomplete', function cleaner() {
@@ -960,7 +962,9 @@ let configObj = getActiveActivity()
               //return;
           }
 
-          var camera = document.getElementById("main-camera");
+
+          var camera = document.getElementById('rig')
+          // var camera = document.getElementById("main-camera");
 
           //listens animation end
           camera.addEventListener('animationcomplete', function scrollFocus() {
@@ -1320,6 +1324,11 @@ let configObj = getActiveActivity()
         pane = document.getElementById(currentConfigPane);
         pane.style.visibility = "visible";
 
+        //Added auto-focus for quick editing
+        //also an attempt to edit labels in VR-mode (does not seem to work)
+        let input = pane.getElementsByTagName("input")[0]
+        if(input) {input.focus()}
+
         return pane;
       }
 
@@ -1453,6 +1462,9 @@ case 'catch-start':
         //obtain user input
         var element = document.getElementById("loginput");
         var logText = element.getElementsByTagName("input")[0].value;
+
+        // element.getElementsByTagName("input")[0].focus();
+
 
         //obtain 3D label
         // var text = configObj.getElementsByTagName("a-text")[0].firstChild;

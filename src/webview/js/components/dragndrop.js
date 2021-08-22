@@ -5,9 +5,27 @@
 AFRAME.registerComponent("clickable", {
     init: function() {
         
+
+        this.el.addEventListener('raycaster-intersected', evt => {
+            this.raycaster = evt.detail.el.getAttribute('raycaster');
+            // console.log('raycaster intersected:'+this.el.id)
+          });
+          this.el.addEventListener('raycaster-intersected-cleared', evt => {
+            this.raycaster = null;
+            // console.log('raycaster cleared: '+this.el.id)
+        });
+
+
         //activate dragging when mouse button is pressed
         this.mousedownHandler = e => {
-                                        if (this.el.is("cursor-hovered")) {
+                                        // if (this.el.is("cursor-hovered")) {
+                                        // if (this.el.is("raycaster-intersected")) {
+
+                                            if(e.target != this.el) {return;}
+
+                                            if (!this.raycaster) { return; }
+                                            
+
 
                                             // let t = this.target
 
@@ -24,7 +42,7 @@ AFRAME.registerComponent("clickable", {
                                             {
                                                 this.el.components.detachable.detach()
                                             }
-                                        }
+                                        // }
                                     }
 
         //deactivate dragging when button is released
@@ -154,7 +172,20 @@ AFRAME.registerComponent("dragndrop", {
                     relation = this.el.object3D.position.z / this.direction.z
                 }
                 else{
-                    relation = -(this.el.sceneEl.camera.el.object3D.position.z / this.direction.z)
+
+                    if(this.el.sceneEl.is('vr-mode')){
+
+                        let controllerPosition = new THREE.Vector3()
+                        document.getElementById('myvrcontroller').object3D.getWorldPosition(controllerPosition)
+
+
+                        // relation = -(document.getElementById('myvrcontroller').object3D.position.z / this.direction.z)
+                        relation = -(controllerPosition.z / this.direction.z)
+                    }
+                    else{
+                        // relation = -(this.el.sceneEl.camera.el.object3D.position.z / this.direction.z)
+                        relation = -(this.el.sceneEl.camera.el.parentElement.object3D.position.z / this.direction.z)
+                    }
                 }
 
                 //variable to take in consideration inner coordinates (entities inside entities)
@@ -182,7 +213,40 @@ AFRAME.registerComponent("dragndrop", {
 
     //Keeps the value of the Raycaster's vector
     updateDirection: function() {
-        this.direction.copy(this.el.sceneEl.getAttribute("raycaster").direction);
+        // this.direction.copy(this.el.sceneEl.getAttribute("raycaster").direction);
+        // if(this.raycaster)
+        // this.direction.copy(this.el.components.clickable.raycaster.direction)
+        // else
+        // this.direction.copy(this.el.sceneEl.getAttribute("raycaster").direction);
+
+
+        if(this.el.sceneEl.is('vr-mode')){
+            // this.direction.copy(document.getElementById("myvrcontroller").getAttribute("raycaster").direction)
+
+            // var point = new THREE.Vector3(0, 0, -1);
+            // let controller = document.getElementById("myvrcontroller")
+            // controller.object3D.localToWorld(point);
+            // this.direction.copy(point.sub(controller.object3D.position);
+
+
+            let rotation = document.getElementById("myvrcontroller").getAttribute("rotation")
+
+            this.direction = {
+                x: Math.cos(rotation.x * (Math.PI / 180)) * Math.sin(rotation.y * (Math.PI / 180)),
+                //    x: Math.cos(rotation.x * (Math.PI / 180)) * Math.cos(rotation.y * (Math.PI / 180)),
+                y: - Math.sin(rotation.x * (Math.PI / 180)),
+                z: Math.cos(rotation.x * (Math.PI / 180)) * Math.cos(rotation.y * (Math.PI / 180)),
+                //    z: Math.cos(rotation.x * (Math.PI / 180)) * Math.sin(rotation.y * (Math.PI / 180)),
+            }
+        }
+ 
+        else
+ 
+        {
+            this.direction.copy(this.el.sceneEl.getAttribute("raycaster").direction);
+
+        }
+
     },
 
     //Updates the entity's position
@@ -194,7 +258,21 @@ AFRAME.registerComponent("dragndrop", {
             relation = this.el.object3D.position.z / this.direction.z
         }
         else{
-            relation = -(this.el.sceneEl.camera.el.object3D.position.z / this.direction.z)
+
+            if(this.el.sceneEl.is('vr-mode')){
+                let controllerPosition = new THREE.Vector3()
+                document.getElementById('myvrcontroller').object3D.getWorldPosition(controllerPosition)
+                relation = -(controllerPosition.z / this.direction.z)
+
+                // relation = -(document.getElementById('myvrcontroller').object3D.position.z / this.direction.z)
+            }
+            else{
+                // relation = -(this.el.sceneEl.camera.el.object3D.position.z / this.direction.z)
+                relation = -(this.el.sceneEl.camera.el.parentElement.object3D.position.z / this.direction.z)
+            }
+
+
+            // relation = -(this.el.sceneEl.camera.el.object3D.position.z / this.direction.z)
         }
 
         //Calculate the new coordinates
