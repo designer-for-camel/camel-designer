@@ -1325,7 +1325,7 @@ let configObj = getActiveActivity()
         pane.style.visibility = "visible";
 
         //Added auto-focus for quick editing
-        //also an attempt to edit labels in VR-mode (does not seem to work)
+        //It helps in VR-mode to edit with keyboard
         let input = pane.getElementsByTagName("input")[0]
         if(input) {input.focus()}
 

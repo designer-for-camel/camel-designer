@@ -442,5 +442,30 @@
         createMenu3D()
       }
 
+      scene.addEventListener('enter-vr', function () {
+    
+        //the menu positioning depends on the view mode (VR on/off)
+        //in VR mode we want the menu in a more centered position
+        let menu3D = document.getElementById('handle')
+
+        //keep reference to camera
+        var camera = document.getElementById("main-camera");
+        //obtain camera component
+        let cam = camera.components.camera.camera; 
+
+        //define the distance where the menu will be placed
+        //and calculate viewable height and width in browser window 
+        let distance = 4
+        var height = 2 * distance * Math.tan(cam.fov / 2 / 180 * Math.PI);
+        var width = height * cam.aspect;
+
+        //calculate percentage position where the menu will be placed
+        height = height/2 * .5
+        width = width/2 * .2
+
+        handle.setAttribute('position', -width/2+' '+height/2+' -3')
+        handle.setAttribute('scale', '.5 .5 .5')
+      });
+
   </script>
 </html>

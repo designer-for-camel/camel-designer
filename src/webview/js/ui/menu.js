@@ -588,9 +588,6 @@ function createMenu3D(configuration)
     //   - http://irfu.cea.fr/Projets/PYMSES/_images/pymses_pespective_camera.png
     //   - https://jsfiddle.net/cpg890nm/1/
 
-    //the menu positioning depends on the view mode (VR on/off)
-    let vrModeActive = document.getElementById("thescene").is('vr-mode')
-
     //keep reference to camera
     var camera = document.getElementById("main-camera");
 
@@ -604,14 +601,8 @@ function createMenu3D(configuration)
     var width = height * cam.aspect;
 
     //calculate percentage position where the menu will be placed
-    if(vrModeActive){
-        height = height/2 * .5
-        width = width/2 * .2
-    }
-    else{
-        height = height * .6
-        width = width * .8   
-    }
+    height = height * .6
+    width = width * .8
 
     // console.log("frame dimensions: " + height +" "+width);
 
@@ -621,14 +612,7 @@ function createMenu3D(configuration)
     handle.setAttribute('color', '#454545')
     handle.setAttribute('radius', '.15')
     handle.setAttribute('height', '.051')
-
-    if(vrModeActive){
-        handle.setAttribute('position', -width/2+' '+height/2+' -3')
-        handle.setAttribute('scale', '.5 .5 .5')
-    }
-    else{
-        handle.setAttribute('position', -width/2+' '+height/2+' -4')
-    }
+    handle.setAttribute('position', -width/2+' '+height/2+' -4')
 
     //make interactive
     handle.classList.add('interactive')
