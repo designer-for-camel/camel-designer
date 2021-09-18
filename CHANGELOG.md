@@ -124,4 +124,8 @@ DataFormats included:
 - CamelContext now includes the attribute `streamCache="true"` (this helps on demos when body contains a stream)
 - REST methods (except `GET`) now include the default attribute `type="String"` (allows Swagger to display a text input)
 
-## 0.N.M
+## Unpublished
+
+- Mouse and VR controllers alignment. This allows both interaction methods to use the same underlying implementation.
+- 3D menu navigation compatible with mouse and VR controllers.
+- Fix: camera coordinates now set to zero. Double-click animations to change route did not hit target properly.
