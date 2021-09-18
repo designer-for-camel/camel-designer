@@ -123,3 +123,5 @@ DataFormats included:
 
 - CamelContext now includes the attribute `streamCache="true"` (this helps on demos when body contains a stream)
 - REST methods (except `GET`) now include the default attribute `type="String"` (allows Swagger to display a text input)
+
+## 0.N.M
