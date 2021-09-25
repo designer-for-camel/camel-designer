@@ -26,6 +26,7 @@
 
     <!-- <script src="https://unpkg.com/aframe-outline@%5E1.1.0/build/aframe-outline.min.js"></script> -->
 
+    <script src="https://unpkg.com/aframe-animation-timeline-component@2.0.0/dist/aframe-animation-timeline-component.min.js"></script>
 
     <!-- local scripts -->
     <script src="js/helper-blocks.js"></script>
@@ -47,6 +48,8 @@
     <!-- experimental -->
     <script src="js/incubator.js"></script>
     <script src="js/ui/menu.js"></script>
+    <script src="js/ui/inputlistener.js"></script>
+    <script src="js/components/plane-rounded.js"></script>
 
     <!-- Fonts to work with off-line -->
     <script>
@@ -298,6 +301,7 @@
                 <option value="xpath">xpath</option>
                 <option value="method">method</option>
                 <option value="tokenize">tokenize</option>
+                <option value="header">header</option>
               </select>
               <div class="attributes" onchange="useExpressionAttribute(event);syncEditor();"></div>
             </div>
@@ -359,7 +363,8 @@
       </div>
 
     <!-- Spacial scene (A-Frame elements) -->
-    <a-scene id="thescene" myoutline cursor="rayOrigin:mouse" raycaster="objects: .interactive, .testcollidable" vr-mode-ui="enabled: true" screenshot="width: 512; height: 256;">
+    <a-scene  
+              id="thescene" myoutline cursor="rayOrigin:mouse" raycaster="objects: .interactive, .testcollidable" vr-mode-ui="enabled: true" screenshot="width: 512; height: 256;" keyboard-shortcuts="enterVR: false">
 
       <a-assets>
 
@@ -401,10 +406,27 @@
         animation__geometry="property: opacity; to 0.0; dur: 2000; startEvents: mouseenter"
        ></a-mixin>
 
+
+       <a-timeline id="timelineExchange">
+        <a-timeline-animation select=".exchange" name="receive"></a-timeline-animation>
+        <a-timeline-animation select=".exchange" name="merge"></a-timeline-animation>
+        <a-timeline-animation select=".exchange" name="return"></a-timeline-animation>
+      </a-timeline>
+
+      <a-timeline id="timelineChoice">
+        <a-timeline-animation select=".exchoice" name="receive"></a-timeline-animation>
+        <a-timeline-animation select=".exchoice" name="route1"></a-timeline-animation>
+        <a-timeline-animation select=".exchoice" name="branch1"></a-timeline-animation>
+        <a-timeline-animation select=".exchoice" name="receive"></a-timeline-animation>
+        <a-timeline-animation select=".exchoice" name="route2"></a-timeline-animation>
+        <a-timeline-animation select=".exchoice" name="branch2"></a-timeline-animation>
+      </a-timeline>
+
+
       </a-assets>
 
       <a-entity id="rig">
-        <a-camera id="main-camera" look-controls-enabled="false" position="0 0 0"></a-camera>
+        <a-camera id="main-camera" look-controls-enabled="false" position="0 0 0" wasd-controls-enabled="true"></a-camera>
 
         <a-entity laser-controls="hand: left" ></a-entity>
         <a-entity id="myvrcontroller" laser-controls="hand: right" raycaster="objects: .interactive"></a-entity>
@@ -439,6 +461,7 @@
       }
 
       function run () {
+        createMenu3Dcontrol()
         createMenu3D()
       }
 

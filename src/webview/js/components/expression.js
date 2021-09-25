@@ -27,15 +27,21 @@ AFRAME.registerComponent('expression', {
         //defaults
         this.language          = "simple"
         this.attributes        = {}
-        this.defaultExpression = "hello world";
+        this.defaultExpression = "hello world"
+        this.expressionElement = definition.firstElementChild
+
+        //special case for aggregations (the expression is 1 level deeper)
+        if(definition.tagName == 'aggregate'){
+            this.expressionElement = definition.firstElementChild.firstElementChild
+        }
 
         if(definition)
         {
-            this.language = definition.firstElementChild.tagName
-            // defaultValue = definition.firstElementChild.innerHTML;
+            //obtain language
+            this.language = this.expressionElement.tagName
 
             //obtains definition attributes
-            let defAttributes = definition.firstElementChild.attributes
+            let defAttributes = this.expressionElement.attributes
 
             //loops over attributes
             for(let i=0; i<defAttributes.length; i++)
@@ -50,7 +56,7 @@ AFRAME.registerComponent('expression', {
             }
             else{
                 //default expression
-                this.defaultExpression = definition.firstElementChild.innerHTML;
+                this.defaultExpression = this.expressionElement.innerHTML;
             }
         }
     },

@@ -1313,6 +1313,11 @@ function createSplit(definition)
     //we obtain the starting activity to configure it
     let start = document.getElementById(splitBox.getAttribute('group-start'))
 
+    //create visual integration pattern
+    let animation = createSplitAnimation()
+    animation.setAttribute("position", "0 1 0")
+    start.appendChild(animation)
+
     //add expression component (and load definition)
     start.setAttribute('expression', {position: "0 -0.7 0", configMethod: [updateConfigSplit]})
     start.components.expression.setDefinition(fullDefinition)
@@ -2364,6 +2369,353 @@ function defineDataFormatAsOneLiner(definition)
 }
 
 
+
+//============================================================
+//============================================================
+
+
+    //Creates an Aggregator code segment
+    //Given the activities [A1,A2]:
+    //before:  A1 -------------------------> A2
+    //after:   A1 -> { -> activities -> } -> A2
+    function createAggregator(definition)
+    {
+        //we're about to create multiple activities, so we stop streaming updates until we're done
+        syncEditorEnabled = false;
+    
+        if(!definition)
+        {
+            let defaultAggregation =
+                '<aggregate strategyRef="qaStrategy" completionSize="2">'+
+                    '<correlationExpression>'+
+                        '<header>correlation</header>'+
+                    '</correlationExpression>'+
+                    '<log message="aggregated message"/>'+
+                '</aggregate>'
+
+            //default definition if not given
+            definition = new DOMParser().parseFromString(defaultAggregation, 'application/xml').documentElement;
+        }
+
+        //we keep a copy of the full definition
+        let fullDefinition = definition.cloneNode(true)
+    
+        //We remove the expression node to leave processing actions only
+        definition.removeChild(definition.children[0])
+    
+        //we create the group of activities inside 'split'
+        let aggregateBox = createActivityGroup('aggregate', 'aggr.', 'end', definition)
+    
+        //we obtain the starting activity to configure it
+        let start = document.getElementById(aggregateBox.getAttribute('group-start'))
+    
+
+        let animation = createAggregateAnimation()
+        animation.setAttribute("position", "0 1 0")
+        start.appendChild(animation)
+
+        //add expression component (and load definition)
+        start.setAttribute('expression', {position: "0 -0.7 0", configMethod: [updateConfigSplit]})
+        start.components.expression.setDefinition(fullDefinition)
+    
+        //As we're creating many boxes and re-positioning, the camera is all over the place
+        //so we reset it where we want it to be 
+        switchConfigPaneByActivity(
+            document.getElementById(aggregateBox.getAttribute('group-end'))
+        )
+    
+      //now we're done, we switch back on, and we sync.
+      syncEditorEnabled = true;
+      syncEditor();
+    }
+
+    function createAggregateAnimation(){
+
+        //animation container
+        let container = document.createElement("a-entity")
+        container.setAttribute('position', "0 1 0")
+        container.setAttribute('scale', ".15 .15 .15")
+    
+        //animated exchange
+        let ex1 = document.createElement("a-box")
+        ex1.setAttribute('color', 'grey')
+        ex1.setAttribute('class', 'exchange')
+        ex1.setAttribute('width', '1')
+        ex1.setAttribute('height', '1')
+        ex1.setAttribute('animation__receive',    {property: 'position', from: '-2 2 0', to: '0 2 0'});
+        ex1.setAttribute('animation__merge',      {property: 'position', from: ' 0 2 0', to: '0 0 0'});
+        ex1.setAttribute('animation__return',     {property: 'position', from: ' 0 0 0', to: '3 0 0'});
+        ex1.setAttribute('animation-timeline__1', {timeline: '#timelineExchange', loop: "true"});
+        container.appendChild(ex1)
+    
+        //animated exchange
+        ex1 = document.createElement("a-box")
+        ex1.setAttribute('color', 'grey')
+        ex1.setAttribute('class', 'exchange')
+        ex1.setAttribute('width', '1')
+        ex1.setAttribute('height', '1')
+        ex1.setAttribute('animation__receive',    {property: 'position', from: '-2.5 0 0', to: '0 0 0'});
+        ex1.setAttribute('animation__merge',      {property: 'position', from: ' 0   0 0', to: '0 0 0'});
+        ex1.setAttribute('animation__return',     {property: 'position', from: ' 0   0 0', to: '3 0 0'});
+        ex1.setAttribute('animation-timeline__1', {timeline: '#timelineExchange', loop: "true"});
+        container.appendChild(ex1)
+         
+        //animated exchange
+        ex1 = document.createElement("a-box")
+        ex1.setAttribute('color', 'grey')
+        ex1.setAttribute('class', 'exchange')
+        ex1.setAttribute('width', '1')
+        ex1.setAttribute('height', '1')
+        ex1.setAttribute('animation__receive',    {property: 'position', from: '-3 -2 0', to: '0 -2 0'});
+        ex1.setAttribute('animation__merge',      {property: 'position', from: ' 0 -2 0', to: '0  0 0'});
+        ex1.setAttribute('animation__return',     {property: 'position', from: ' 0  0 0', to: '3  0 0'});
+        ex1.setAttribute('animation-timeline__1', {timeline: '#timelineExchange', loop: "true"});
+        container.appendChild(ex1)
+
+        ex1 = document.createElement("a-box")
+        ex1.setAttribute('color', 'grey')
+        // ex1.setAttribute('depth', '1.5')
+        ex1.setAttribute('width', '1.5')
+        ex1.setAttribute('height', '5.5')
+        ex1.setAttribute('opacity', '0.4')
+        container.appendChild(ex1)
+    
+        //Frame around animation
+        ex1 = document.createElement("a-entity")
+        ex1.setAttribute('line'   , {start: "-3.5  3.5 0", end: " 3.5  3.5 0", color: "grey"})
+        ex1.setAttribute('line__2', {start:  "3.5  3.5 0", end: " 3.5 -3.5 0", color: "grey"})
+        ex1.setAttribute('line__3', {start:  "3.5 -3.5 0", end: "-3.5 -3.5 0", color: "grey"})
+        ex1.setAttribute('line__4', {start: "-3.5 -3.5 0", end: "-3.5  3.5 0", color: "grey"})
+        container.appendChild(ex1)
+
+        //Frame label
+        ex1 = appendLabel(container, "Aggregator")
+        ex1.setAttribute("position", "0 4.5 0")
+        ex1.setAttribute("scale", "9 9 9")
+        ex1.setAttribute("color", "grey")
+
+        return container
+      }
+
+      function createSplitAnimation(){
+
+        //animation container
+        let container = document.createElement("a-entity")
+        container.setAttribute('position', "0 1 0")
+        container.setAttribute('scale', ".15 .15 .15")
+    
+        //animated exchange
+        let ex1 = document.createElement("a-box")
+        ex1.setAttribute('color', 'grey')
+        ex1.setAttribute('class', 'exchange')
+        ex1.setAttribute('width', '1')
+        ex1.setAttribute('height', '1')
+        ex1.setAttribute('animation__receive',    {property: 'position', from: '-3 0 0', to: '0 0 0'});
+        ex1.setAttribute('animation__merge',      {property: 'position', from: ' 0 0 0', to: '0 2 0'});
+        ex1.setAttribute('animation__return',     {property: 'position', from: ' 0 2 0', to: '3 2 0'});
+        ex1.setAttribute('animation-timeline__1', {timeline: '#timelineExchange', loop: "true"});
+        container.appendChild(ex1)
+
+        //animated exchange
+        ex1 = document.createElement("a-box")
+        ex1.setAttribute('color', 'grey')
+        ex1.setAttribute('class', 'exchange')
+        ex1.setAttribute('width', '1')
+        ex1.setAttribute('height', '1')
+        ex1.setAttribute('animation__receive',    {property: 'position', from: '-3 0 0', to: '0   0 0'});
+        ex1.setAttribute('animation__merge',      {property: 'position', from: ' 0 0 0', to: '0   0 0'});
+        ex1.setAttribute('animation__return',     {property: 'position', from: ' 0 0 0', to: '2.5 0 0'});
+        ex1.setAttribute('animation-timeline__1', {timeline: '#timelineExchange', loop: "true"});
+        container.appendChild(ex1)
+     
+        //animated exchange
+        ex1 = document.createElement("a-box")
+        ex1.setAttribute('color', 'grey')
+        ex1.setAttribute('class', 'exchange')
+        ex1.setAttribute('width', '1')
+        ex1.setAttribute('height', '1')
+        ex1.setAttribute('animation__receive',    {property: 'position', from: '-3  0 0', to: '0  0 0'});
+        ex1.setAttribute('animation__merge',      {property: 'position', from: ' 0  0 0', to: '0 -2 0'});
+        ex1.setAttribute('animation__return',     {property: 'position', from: ' 0 -2 0', to: '2 -2 0'});
+        ex1.setAttribute('animation-timeline__1', {timeline: '#timelineExchange', loop: "true"});
+        container.appendChild(ex1)
+
+        //visual processor where split happens
+        ex1 = document.createElement("a-box")
+        ex1.setAttribute('color', 'grey')
+        ex1.setAttribute('width', '1.5')
+        ex1.setAttribute('height', '5.5')
+        ex1.setAttribute('opacity', '0.4')
+        container.appendChild(ex1)
+    
+        //Frame around animation
+        ex1 = document.createElement("a-entity")
+        ex1.setAttribute('line'   , {start: "-3.5  3.5 0", end: " 3.5  3.5 0", color: "grey"})
+        ex1.setAttribute('line__2', {start:  "3.5  3.5 0", end: " 3.5 -3.5 0", color: "grey"})
+        ex1.setAttribute('line__3', {start:  "3.5 -3.5 0", end: "-3.5 -3.5 0", color: "grey"})
+        ex1.setAttribute('line__4', {start: "-3.5 -3.5 0", end: "-3.5  3.5 0", color: "grey"})
+        container.appendChild(ex1)
+
+        //Frame label
+        ex1 = appendLabel(container, "Splitter")
+        ex1.setAttribute("position", "0 4.5 0")
+        ex1.setAttribute("scale", "9 9 9")
+        ex1.setAttribute("color", "grey")
+
+        return container
+      }
+
+
+      function createChoiceAnimation(){
+        let container = document.createElement("a-entity")
+        container.setAttribute('position', "0 1 0")
+        container.setAttribute('scale', ".15 .15 .15")
+    
+        let ex1 = document.createElement("a-box")
+        ex1.setAttribute('color', 'grey')
+        ex1.setAttribute('class', 'exchoice')
+        ex1.setAttribute('width', '1')
+        ex1.setAttribute('height', '1')
+        ex1.setAttribute('animation__receive',    {property: 'position', from: '-3 0 0', to: '0 0 0'});
+        ex1.setAttribute('animation__route1',    {property: 'position', from: '0 0 0', to: '0 2 0'});
+        ex1.setAttribute('animation__branch1',    {property: 'position', from: '0 2 0', to: '3 2 0'});
+        ex1.setAttribute('animation__route2',    {property: 'position', from: '0 0 0', to: '0 -2 0'});
+        ex1.setAttribute('animation__branch2',    {property: 'position', from: '0 -2 0', to: '3 -2 0'});
+        ex1.setAttribute('animation-timeline__1',    {timeline: '#timelineChoice', loop: "true"});
+        container.appendChild(ex1)
+    
+
+        ex1 = document.createElement("a-box")
+        ex1.setAttribute('color', 'grey')
+        ex1.setAttribute('width', '1.5')
+        ex1.setAttribute('height', '5.5')
+        ex1.setAttribute('opacity', '0.4')
+        container.appendChild(ex1)
+    
+        //Frame around animation
+        ex1 = document.createElement("a-entity")
+        ex1.setAttribute('line'   , {start: "-3.5  3.5 0", end: " 3.5  3.5 0", color: "grey"})
+        ex1.setAttribute('line__2', {start:  "3.5  3.5 0", end: " 3.5 -3.5 0", color: "grey"})
+        ex1.setAttribute('line__3', {start:  "3.5 -3.5 0", end: "-3.5 -3.5 0", color: "grey"})
+        ex1.setAttribute('line__4', {start: "-3.5 -3.5 0", end: "-3.5  3.5 0", color: "grey"})
+        container.appendChild(ex1)
+
+        //Frame label
+        ex1 = appendLabel(container, "Router")
+        ex1.setAttribute("position", "0 4.5 0")
+        ex1.setAttribute("scale", "9 9 9")
+        ex1.setAttribute("color", "grey")
+
+        return container
+      }
+      
+
+//Creates a DataFormat given a parsed XML definition
+function createProcess(definition)
+{
+    // definition = definition || new DOMParser().parseFromString('<to uri="dataformat:base64:marshal"/>', "text/xml").documentElement    
+    definition = definition || {definition: new DOMParser().parseFromString(
+        '<process ref="myJavaProcess"/>',
+        "text/xml").documentElement}
+
+    //create activity
+    // let process = createEndpointDataFormat(definition)
+    // dataformat.setAttribute('opacity', 0.2)
+
+    //create activity
+    definition.type = "process"
+    let activity = createActivity(definition);
+
+      //this is the label inside the geometry (activity descriptor)
+    var text = createText();
+    activity.appendChild(text);
+    text.setAttribute('value', 'process');
+    text.setAttribute('color', 'white');
+    text.setAttribute('align', 'center');
+    text.setAttribute('side', 'double');
+
+    // text with actual LOG as configured in Camel
+    var label = createText();
+    text.appendChild(label);
+    label.setAttribute('value', definition.definition.getAttribute("ref"));
+    label.setAttribute('color', 'white');
+    label.setAttribute('align', 'center');
+    label.setAttribute('position', {x: 0, y: -.7, z: 0});
+    label.setAttribute('side', 'double');
+
+    let gear = document.createElement("a-entity")
+    gear.setAttribute('position', "0 0 -.1")
+    gear.setAttribute('scale', ".15 .15 .15")
+    gear.setAttribute('animation',    {property: 'rotation', from: '0 0 0', to: '0 0 -360', loop: true, easing: 'linear', dur: 10000});
+
+    let wheel = document.createElement('a-cylinder')
+    wheel.setAttribute('color', '#454545')
+    wheel.setAttribute('radius', '2')
+    wheel.setAttribute('height', '.2')
+    wheel.setAttribute('rotation', '90 0 0')
+    gear.appendChild(wheel)
+
+    let teeth
+    for(let i=0;i<180;i+=30){
+        teeth = document.createElement("a-box")
+        teeth.setAttribute('color', '#454545')
+        teeth.setAttribute('width', '.6')
+        teeth.setAttribute('height', '5')
+        teeth.setAttribute('depth', '.2')
+        teeth.setAttribute('rotation', "0 0 "+i)
+        gear.appendChild(teeth)
+    }
+
+    activity.appendChild(gear)
+
+    //add uri component (and load definition)
+    // activity.setAttribute('uri', {position: "0 -.9 0", configMethod: [updateConfigEndpointDataformat]})
+    // activity.components.uri.setDefinition(definition.definition)
+
+    goLive(activity);
+
+    return activity
+}
+
+/*
+function editLabel(label){
+
+    let input = UiInput.getActiveElement()
+
+    if(input){
+        input.parentElement.parentElement.setAttribute('visible', true);
+        UiInput.setValue(getActiveRoute().id+" ")
+        return
+    }
+
+    //create button entity
+    input = document.createElement('a-plane-rounded')
+    input.id = 'ui-input-text'
+
+    input.setAttribute('color', 'grey')
+    input.setAttribute('width', '2.5')
+    input.setAttribute('height', '.5')
+    input.setAttribute('radius', '.1')
+    input.setAttribute('opacity', '.4')
+    input.setAttribute('position', '-1.25 0 -2')
+
+    let listener = function (event) {
+         renameActiveRoute(event.detail.value)
+
+         UiInput.getActiveElement().parentElement.parentElement.setAttribute('visible', false)
+    }
+
+    let textbox = createTextInput(getActiveRoute().id, listener)
+    textbox.setAttribute('position', '1.25 .25 0')
+
+    input.appendChild(textbox)
+
+    var camera = document.getElementById("main-camera");
+    camera.appendChild(input)
+   
+    return input
+  }
+*/
 //==================================
 
 

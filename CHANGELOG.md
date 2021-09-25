@@ -126,6 +126,12 @@ DataFormats included:
 
 ## Unpublished
 
-- Mouse and VR controllers alignment. This allows both interaction methods to use the same underlying implementation.
-- 3D menu navigation compatible with mouse and VR controllers.
-- Fix: camera coordinates now set to zero. Double-click animations to change route did not hit target properly.
+- VR mode enabled (for browsers, not VSCode)
+- Mouse and VR controllers alignment (same underlying implementation)
+- Introduced 'Aggregator' definitions (EIP pattern)
+- Introduced 'Process' definitions (EIP pattern *Message Translator*)
+- `<choice>` statement improvements:
+  - Menu includes option for 1/2/3 conditions (+1 for `<otherwise>` branch) \
+    If more needed, add them in the code and reload the visual editor.
+  - Vertical position of transition (choice --> activity) determines order of branches in the code \
+  Drag'n'drop 1st branch activity to change order of conditions in the code.

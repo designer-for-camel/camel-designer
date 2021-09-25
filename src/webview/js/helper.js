@@ -209,7 +209,7 @@ function isBoxed(activity)
   return activity.parentNode && (activity.parentNode.nodeName.toLowerCase() == "a-box" || activity.parentNode.nodeName.toLowerCase() == "a-plane");
 }
 
-//returns TRUE when activity is part of a group of acvivities (choices/multicasts)
+//returns TRUE when activity is part of a group of activities (choices/multicast)
 //TODO: review logic for activities inside choice branches
 function isGroup(activity)
 {
@@ -688,4 +688,13 @@ function isMulticast(entity)
   }
 
   return false
+}
+
+function getRoutes(){
+
+  //obtain all route definitions
+  let routes = document.getElementById('route-definitions').children
+
+  //convert to Array and return
+  return  Array.prototype.slice.call(routes);
 }

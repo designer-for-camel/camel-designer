@@ -285,6 +285,10 @@ function createActivityFromSource(type, delay, definition, lastAction) {
             return createActivityDelayed(createBody, delay, definition, lastAction);            
             // break;
 
+
+        case 'process':
+            return createActivityDelayed(createProcess, delay, definition, lastAction);            
+
         case 'kafka':
         case 'file':
         case 'ftp':
@@ -293,6 +297,8 @@ function createActivityFromSource(type, delay, definition, lastAction) {
 
         case 'split':
             return createActivityDelayed(createSplit, delay, definition.definition, lastAction);
+        case 'aggregate':
+            return createActivityDelayed(createAggregator, delay, definition.definition, lastAction);            
         case 'doTry':
             return createActivityDelayed(createTryCatch, delay, definition.definition, lastAction);
 
@@ -632,6 +638,19 @@ function renderActivity(activity, mycode, iterator) {
             break;
 
 
+        case 'aggregate-start':
+            mycode.text +=  mycode.tab+'<aggregate strategyRef="myStrategy" completionSize="2" id="'+activity.parentNode.id+'">\n'+
+                            mycode.tab+'  <correlationExpression>\n'+
+                            mycode.tab+'    '+activity.components.expression.getXml()+'\n'+
+                            mycode.tab+'  </correlationExpression>\n'
+
+            mycode.tab  += '  '
+            break;
+        case 'aggregate-end':
+            mycode.tab = mycode.tab.slice(0, -2);
+            mycode.text += mycode.tab+'</aggregate>\n'
+            break;
+
         //Try-Catch statements are handled in the following way:
         // - on try-start we open the XML tag
         // - on try-end:
@@ -725,6 +744,10 @@ function renderActivity(activity, mycode, iterator) {
             break;
 
 
+        case 'process':
+            mycode.text += mycode.tab+'<process ref="'+activity.getElementsByTagName('a-text')[0].firstChild.getAttribute('value')+'" id="'+activity.id+'"/>\n'
+            break;
+            
         case 'dataformat':
             //assumes activity is an endpoint (<to>) and has URI
             mycode.text += mycode.tab+'<to uri="'+activity.components.uri.getValue()+'" id="'+activity.id+'"/>\n'
@@ -747,33 +770,45 @@ function renderActivity(activity, mycode, iterator) {
 function renderChoice(choice, mycode, iterator) {
 
     //obtain choice paths
-    var links = JSON.parse(choice.getAttribute("links"));
+    // var links = JSON.parse(choice.getAttribute("links"));
 
     let link;
     let condition;
     let alternative;
-    let start = choice;
+    // let start = choice;
 
     mycode.text += mycode.tab+'<choice id="'+choice.id+'">\n'
     mycode.tab  += '  '
 
+    //obtain all links rooted in the choice activity
+    let domlinks = document.querySelectorAll('a-cylinder[source="'+choice.id+'"]');
+
+    // Convert NodeList to an array
+    var linksArray = Array.prototype.slice.call(domlinks);
+
+    // Sort the links by their vertical position
+    linksArray.sort(function(a,b) {
+        //only exception is choice's OTHERWISE, needs to be last
+        let label = a.getElementsByTagName('a-text')[0].getAttribute('value')
+        if(label == 'otherwise'){
+            return 1
+        }
+        var aY = a.object3D.position.y;
+        var bY = b.object3D.position.y;
+        if (aY > bY) return -1;
+        if (aY < bY) return 1;
+        return 0;
+    });
+
     //Itereta over the paths...
-    for(let i=0; i<links.length; i++)
+    for(let i=0; i<linksArray.length; i++)
     {
         //get link
-        link = document.getElementById(links[i]);
+        link = linksArray[i];
 
         //attempt to obtain label entity
         alternative = link.getElementsByTagName('a-text')[0]
         
-        //if there is no label
-        if(alternative == null)
-        {
-            //then this link is the incoming link to the choice activity
-            //we ignore it, and continue on next iteration
-            continue
-        }
-
         //obtain text on label
         alternative = alternative.getAttribute('value');
 
@@ -785,7 +820,8 @@ function renderChoice(choice, mycode, iterator) {
             mycode.tab += '  ';
             mycode.text += mycode.tab+'<simple>'+condition+'</simple>\n'
             // renderRouteActivity(iterator.iterateNext(), mycode, iterator);
-            choice = getNextActivity(choice);
+            //choice = getNextActivity(choice);
+            choice = getLinkDestination(link)
 
             while(choice.getAttribute('processor-type') != 'choice-end')
             {

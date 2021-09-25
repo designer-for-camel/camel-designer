@@ -6,7 +6,7 @@ AFRAME.registerComponent('keyboardlistener', {
     // },
     init: function () {
 
-        console.log("init keyboard-listener" + this.el);
+        console.log("init keyboard-listener " + this.el.id);
 
         document.addEventListener('keydown', this.notify);
         document.addEventListener('keyup', this.notify);

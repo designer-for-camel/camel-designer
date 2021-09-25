@@ -1126,6 +1126,23 @@ function createMulticast(definition)
       //   syncEditor();
       // }
 
+      //creates CHOICE structure with given number of conditions to include
+      function createChoiceWith(numConditions)
+      {        
+        let conditions
+
+        for(let i=0; i<numConditions; i++){
+          //default condition definition
+          conditions += '<when><simple>\'condition'+(i+1)+'\' != null</simple><log message="branch '+(i+1)+'"/></when>'
+        }
+
+        //include OTHERWISE statement
+        let definition = '<choice>'+conditions+'<otherwise><log message="branch otherwise"/></otherwise></choice>'
+
+        //CHOICE creation
+        createChoice(new DOMParser().parseFromString(definition, 'application/xml').documentElement)
+      }
+
       //UNDER CONSTRUCTION
       //This is an effort to make a better CHOICE creator
       //the first one is too rigid, and mixed with MULTICAST
@@ -1164,6 +1181,11 @@ function createMulticast(definition)
 
         // create CHOICE start activity
         let start = createActivity({type: 'choice-start', definition: definition, detachable: false});
+
+        //create visual integration pattern
+        let animation = createChoiceAnimation()
+        animation.setAttribute("position", "0 1 0")
+        start.appendChild(animation)
 
         //We create CHOICE end activity
         //We need to provide a specific ID for the end activity (with format: "[startId]-end")

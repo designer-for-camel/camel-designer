@@ -49,6 +49,14 @@ AFRAME.registerComponent("clickable", {
         this.mouseupHandler = e =>  {
                                         if (this.el.is("dragging")) {
                                             this.el.removeState("dragging");
+
+                                            //special case for choice activities:
+                                            //repositioning first choice activity may change the order of conditions in the code
+                                            let preceding = getPreviousActivity(this.el)
+                                            if(preceding && preceding.getAttribute('processor-type') == 'choice-start'){
+                                                syncEditor()
+                                            }
+
                                             syncMetadata()
                                         }
                                     }

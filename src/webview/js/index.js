@@ -518,6 +518,9 @@
 
           //switching to next route will select the new route 
           nextRoute(routeId);
+
+          //The new route needs to be included in the menu
+          createMenu3Dcontrol();
       }
 
       function initPanes()
@@ -1414,6 +1417,10 @@ case 'split-start':
     newConfigPane = "set-body";
     updateConfigBody();
     break;
+case 'aggregate-start':
+    newConfigPane = "set-body";
+    updateConfigBody();
+    break;
 case 'catch-start':
     newConfigPane = "config-catch";
     updateConfigCatch();
@@ -1529,6 +1536,7 @@ case 'catch-start':
           //allowed activities
           case 'body':
           case 'split-start':
+          case 'aggregate-start':
             break;
         
           //not allowed (end of processing)

@@ -29,6 +29,8 @@ function appendLabel(parent, text, count){
     label.setAttribute('side', 'double');
     label.setAttribute('position', '0 0 .01');
     parent.appendChild(label)
+
+    return label
 }
 
 function createMenuButton(menu, configuration)
@@ -383,8 +385,24 @@ function createMenu3D(configuration)
                 function: 'createDirect',                
             },
             {
-                label:    'choice',
-                function: 'createChoice',                
+                label: 'choice >',
+                submenu: [
+                    {
+                        label:    '1 condition',
+                        function: 'createChoiceWith',
+                        arguments: ['1']
+                    },
+                    {
+                        label:    '2 conditions',
+                        function: 'createChoiceWith',
+                        arguments: ['2']     
+                    },
+                    {
+                        label:    '3 conditions',
+                        function: 'createChoiceWith' ,
+                        arguments: ['3']    
+                    }
+                ]   
             },
             {
                 label:    'try-catch',
@@ -393,6 +411,14 @@ function createMenu3D(configuration)
             {
                 label:    'split',
                 function: 'createSplit',                
+            },
+            {
+                label:    'aggregate',
+                function: 'createAggregator',                
+            },
+            {
+                label:    'process',
+                function: 'createProcess',                
             },
             {
                 label:    'dataformat >',
@@ -713,3 +739,286 @@ function tempVR(){
         // tempResetCamera()
     }
 }
+
+//===========================================================
+//===========================================================
+
+//This function creates a 3D interactive Menu
+//The challenge is that it attaches to the camera and needs to be positioned where visible.
+//Different users will have different browser window dimensions.
+//A-Frame does not provide an easy way to obtain the visible dimensions from a browser window.
+//This function calculates the viewable dimensions
+//
+//References:
+//Resources on how to obtain A-Frame canvas dimensions:
+//   - https://stackoverflow.com/questions/44974596/how-to-fit-a-plane-to-the-a-canvas
+//   - http://irfu.cea.fr/Projets/PYMSES/_images/pymses_pespective_camera.png
+//   - https://jsfiddle.net/cpg890nm/1/
+function createMenu3Dcontrol()
+// function createMenu3Dcontrol(configuration)
+{
+
+
+    let defMenuRoutes = 
+    {
+        name: 'route...',
+        class: 'route',
+        enabled: true,
+        menu: [
+            {
+                label:    '   edit   >',
+                submenu: [
+                    {
+                        label:    'new',
+                        function: 'newRoute'
+                    },
+                    {
+                        label:    'delete',
+                        function: 'deleteRoute'   
+                    },
+                    {
+                        label:    'rename',
+                        function: 'editRouteName'
+                    }
+                ]             
+            },
+            // {
+            //     label:    'timer',
+            //     function: 'createTimer',                
+            // },
+            // {
+            //     label:    'kafka',
+            //     function: 'createKafkaStart',                
+            // },
+            // {
+            //     label:    'file',
+            //     function: 'createFileStart',                
+            // },
+            // {
+            //     label:    'ftp',
+            //     function: 'createFtpStart',                
+            // },
+        ]
+    }
+
+
+    //MENU POSITIONING:
+    //    (see comments on head of function)
+    //References:
+    //Resources on how to obtain A-Frame canvas dimensions:
+    //   - https://stackoverflow.com/questions/44974596/how-to-fit-a-plane-to-the-a-canvas
+    //   - http://irfu.cea.fr/Projets/PYMSES/_images/pymses_pespective_camera.png
+    //   - https://jsfiddle.net/cpg890nm/1/
+
+    let controlId = 'handle-control'
+
+    //keep reference to camera
+    var camera = document.getElementById("main-camera");
+
+    //obtain camera component
+    let cam = camera.components.camera.camera; 
+
+    //define the distance where the menu will be placed
+    //and calculate viewable height and width in browser window 
+    let distance = 4
+    var height = 2 * distance * Math.tan(cam.fov / 2 / 180 * Math.PI);
+    var width = height * cam.aspect;
+
+    //calculate percentage position where the menu will be placed
+    height = height * .6
+    width = width * .8
+
+    // console.log("frame dimensions: " + height +" "+width);
+
+    // let position = -width/2+' '+height/2+' -4'
+    let position = '1 '+height/2+' -4'
+
+    let handle = document.getElementById(controlId)
+    
+    //if one exists, we discard and recreate
+    if(handle){
+        //keep original position
+        position = handle.getAttribute('position')
+        camera.removeChild(handle)
+    }
+
+    //Create the menu handler (grabber to drag'n'drop)
+    handle = document.createElement('a-cylinder')
+    handle.id = 'handle-control'
+    handle.setAttribute('color', '#454545')
+    handle.setAttribute('radius', '.15')
+    handle.setAttribute('height', '.051')
+    // handle.setAttribute('position', -width/2+' '+height/2+' -4')
+    handle.setAttribute('position', position)
+
+    //make interactive
+    handle.classList.add('interactive')
+    handle.classList.add('clickable')
+    handle.setAttribute('dragndrop','')
+
+
+    let routes = getRoutes()
+    let option
+
+    for(let i = 0; i < routes.length ; i++){
+        
+        option = 
+            {
+                label:    routes[i].id,
+                function: 'nextRoute',
+                arguments: routes[i].id
+            }
+
+        defMenuRoutes.menu.push(option)
+    }
+
+    //create all menus
+    let menuRoutes = createMenuButton(defMenuRoutes)
+    menuRoutes.setAttribute('position', '.5 0 0')
+
+    // let menuSet = createMenuButton(defMenuSet)
+    // menuSet.setAttribute('position', '1.5 0 0')
+
+
+    //create menu container
+    let menu3D = document.createElement("a-entity")
+    menu3D.appendChild(menuRoutes)
+    // menu3D.appendChild(menuSet)
+
+    //rotate handle, and counter-rotate menu (to compensate parent's rotation)
+    handle.setAttribute('rotation', '90 0 0')
+    menu3D.setAttribute('rotation', '-90 0 0')
+
+    //attach menu to grabber
+    handle.appendChild(menu3D)
+
+    //create hint for handler
+    // let hint = document.createElement("a-entity")
+    // hint.setAttribute('hint', 'message: Drag the menu from the round shape')
+    // hint.setAttribute('rotation', '-90 0 0')
+    // hint.setAttribute('scale', '.5 .5 .5')
+    // handle.appendChild(hint)
+
+    //attach menu to camera
+    camera.appendChild(handle)
+}
+
+function menuTestKeypress(e){
+
+    console.log("key press: "+e)
+}
+
+
+
+
+  
+  class UiInput{
+    static activeElement = null;
+
+    static focus(element) {
+        this.activeElement = element;
+    }
+
+    static getActiveElement() {
+        return this.activeElement
+    }
+
+    static setValue(value){
+        this.activeElement.setAttribute('value', value)
+    }
+
+    static getValue(){
+        return this.activeElement.getAttribute('value')
+    }
+
+    static submitValue(){
+        this.activeElement.emit('uiinputsubmit', {value: this.getValue()}, false);
+    }
+  }
+
+  function editRouteName(){
+
+    let input = UiInput.getActiveElement()
+
+    if(input){
+        input.parentElement.parentElement.setAttribute('visible', true);
+        UiInput.setValue(getActiveRoute().id+" ")
+        return
+    }
+
+    //create button entity
+    input = document.createElement('a-plane-rounded')
+    // groupButton.id = 'menu-main'
+    input.id = 'ui-input-text'
+
+    //add classes
+    // groupButton.classList.add(menu.class)
+    // groupButton.classList.add('menu-button')
+
+    //enable/disable as per configuration
+    // setButtonEnabled(groupButton, menu.enabled)
+
+    input.setAttribute('color', 'grey')
+    // input.setAttribute('value', 'hello world')
+    input.setAttribute('width', '2.5')
+    input.setAttribute('height', '.5')
+    input.setAttribute('radius', '.1')
+    input.setAttribute('opacity', '.4')
+    input.setAttribute('position', '-1.25 0 -2')
+    // input.setAttribute('scale', '0 0 -2')
+    //set label to menu button
+
+    let listener = function (event) {
+         renameActiveRoute(event.detail.value)
+
+         UiInput.getActiveElement().parentElement.parentElement.setAttribute('visible', false)
+    }
+
+    let textbox = createTextInput(getActiveRoute().id, listener)
+    textbox.setAttribute('position', '1.25 .25 0')
+
+    input.appendChild(textbox)
+
+    // UiInput.focus(label)
+
+    // let inputtext1 = createInputBox()
+    // let inputtext2 = createInputBox()
+    // inputtext2.setAttribute("position", "0 -2 -3")
+
+    var camera = document.getElementById("main-camera");
+    camera.appendChild(input)
+    // camera.appendChild(textbox)
+
+    return input
+  }
+
+  function renameActiveRoute(newRouteId){
+    getActiveRoute().id = newRouteId
+    routes[0] = newRouteId
+    document.getElementsByTagName("routenav")[1].innerHTML = newRouteId;
+    createMenu3Dcontrol();
+  }
+
+
+
+  function createTextInput(defaultText, listener){
+
+    let textbox = document.createElement("a-plane")
+    textbox.setAttribute('color', 'grey')
+    textbox.setAttribute('width', '2')
+    textbox.setAttribute('height', '.3')
+
+    let label = appendLabel(textbox, defaultText)
+    label.setAttribute('inputlistener', '')
+    label.setAttribute('position', "-0.95 0.015 0")
+    label.setAttribute('align', 'left');
+    label.setAttribute('color', 'black');
+
+    UiInput.focus(label)
+
+    label.addEventListener('uiinputsubmit', listener);
+
+    return textbox
+  }
+
+
