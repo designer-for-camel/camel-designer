@@ -901,101 +901,47 @@ function createMenu3Dcontrol()
 
     //attach menu to camera
     camera.appendChild(handle)
+
+
+    //create hint for handler
+    // let itext = document.createElement("a-input")
+    // itext.setAttribute('position', '0 0 -2')
+    // itext.classList.add('interactive')
+    // camera.appendChild(itext)
+
+    // itext = document.createElement("a-sphere")
+    // itext.setAttribute('position', '-1 0 -2')
+    // itext.classList.add('interactive')
+    // itext.setAttribute('clickable', '')
+    // camera.appendChild(itext)
+
+    // <a-input class="interactive" clickable position="0 0 -2" placeholder="Username" color="black" width="1"></a-input>
+
+
 }
 
-function menuTestKeypress(e){
-
-    console.log("key press: "+e)
-}
 
 
 
-
-  
-  class UiInput{
-    static activeElement = null;
-
-    static focus(element) {
-        this.activeElement = element;
-    }
-
-    static getActiveElement() {
-        return this.activeElement
-    }
-
-    static setValue(value){
-        this.activeElement.setAttribute('value', value)
-    }
-
-    static getValue(){
-        return this.activeElement.getAttribute('value')
-    }
-
-    static submitValue(){
-        this.activeElement.emit('uiinputsubmit', {value: this.getValue()}, false);
-    }
-  }
 
   function editRouteName(){
+      //obtain UI form
+      let configPanel = document.getElementById('ui-route-rename') 
 
-    let input = UiInput.getActiveElement()
+      //populate UI input with current Route ID
+      configPanel.querySelector('a-input').setAttribute('value', getActiveRoute().id)
 
-    if(input){
-        input.parentElement.parentElement.setAttribute('visible', true);
-        UiInput.setValue(getActiveRoute().id+" ")
-        return
-    }
-
-    //create button entity
-    input = document.createElement('a-plane-rounded')
-    // groupButton.id = 'menu-main'
-    input.id = 'ui-input-text'
-
-    //add classes
-    // groupButton.classList.add(menu.class)
-    // groupButton.classList.add('menu-button')
-
-    //enable/disable as per configuration
-    // setButtonEnabled(groupButton, menu.enabled)
-
-    input.setAttribute('color', 'grey')
-    // input.setAttribute('value', 'hello world')
-    input.setAttribute('width', '2.5')
-    input.setAttribute('height', '.5')
-    input.setAttribute('radius', '.1')
-    input.setAttribute('opacity', '.4')
-    input.setAttribute('position', '-1.25 0 -2')
-    // input.setAttribute('scale', '0 0 -2')
-    //set label to menu button
-
-    let listener = function (event) {
-         renameActiveRoute(event.detail.value)
-
-         UiInput.getActiveElement().parentElement.parentElement.setAttribute('visible', false)
-    }
-
-    let textbox = createTextInput(getActiveRoute().id, listener)
-    textbox.setAttribute('position', '1.25 .25 0')
-
-    input.appendChild(textbox)
-
-    // UiInput.focus(label)
-
-    // let inputtext1 = createInputBox()
-    // let inputtext2 = createInputBox()
-    // inputtext2.setAttribute("position", "0 -2 -3")
-
-    var camera = document.getElementById("main-camera");
-    camera.appendChild(input)
-    // camera.appendChild(textbox)
-
-    return input
+      //activate UI configuration panel
+      configPanel.components.form.setActive(true);
   }
+
 
   function renameActiveRoute(newRouteId){
     getActiveRoute().id = newRouteId
     routes[0] = newRouteId
     document.getElementsByTagName("routenav")[1].innerHTML = newRouteId;
+
+    //as the route name has changed, the dropdown menu needs to be synched
     createMenu3Dcontrol();
   }
 

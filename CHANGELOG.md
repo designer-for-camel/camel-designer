@@ -135,3 +135,6 @@ DataFormats included:
     If more needed, add them in the code and reload the visual editor.
   - Vertical position of transition (choice --> activity) determines order of branches in the code \
   Drag'n'drop 1st branch activity to change order of conditions in the code.
+- New 3D forms to configure activities (to replace 2D HTML ones). New configurators for:
+  - Aggregator
+  - Route name

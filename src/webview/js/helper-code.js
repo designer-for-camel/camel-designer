@@ -639,7 +639,7 @@ function renderActivity(activity, mycode, iterator) {
 
 
         case 'aggregate-start':
-            mycode.text +=  mycode.tab+'<aggregate strategyRef="myStrategy" completionSize="2" id="'+activity.parentNode.id+'">\n'+
+            mycode.text +=  mycode.tab+'<aggregate'+activity.components.definition.getXmlParameters()+' id="'+activity.parentNode.id+'">\n'+
                             mycode.tab+'  <correlationExpression>\n'+
                             mycode.tab+'    '+activity.components.expression.getXml()+'\n'+
                             mycode.tab+'  </correlationExpression>\n'

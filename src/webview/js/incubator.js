@@ -2389,6 +2389,7 @@ function defineDataFormatAsOneLiner(definition)
                 '<aggregate strategyRef="qaStrategy" completionSize="2">'+
                     '<correlationExpression>'+
                         '<header>correlation</header>'+
+                        // '<xpath saxon="false">correlation</xpath>'+
                     '</correlationExpression>'+
                     '<log message="aggregated message"/>'+
                 '</aggregate>'
@@ -2409,7 +2410,7 @@ function defineDataFormatAsOneLiner(definition)
         //we obtain the starting activity to configure it
         let start = document.getElementById(aggregateBox.getAttribute('group-start'))
     
-
+        //animated EIP pattern
         let animation = createAggregateAnimation()
         animation.setAttribute("position", "0 1 0")
         start.appendChild(animation)
@@ -2418,12 +2419,18 @@ function defineDataFormatAsOneLiner(definition)
         start.setAttribute('expression', {position: "0 -0.7 0", configMethod: [updateConfigSplit]})
         start.components.expression.setDefinition(fullDefinition)
     
+        //add component necessary for 3D configuration forms
+        start.setAttribute('definition', {element: fullDefinition})
+
         //As we're creating many boxes and re-positioning, the camera is all over the place
         //so we reset it where we want it to be 
         switchConfigPaneByActivity(
             document.getElementById(aggregateBox.getAttribute('group-end'))
         )
     
+    //   get3DconfigPanel()
+            // UiInput.setValue(start.components.definition.getValue("strategyRef"))
+
       //now we're done, we switch back on, and we sync.
       syncEditorEnabled = true;
       syncEditor();

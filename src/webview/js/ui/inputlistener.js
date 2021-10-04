@@ -6,27 +6,35 @@ AFRAME.registerComponent('inputlistener', {
     // },
     init: function () {
 
-        // onFocus = this.el
-
         console.log("init input-listener " + this.el.id);
-
-        // this.el.setAttribute('value', this.el.getAttribute('value')+" ")
 
         // document.addEventListener('keydown', this.notify);
         // document.addEventListener('keyup', this.notify);
         document.addEventListener('keypress', this.notify);
         document.addEventListener('keydown', this.backspace);
 
+        this.that = this
 
-        this.altpressed = false;
-        this.blinker = true;
-        this.blinkerFirst = true;
-        setInterval(this.blink,500, this);
+        setInterval(this.blinkerTick,500, this);
+    },
+
+    blinkerTick: function(){
+        let input = UiInput.getActiveElement()
+
+        if(input){
+            // input.blinkerTick()
+            input.components.input.blinkerTick()
+        }
     },
 
     focus: function(element){
         UiInput.focus(element)
         UiInput.setValue(UiInput.value+" ")
+    },
+    unfocus: function(element){
+
+        // UiInput.focus(element)
+        UiInput.setValue(UiInput.getValue().slice(0, -1))
     },
 
     //ATTENTION:
@@ -35,20 +43,7 @@ AFRAME.registerComponent('inputlistener', {
     notify: function(event) {
 
         console.log("inputlistener: "+event.type+"/"+event.key)
-
         console.log("element with focus: "+UiInput.activeElement.tagName)
-
-        /*
-        let input = this.querySelectorAll('[inputlistener]')[0]
-        let value = input.getAttribute('value')
-
-        value += event.key
-
-        input.setAttribute('value', value)
-        */
-
-        // let el = UiInput.getActiveElement()
-        // let value = el.getAttribute('value')
 
         let value = UiInput.getValue()
 
@@ -72,61 +67,30 @@ AFRAME.registerComponent('inputlistener', {
             return
         }
 
-
-
-        // if(UiInput.value.length < 13){
-        if(value.length < 13){
-            value = value.slice(0, -1)
-            // el.setAttribute('value', value+event.key+" ")
-            UiInput.setValue(value+event.key+" ")
-
-
-            //UiInput.setValue(UiInput.value.slice(0, -1))
-            //UiInput.setValue(UiInput.value+event.key+" ")
-        }
+        // if(value.length < 13){
+            UiInput.setValue(value+event.key)
+        // }
     },
     
+
     backspace: function(event) {
 
         console.log("inputlistener backspace: "+event.type+"/"+event.key)
 
         if(event.key == "Backspace"){
-            // let input = this.querySelectorAll('[inputlistener]')[0]
-            // let value = input.getAttribute('value')
-
-            // value = value.slice(0, -1)
-
-            // input.setAttribute('value', value)
-
             let el = UiInput.getActiveElement()
-            let value = el.getAttribute('value')
-
-            value = value.slice(0, -2)
-            el.setAttribute('value', value+" ")
-
-            // UiInput.setValue(UiInput.value.slice(0, -2)+" ")
+            let value = UiInput.getValue()
+            value = value.slice(0, -1)
+            UiInput.setValue(value)
         }
+        else if(event.key == "Escape"){
+            UiInput.unfocus()
+        }
+
 
     },
 
-    blink: function(component){
 
-        console.log("blink")
-
-        if(component.blinkerFirst){
-            UiInput.setValue(UiInput.getValue()+' ')
-            component.blinkerFirst = false
-        }
-
-        if(!component.blinker) {
-            UiInput.setValue(UiInput.getValue().slice(0, -1)+"|")
-        }
-        else {
-            UiInput.setValue(UiInput.getValue().slice(0, -1)+" ")
-        }    
-
-        component.blinker = !component.blinker
-    },
 
     // update: function () {},
     // tick: function () {},

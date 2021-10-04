@@ -1324,6 +1324,30 @@ let configObj = getActiveActivity()
 
         currentConfigPane = newConfigPane;
 
+        //hide default (empty) configuration panel 
+        if(newConfigPane == "introconfig"){
+          return
+        }
+
+        //New 3D configuration forms
+        if(newConfigPane == 'ui-config-aggregate'){
+          //obtain 3D configuration form
+          pane = document.getElementById(currentConfigPane);
+          //obtain activity to configure
+          let activity = getActiveActivity()
+          //if activity has a definition component
+          if(activity.components.definition){
+            //load configuration into form
+            pane.components.form.configure(getActiveActivity())
+          }
+          return
+        }
+        else{
+          //ensure the 3D configuration panel is deactivated
+          pane = document.getElementById('ui-config-aggregate')
+          pane.setAttribute('active', false)          
+        }
+
         pane = document.getElementById(currentConfigPane);
         pane.style.visibility = "visible";
 
@@ -1417,10 +1441,12 @@ case 'split-start':
     newConfigPane = "set-body";
     updateConfigBody();
     break;
+
+//Simpler 3D configuration panel
 case 'aggregate-start':
-    newConfigPane = "set-body";
-    updateConfigBody();
+    newConfigPane = "ui-config-aggregate"
     break;
+    
 case 'catch-start':
     newConfigPane = "config-catch";
     updateConfigCatch();
