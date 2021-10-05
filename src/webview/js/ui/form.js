@@ -43,7 +43,7 @@ AFRAME.registerComponent('form', {
 
       //set UI checkbox
       saxon.setAttribute('visible', (language == "xpath"))
-      saxon.setAttribute('checked', activity.components.expression.getLanguageAttributes().saxon)
+      saxon.setAttribute('checked', activity.components.expression.getLanguageAttributes().saxon == "true")
 
       //set UI language
       list.setAttribute('value', language)
@@ -61,7 +61,6 @@ AFRAME.registerComponent('form', {
 
       //set UI actions checkbox selection
       saxon.onclick = function(){
-
         //is it checked
         let checked = saxon.getAttribute('checked') == "true"
 
@@ -74,7 +73,13 @@ AFRAME.registerComponent('form', {
       inputs[0].components.input.linkLabel(activity.children[2])
 
       //set UI attributes
-      inputs[1].setAttribute('value', definition.getAttribute('strategyRef'))
+      // inputs[1].setAttribute('value', definition.getAttribute('strategyRef'))
+      inputs[1].setAttribute('value', activity.components.definition.getAttributes().strategyRef)
+      inputs[1].components.input.setFunctionOnUpdate(function(){
+        console.log('strategy action')      
+        activity.components.definition.setAttribute('strategyRef', inputs[1].getAttribute('value'))
+      })
+
       inputs[2].setAttribute('value', definition.getAttribute('completionSize'))
     },
 
@@ -82,6 +87,7 @@ AFRAME.registerComponent('form', {
       console.log('form update')
       this.setActive(this.data.active)
     },
+    
     tick: function () {},
     remove: function () {},
     pause: function () {},

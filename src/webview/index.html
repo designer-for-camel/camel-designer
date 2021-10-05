@@ -13,6 +13,7 @@
     <!-- <script src="${srcPathScheme}/node_modules/aframe/dist/aframe-v1.0.4.min.js"></script> -->
     <script src="${srcPathScheme}/node_modules/aframe/dist/aframe-v1.2.0.min.js"></script>
     <script src="${srcPathScheme}/node_modules/aframe-aabb-collider-component/dist/aframe-aabb-collider-component.min.js"></script>
+    <script src="${srcPathScheme}/node_modules/aframe-animation-timeline-component/dist/aframe-animation-timeline-component.min.js"></script>
 
     <!-- local scripts -->
     <script src="${srcPathScheme}/src/webview/js/helper-blocks.js"></script>
@@ -34,7 +35,23 @@
     <!-- experimental -->
     <script src="${srcPathScheme}/src/webview/js/incubator.js"></script>
     <script src="${srcPathScheme}/src/webview/js/ui/menu.js"></script>
+    <script src="${srcPathScheme}/src/webview/js/ui/inputlistener.js"></script>
+    <script src="${srcPathScheme}/src/webview/js/components/plane-rounded.js"></script>
+    <script src="${srcPathScheme}/src/webview/js/components/definition.js"></script>
+ 
+    <script src="${srcPathScheme}/src/webview/js/ui/utils.js"></script>
+    <script src="${srcPathScheme}/src/webview/js/ui/input.js"></script>
+    <script src="${srcPathScheme}/src/webview/js/ui/form.js"></script>
+    <script src="${srcPathScheme}/src/webview/js/ui/dropdown.js"></script>
+    <script src="${srcPathScheme}/src/webview/js/ui/checkbox.js"></script>
+    <script src="${srcPathScheme}/src/webview/js/ui/handgrip.js"></script>
+    <script src="${srcPathScheme}/src/webview/js/ui/button.js"></script>
 
+
+    <!-- 3D UI Assets -->
+    <script>
+      AFRAME.ASSETS_PATH = "${srcPathScheme}/src/assets";
+    </script>
 
     <!-- Fonts to work with off-line -->
     <script>
@@ -220,10 +237,10 @@
 
 
       <!-- Configuration Panel -->
-      <div class="activityconfig" id="screenshot" style="visibility: visible;"><br/>
+      <!-- <div class="activityconfig" id="screenshot" style="visibility: visible;"><br/> -->
         <!-- <font size="6">Configuration Pane</font> -->
         <!-- <img id="routeThumbnail-temp2" src="../media/routes-ring.jpg"> -->
-      </div>
+      <!-- </div> -->
 
       <!-- Configuration Panel -->
       <div class="activityconfig" id="introconfig" style="visibility: visible;"><br/>
@@ -282,6 +299,7 @@
                 <option value="xpath">xpath</option>
                 <option value="method">method</option>
                 <option value="tokenize">tokenize</option>
+                <option value="header">header</option>
               </select>
               <div class="attributes" onchange="useExpressionAttribute(event);syncEditor();"></div>
             </div>
@@ -342,7 +360,8 @@
         </div>
       </div>
     <!-- Spacial scene (A-Frame elements) -->
-    <a-scene id="thescene" myoutline cursor="rayOrigin:mouse" raycaster="objects: .interactive, .testcollidable" vr-mode-ui="enabled: false">
+    <a-scene  inputlistener
+              id="thescene" myoutline cursor="rayOrigin:mouse" raycaster="objects: .interactive, .testcollidable" vr-mode-ui="enabled: false">
 
       <a-assets>
         <img id="routeThumbnail" crossorigin="anonymous" src="${srcPathScheme}/src/media/routes-ring.jpg">
@@ -357,15 +376,23 @@
         animation__scale_reverse="property: scale; to: 1 1 1; dur: 200; startEvents: mouseleave"
        ></a-mixin>
 
-      </a-assets>
+       <a-timeline id="timelineExchange">
+        <a-timeline-animation select=".exchange" name="receive"></a-timeline-animation>
+        <a-timeline-animation select=".exchange" name="merge"></a-timeline-animation>
+        <a-timeline-animation select=".exchange" name="return"></a-timeline-animation>
+      </a-timeline>
 
-      <a-entity id="rig">
-        <a-camera id="main-camera" look-controls-enabled="false" position="0 0 0">
-          <a-text value="Prototype\nunder construction" align="center" scale="20 20 20" color="yellow" opacity=".3" position="5 13 -27" side="double" font="${srcPathScheme}/src/webview/fonts/Roboto-msdf.json"></a-text>
-          
-          <a-sphere id="designer-icon" position="17 15 -27" scale="4 4 4" material="" radius="0.5" opacity=".2" transparent="true" color="#52F40C"><a-ring side="double" material="" src="#camel-icon" radius-inner="0.00001" geometry="" radius-outer="0.46"></a-ring></a-sphere> 
-        </a-camera>
-      </a-entity>
+      <a-timeline id="timelineChoice">
+        <a-timeline-animation select=".exchoice" name="receive"></a-timeline-animation>
+        <a-timeline-animation select=".exchoice" name="route1"></a-timeline-animation>
+        <a-timeline-animation select=".exchoice" name="branch1"></a-timeline-animation>
+        <a-timeline-animation select=".exchoice" name="receive"></a-timeline-animation>
+        <a-timeline-animation select=".exchoice" name="route2"></a-timeline-animation>
+        <a-timeline-animation select=".exchoice" name="branch2"></a-timeline-animation>
+      </a-timeline>
+
+
+      </a-assets>
 
       <!-- Entity to accommodate route definitions -->
       <a-entity id="route-definitions" keyboardlistener>
@@ -378,6 +405,56 @@
       </a-entity>
 
       <a-sky color="black"></a-sky>
+
+
+      <a-entity id="rig">
+        <a-camera id="main-camera" look-controls-enabled="false" position="0 0 0" wasd-controls-enabled="true">
+          <a-text value="Prototype\nunder construction" align="center" scale="20 20 20" color="yellow" opacity=".3" position="5 13 -27" side="double" font="${srcPathScheme}/src/webview/fonts/Roboto-msdf.json"></a-text>
+          
+          <a-sphere id="designer-icon" position="17 15 -27" scale="4 4 4" material="" radius="0.5" opacity=".2" transparent="true" color="#52F40C"><a-ring side="double" material="" src="#camel-icon" radius-inner="0.00001" geometry="" radius-outer="0.46"></a-ring></a-sphere> 
+        </a-camera>
+
+        <a-form handgrip id="ui-route-rename" position="-1 0 -2.5">
+          <a-plane-rounded opacity=".5" width="2" height="1" radius="0.05" color="grey">
+          </a-plane-rounded>
+          <a-entity scale=".3 .3 .3">
+            <a-text font="roboto" align="center" position="3.5 2.5 0" scale="2 2 2" value="Rename Route"></a-text>
+            <a-text   position="1 1.25 0" value="Name: "></a-text>
+            <a-input  position="2   1.25 0" width="3" value="value 1"></a-input>
+            <a-button position="5.6 1.25 0" onclick="renameActiveRoute(this.previousElementSibling.getAttribute('value'));this.parentEl.parentEl.components.form.setActive(false)"></a-button>
+          </a-entity>
+        </a-form>
+
+
+        <a-form handgrip id="ui-config-aggregate" position="-1 -1.5 -2" active="false">
+          <!-- <a-plane-rounded id="3d-config-aggr" position="0.5 0.5 -2.5" width="4" height="3.1" radius="0.05" rotation="0 -20 0" scale="0.3 0.3 0.3"> -->
+          <a-plane-rounded id="3d-config-aggr" opacity=".5" width="6" height="3.1" radius="0.05" scale="0.3 0.3 0.3" color="grey">
+              <!-- <a-switch position="0.2 2.7 0" enabled="true"></a-switch>
+              <a-radio position="0.2 2.4 0" width="3" name="food" label="Burger with fries and pizza" value="pizza"></a-radio>
+              <a-radio position="0.2 2.1 0" width="3" name="food" label="Veggies" checked="true" disabled="true"></a-radio>
+              <a-radio position="0.2 1.8 0" width="3" name="food" label="Ice cream"></a-radio> -->
+          </a-plane-rounded>
+          <a-entity scale=".3 .3 .3">
+            <a-text     position="1.1 2.5 0" value="Expression language: "></a-text>
+            <!-- <a-dropdown position="3.8 2.5 0" 
+                        onclick="this.nextElementSibling.setAttribute('visible', this.getAttribute('value') == 'xpath')" 
+                        menu='{"name":"uidropdown","label":"testmenu","class":"ui","enabled":true,"menu":[{"label":"simple","function":"createHeader"},{"label":"constant","function":"createProperty"},{"label":"xpath","function":"xpath"}]}'></a-dropdown> -->
+            <a-dropdown position="3.8 2.5 0" 
+                        menu='{"name":"uidropdown","label":"testmenu","class":"ui","enabled":true,"menu":[{"label":"simple","function":"createHeader"},{"label":"constant","function":"createProperty"},{"label":"xpath","function":"xpath"}]}'></a-dropdown>
+ 
+            <a-checkbox position="4.5 2.5 0" width="1" name="stuff" label="saxon" checked="false"></a-checkbox>
+            <a-input position="1 2 0" placeholder="Username" color="black" width="4" value="value 2"></a-input>
+            
+            <a-text align="right" position="2 1.25 0" value="strategyRef"></a-text>
+            <a-input position="2.1 1.25 0" placeholder="Username" color="black" width="2" value="value 1"></a-input>
+
+            <a-text  align="right" position="2 0.75 0" value="completionSize"></a-text>
+            <a-input position="2.1 0.75 0" placeholder="Username" color="black" width="2" value="value 2"></a-input>
+          </a-entity>
+        </a-form>
+
+      </a-entity>
+
 
 	  </a-scene>
 

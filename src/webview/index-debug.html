@@ -425,12 +425,12 @@
          animation__scale_reverse="property: scale; to: 1 1 1; dur: 200; startEvents: mouseleave"
         ></a-mixin>
 
-        <a-mixin
+        <!-- <a-mixin
         id="dataformat"
         geometry="primitive: cone"
         material="color: grey; shader: flat; opacity: 0.4;"
         animation__geometry="property: opacity; to 0.0; dur: 2000; startEvents: mouseenter"
-       ></a-mixin>
+       ></a-mixin> -->
 
 
        <a-timeline id="timelineExchange">
@@ -473,7 +473,18 @@
       <a-entity id="rig">
         <a-camera id="main-camera" look-controls-enabled="false" position="0 0 0" wasd-controls-enabled="true"></a-camera>
 
+        <a-entity laser-controls="hand: left" ></a-entity>
+        <a-entity id="myvrcontroller" laser-controls="hand: right" raycaster="objects: .interactive"></a-entity>
 
+      </a-entity>
+
+
+	  </a-scene>
+
+  </body>
+
+  <script>
+    var html = `
         <a-form handgrip id="ui-route-rename" position="-1 0 -2.5">
           <a-plane-rounded opacity=".5" width="2" height="1" radius="0.05" color="grey">
           </a-plane-rounded>
@@ -485,20 +496,11 @@
           </a-entity>
         </a-form>
 
-
         <a-form handgrip id="ui-config-aggregate" position="-1 -1.5 -2" active="false">
-          <!-- <a-plane-rounded id="3d-config-aggr" position="0.5 0.5 -2.5" width="4" height="3.1" radius="0.05" rotation="0 -20 0" scale="0.3 0.3 0.3"> -->
           <a-plane-rounded id="3d-config-aggr" opacity=".5" width="6" height="3.1" radius="0.05" scale="0.3 0.3 0.3" color="grey">
-              <!-- <a-switch position="0.2 2.7 0" enabled="true"></a-switch>
-              <a-radio position="0.2 2.4 0" width="3" name="food" label="Burger with fries and pizza" value="pizza"></a-radio>
-              <a-radio position="0.2 2.1 0" width="3" name="food" label="Veggies" checked="true" disabled="true"></a-radio>
-              <a-radio position="0.2 1.8 0" width="3" name="food" label="Ice cream"></a-radio> -->
           </a-plane-rounded>
           <a-entity scale=".3 .3 .3">
             <a-text     position="1.1 2.5 0" value="Expression language: "></a-text>
-            <!-- <a-dropdown position="3.8 2.5 0" 
-                        onclick="this.nextElementSibling.setAttribute('visible', this.getAttribute('value') == 'xpath')" 
-                        menu='{"name":"uidropdown","label":"testmenu","class":"ui","enabled":true,"menu":[{"label":"simple","function":"createHeader"},{"label":"constant","function":"createProperty"},{"label":"xpath","function":"xpath"}]}'></a-dropdown> -->
             <a-dropdown position="3.8 2.5 0" 
                         menu='{"name":"uidropdown","label":"testmenu","class":"ui","enabled":true,"menu":[{"label":"simple","function":"createHeader"},{"label":"constant","function":"createProperty"},{"label":"xpath","function":"xpath"}]}'></a-dropdown>
  
@@ -512,17 +514,10 @@
             <a-input position="2.1 0.75 0" placeholder="Username" color="black" width="2" value="value 2"></a-input>
           </a-entity>
         </a-form>
-   
+    `;
 
-        <a-entity laser-controls="hand: left" ></a-entity>
-        <a-entity id="myvrcontroller" laser-controls="hand: right" raycaster="objects: .interactive"></a-entity>
-
-      </a-entity>
-
-
-	  </a-scene>
-
-  </body>
+    document.getElementById('main-camera').insertAdjacentHTML('beforeend', html);
+  </script>
 
   <script>
 

@@ -165,6 +165,10 @@ AFRAME.registerComponent('input', {
       this.linkedLabel.setAttribute('value', '"'+value+'"')
     }
 
+    if(this.onupdate){
+      this.onupdate.call() 
+    }
+
     //if input has focus, we blink to update blinker's position
     if(this.blinker.getAttribute('visible')){
       this.blink()
@@ -229,18 +233,28 @@ AFRAME.registerComponent('input', {
       this.blinkerVisible = true
   },
 
+  //A-Frame calls 'update' when the HTML attributes are changed
   update: function (oldData) {
-    console.log('form update')
+    console.log('input update')
 
     //at creation time there is no data, so we ignore the invocation
     if(Object.keys(oldData).length === 0){
       return
     }
 
+    //for now we just care the for attribute 'value'
     if(this.data.value != oldData.value){
       this.setValue(this.data.value)
+
+      //when the value changes we sync with the editor
+      syncEditor()
     }
   },
+
+  setFunctionOnUpdate: function(action) {
+    this.onupdate = action
+  }
+
 
 /*
     blink: function() {

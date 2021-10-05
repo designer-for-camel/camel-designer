@@ -222,6 +222,7 @@
                 
                   //run UI initialisation with configuration data
                   createMenu3D(message.payload)
+                  createMenu3Dcontrol()
                   importSourceCode();
 
 

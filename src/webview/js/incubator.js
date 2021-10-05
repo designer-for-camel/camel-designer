@@ -2420,7 +2420,9 @@ function defineDataFormatAsOneLiner(definition)
         start.components.expression.setDefinition(fullDefinition)
     
         //add component necessary for 3D configuration forms
-        start.setAttribute('definition', {element: fullDefinition})
+        // start.setAttribute('definition', {element: fullDefinition})
+        start.setAttribute('definition', null)
+        start.components.definition.setDefinition(fullDefinition)
 
         //As we're creating many boxes and re-positioning, the camera is all over the place
         //so we reset it where we want it to be 

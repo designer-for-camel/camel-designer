@@ -5,6 +5,7 @@ AFRAME.registerComponent('definition', {
     },
     init: function () {
 
+/*
         this.attributes        = {}
 
         // if(definition)
@@ -32,12 +33,28 @@ AFRAME.registerComponent('definition', {
             // }
         // }
 
-
+*/
         
         //as init() runs asynchronously, it might run after the panel was loaded
         //config info needs to be reloaded
         // this.attrValue.configMethod[0](this.el)
         // UiInput.setValue(this.attributes["strategyRef"])
+    },
+    setDefinition: function(definition) {
+
+        this.definition = definition
+
+        this.attributes        = {}
+
+        //obtains definition attributes
+        let defAttributes = definition.attributes
+
+        //loops over attributes
+        for(let i=0; i<defAttributes.length; i++)
+        {
+            //adds definition attribute to component
+            this.attributes[defAttributes[i].name] = defAttributes[i].value
+        }
     },
 
     /*
@@ -81,7 +98,8 @@ AFRAME.registerComponent('definition', {
     },
 */       
     getDefinition: function () {
-      return this.data.element
+    //   return this.data.element
+      return this.definition
     },
 
     setValue: function (expression) {
@@ -112,6 +130,22 @@ AFRAME.registerComponent('definition', {
         // return this.defaultExpression
         return this.attributes[parameter]
     },
+
+    getAttributes: function () {
+        return this.attributes
+    },
+
+    setAttribute: function(name, value){
+        if(value)
+        {
+            this.attributes[name] = value
+        }
+        else
+        {
+            delete this.attributes[name]
+        }
+    },
+
 
 
     /*
@@ -144,6 +178,12 @@ AFRAME.registerComponent('definition', {
 
         //constructs a list of XML attributes (helper to render Camel XML)
         for (var key in this.attributes){
+
+            //ignore ID (may be included when parsing code)
+            if(key == 'id'){
+                continue
+            }
+
             attributesXml+= ' '+key+'="'+this.attributes[key]+'"'
         }
 
