@@ -122,6 +122,12 @@ AFRAME.registerComponent('expression', {
 
         //constructs a list of XML attributes (helper to render Camel XML)
         for (var key in this.attributes){
+
+            //'saxon' attribute only when language is xpath
+            if(key == "saxon" && this.language != "xpath"){
+                continue
+            }
+
             attributesXml+= ' '+key+'="'+this.attributes[key]+'"'
         }
 

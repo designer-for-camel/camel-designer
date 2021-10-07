@@ -131,7 +131,7 @@ AFRAME.registerComponent("dragndrop", {
         //is this entity attached to the camera?
         //Normally entities are not attached to the camera, but 3D menus are.
         //this helps with calculations to move the entity
-        this.isCameraChild = (this.el.parentElement == this.el.sceneEl.camera.el)
+        this.isCameraChild = (this.el.parentElement == document.getElementById('main-camera'))
 
         //Groups have a frame (a-plane) as background
         //the frame helps visualise the group and helps the dnd the entire group

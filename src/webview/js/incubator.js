@@ -2354,6 +2354,20 @@ function defineDataFormatAsOneLiner(definition)
         options = "?"
     }
 
+    //special case for JSON which requires a library
+    if(dataFormatType == "json"){
+
+        //if the attribute library exists
+        if(attributes['library']){
+            dataFormatType += "-"+attributes.library.value.toLowerCase()
+            attributes.removeNamedItem('library')
+        }
+        else{
+            //default library
+            dataFormatType += "-jackson"
+        }
+    }
+
     //translate attributes to URI options
     for(let i=0; i<attributes.length; i++){
         if(i==0){

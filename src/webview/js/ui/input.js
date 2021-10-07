@@ -119,10 +119,6 @@ AFRAME.registerComponent('input', {
 
   },
 
-  linkLabel: function(label){
-    this.linkedLabel = label
-  },
-
   blinkerTick: function(){
     if(!this.blinkerVisible){
       this.blink()
@@ -159,11 +155,6 @@ AFRAME.registerComponent('input', {
 
   setValue: function(value){
     this.label.setAttribute('value', value)
-
-    //if there is an activity label we do a live update
-    if(this.linkedLabel){
-      this.linkedLabel.setAttribute('value', '"'+value+'"')
-    }
 
     if(this.onupdate){
       this.onupdate.call() 

@@ -5,40 +5,12 @@ AFRAME.registerComponent('definition', {
     },
     init: function () {
 
-/*
-        this.attributes        = {}
-
-        // if(definition)
-        // {
-            //obtain language
-            // this.language = this.expressionElement.tagName
-
-            //obtains definition attributes
-            let defAttributes = this.data.element.attributes
-
-            //loops over attributes
-            for(let i=0; i<defAttributes.length; i++)
-            {
-                //adds definition attribute to component
-                this.attributes[defAttributes[i].name] = defAttributes[i].value
-            }
-
-            // //for some languages, expressions are loaded from attributes
-            // if(this.language == "tokenize"){
-            //     this.defaultExpression = this.attributes.token
-            // }
-            // else{
-            //     //default expression
-            //     this.defaultExpression = this.expressionElement.innerHTML;
-            // }
-        // }
-
-*/
+        //As init() is invoked asynchronously, early access to definition values might return null/empty
+        //Best to follow the steps below:
+        //  1) set component
+        //  2) manually invoke setDefinition()
+        //  3) access definition values
         
-        //as init() runs asynchronously, it might run after the panel was loaded
-        //config info needs to be reloaded
-        // this.attrValue.configMethod[0](this.el)
-        // UiInput.setValue(this.attributes["strategyRef"])
     },
     setDefinition: function(definition) {
 
@@ -55,51 +27,6 @@ AFRAME.registerComponent('definition', {
             //adds definition attribute to component
             this.attributes[defAttributes[i].name] = defAttributes[i].value
         }
-    },
-
-    /*
-    setDefinition: function(definition) {
-
-        //defaults
-        this.language          = "simple"
-        this.attributes        = {}
-        this.defaultExpression = "hello world"
-        this.expressionElement = definition.firstElementChild
-
-        //special case for aggregations (the expression is 1 level deeper)
-        if(definition.tagName == 'aggregate'){
-            this.expressionElement = definition.firstElementChild.firstElementChild
-        }
-
-        if(definition)
-        {
-            //obtain language
-            this.language = this.expressionElement.tagName
-
-            //obtains definition attributes
-            let defAttributes = this.expressionElement.attributes
-
-            //loops over attributes
-            for(let i=0; i<defAttributes.length; i++)
-            {
-                //adds definition attribute to component
-                this.attributes[defAttributes[i].name] = defAttributes[i].value
-            }
-
-            //for some languages, expressions are loaded from attributes
-            if(this.language == "tokenize"){
-                this.defaultExpression = this.attributes.token
-            }
-            else{
-                //default expression
-                this.defaultExpression = this.expressionElement.innerHTML;
-            }
-        }
-    },
-*/       
-    getDefinition: function () {
-    //   return this.data.element
-      return this.definition
     },
 
     setValue: function (expression) {
@@ -119,15 +46,6 @@ AFRAME.registerComponent('definition', {
       },
 
     getValue: function (parameter) {
-        //only if component has initialised we can return a value
-        //because the component loads asynchronously, the config panel may first attempt to get the value before the component is ready 
-        // if(this.label)
-        // {
-        //     return this.label.getAttribute('value').slice(1, -1);  //slice -> gets rid of double quotes at start/end
-        // }
-
-        //otherwise return default one (init might not have yet run)
-        // return this.defaultExpression
         return this.attributes[parameter]
     },
 
@@ -146,32 +64,6 @@ AFRAME.registerComponent('definition', {
         }
     },
 
-
-
-    /*
-    getLanguage: function () {
-        return this.language
-      },
-
-    setLanguage: function (language) {
-        this.language = language
-    },
-
-    getLanguageAttributes: function (language) {
-        return this.attributes
-    },
-
-    setLanguageAttribute: function(name, value){
-        if(value)
-        {
-            this.attributes[name] = value
-        }
-        else
-        {
-            delete this.attributes[name]
-        }
-    },
-*/
     getXmlParameters: function(){
 
         let attributesXml = ""

@@ -16,9 +16,12 @@ AFRAME.registerComponent('form', {
         });
       }
       else{
+        //while inactive, ensure elements are not interactive
         this.interactiveElements.forEach(element => {
           element.classList.remove('interactive')
         });
+        //ensure any editing on inputs are done
+        UiInput.unfocus()
       }
       this.el.setAttribute('visible', active)
     },
@@ -29,8 +32,6 @@ AFRAME.registerComponent('form', {
 
       this.currentActivity = activity
 
-      let definition = activity.components.definition.getDefinition()
-
       this.el.setAttribute('active',true)
 
       //get UI elements
@@ -39,11 +40,11 @@ AFRAME.registerComponent('form', {
       let inputs = Array.from(this.el.querySelectorAll('a-input'))
 
       //get language
-      let language = definition.firstElementChild.firstElementChild.tagName
+      let language = activity.components.expression.getLanguage()
 
       //set UI checkbox
       saxon.setAttribute('visible', (language == "xpath"))
-      saxon.setAttribute('checked', activity.components.expression.getLanguageAttributes().saxon == "true")
+      saxon.setAttribute('checked', activity.components.expression.getLanguageAttributes().saxon == true)
 
       //set UI language
       list.setAttribute('value', language)
@@ -57,6 +58,8 @@ AFRAME.registerComponent('form', {
         
         //show/hide checkbox
         list.nextElementSibling.setAttribute('visible', language == 'xpath')
+
+        syncEditor()
       }
 
       //set UI actions checkbox selection
@@ -66,21 +69,28 @@ AFRAME.registerComponent('form', {
 
         //update activity parameter
         activity.components.expression.setLanguageAttribute('saxon', checked)
+
+        syncEditor()
       }
 
       //set UI correlation expression
-      inputs[0].setAttribute('value', definition.firstElementChild.firstElementChild.textContent)
-      inputs[0].components.input.linkLabel(activity.children[2])
+      inputs[0].setAttribute('value', activity.components.expression.getValue())
+      inputs[0].components.input.setFunctionOnUpdate(function(){
+        activity.components.expression.setValue(inputs[0].getAttribute('value'))
+      })
 
       //set UI attributes
-      // inputs[1].setAttribute('value', definition.getAttribute('strategyRef'))
       inputs[1].setAttribute('value', activity.components.definition.getAttributes().strategyRef)
       inputs[1].components.input.setFunctionOnUpdate(function(){
         console.log('strategy action')      
         activity.components.definition.setAttribute('strategyRef', inputs[1].getAttribute('value'))
       })
 
-      inputs[2].setAttribute('value', definition.getAttribute('completionSize'))
+      inputs[2].setAttribute('value', activity.components.definition.getAttributes().completionSize)
+      inputs[2].components.input.setFunctionOnUpdate(function(){
+        console.log('strategy action')      
+        activity.components.definition.setAttribute('completionSize', inputs[2].getAttribute('value'))
+      })
     },
 
     update: function () {
