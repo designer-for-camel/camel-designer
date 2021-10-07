@@ -45,6 +45,11 @@
       const CAMEL2_ATTRIBUTE_PROPERTY_NAME = "propertyName"
       const CAMEL3_ATTRIBUTE_HEADER_NAME   = "name"
       const CAMEL3_ATTRIBUTE_PROPERTY_NAME = "name"
+
+      const CAMEL2_SIMPLE_HEADER_NAME   = "header"
+      const CAMEL2_SIMPLE_PROPERTY_NAME = "property"
+      const CAMEL3_SIMPLE_HEADER_NAME   = "header"
+      const CAMEL3_SIMPLE_PROPERTY_NAME = "exchangeProperty"
       const CAMEL_RELEASE = {
         v2: 2,
         v3: 3
@@ -100,6 +105,28 @@
         return CAMEL3_ATTRIBUTE_PROPERTY_NAME
       }
 
+      //returns the naming convention to refer to header variables in the Simple language
+      function getCamelSimpleHeaderName()
+      {
+        if(camelVersion == CAMEL_RELEASE.v2)
+        {
+          return CAMEL3_SIMPLE_HEADER_NAME
+        }
+        
+        return CAMEL3_SIMPLE_HEADER_NAME
+      }
+
+      //returns the naming convention to refer to property variables in the Simple language
+      function getCamelSimplePropertyName()
+      {
+        if(camelVersion == CAMEL_RELEASE.v2)
+        {
+          return CAMEL2_SIMPLE_PROPERTY_NAME
+        }
+        
+        return CAMEL3_SIMPLE_PROPERTY_NAME
+      }
+
       //Sets Camel v2
       function setCamelVersion2()
       {
@@ -117,7 +144,7 @@
       //Switches between Camel versions
       function switchCamelVersion()
       {
-        if(camelVersion = CAMEL_RELEASE.v3)
+        if(camelVersion == CAMEL_RELEASE.v3)
         {
           setCamelVersion2()
         }

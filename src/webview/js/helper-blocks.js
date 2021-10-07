@@ -370,6 +370,12 @@ function createProperty(definition)
     if(propertyName != null){
       property.getElementsByTagName("a-text")[0].firstChild.setAttribute('value', propertyName+':');
     }
+    else{
+      //at this stage we tried Camel 2 & 3, and none had header-name defined
+      //we did switch the Camel version and failed, now we restore it 
+      console.warn('Could not find setProperty attribute "'+getCamelAttributePropertyName()+'", switching Camel version...')
+      switchCamelVersion()
+    }
   }
 
   return property
@@ -402,6 +408,12 @@ function createHeader(definition)
     //if header name is not given, we leave the default one from 'createNameValuePair' 
     if(headerName != null){
       header.getElementsByTagName("a-text")[0].firstChild.setAttribute('value', headerName+':');
+    }
+    else{
+      //at this stage we tried Camel 2 & 3, and none had header-name defined
+      //we did switch the Camel version and failed, now we restore it 
+      console.warn('Could not find setHeader attribute "'+getCamelAttributeHeaderName()+'", switching Camel version...')
+      switchCamelVersion()
     }
   }
 

@@ -78,8 +78,18 @@ function findExpressionVariables()
         //if 'setter' found
         if(type == "header" || type == "property"){
         
+            let simpleNamingConvention
+
+            if(type == "header"){
+                simpleNamingConvention = getCamelSimpleHeaderName()
+            }
+            else{
+                simpleNamingConvention = getCamelSimplePropertyName()
+            }
+
             //we add to the collection in the format [type.var] (e.g. 'header.h1')
-            variables.push(type+"."+activity.getElementsByTagName("a-text")[0].firstChild.getAttribute('value').slice(0, -1))
+            // variables.push(type+"."+activity.getElementsByTagName("a-text")[0].firstChild.getAttribute('value').slice(0, -1))
+            variables.push(simpleNamingConvention+"."+activity.getElementsByTagName("a-text")[0].firstChild.getAttribute('value').slice(0, -1))
         }
 
         //look next
