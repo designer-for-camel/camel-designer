@@ -241,7 +241,7 @@ function createRouteDefinitions(routes)
 function createActivityFromSource(type, delay, definition, lastAction) {
 
     //when XML tag is 'to', we need to identify the Camel component
-    if(type == 'to'){
+    if(type == 'to' || type == 'toD'){
         // type = definition.attributes.uri.value.split(":")[0];
         type = definition.definition.attributes.uri.value.split(":")[0];
 
@@ -289,11 +289,15 @@ function createActivityFromSource(type, delay, definition, lastAction) {
         case 'process':
             return createActivityDelayed(createProcess, delay, definition, lastAction);            
 
+        case 'removeHeaders':
+            return createActivityDelayed(createRemoveHeaders, delay, definition, lastAction);            
+    
         case 'kafka':
         case 'file':
         case 'ftp':
         case 'pdf':
-            return createActivityDelayed(createGenericEndpointTo, delay, definition, lastAction);
+        case 'smtp':
+                return createActivityDelayed(createGenericEndpointTo, delay, definition, lastAction);
 
         case 'split':
             return createActivityDelayed(createSplit, delay, definition.definition, lastAction);
@@ -432,7 +436,13 @@ function getCamelSource()
 
 function renderCamelContext(mycode) {
 
-    mycode.text +=  '<'+getCamelSourceEnvelope()+' id="camel" '+getCamelNamespace()+' streamCache="true">\n\n'
+    let streamCache =  ' streamCache="true"'
+
+    if(getCamelSourceEnvelope() == CAMEL_SOURCE_ENVELOPE.camelK){
+        streamCache = ''
+    }
+
+    mycode.text +=  '<'+getCamelSourceEnvelope()+' id="camel" '+getCamelNamespace()+streamCache+'>\n\n'
     mycode.tab += '  '
 
     renderCamelRestDsl(mycode);
@@ -748,14 +758,20 @@ function renderActivity(activity, mycode, iterator) {
             mycode.text += mycode.tab+'<process ref="'+activity.getElementsByTagName('a-text')[0].firstChild.getAttribute('value')+'" id="'+activity.id+'"/>\n'
             break;
             
+        case 'remove-headers':
+            mycode.text += mycode.tab+'<removeHeaders pattern="*" id="'+activity.id+'"/>\n'
+            break;
+
         case 'dataformat':
             //assumes activity is an endpoint (<to>) and has URI
             mycode.text += mycode.tab+'<to uri="'+activity.components.uri.getValue()+'" id="'+activity.id+'"/>\n'
             break;
 
         case 'to':
+            let to = activity.hasAttribute("dynamic") ? "<toD" : "<to"
             //assumes activity is an endpoint (<to>) and has URI
-            mycode.text += mycode.tab+'<to uri="'+activity.components.uri.getValue()+'" id="'+activity.id+'"/>\n'
+            // mycode.text += mycode.tab+'<to uri="'+activity.components.uri.getValue()+'" id="'+activity.id+'"/>\n'
+            mycode.text += mycode.tab+to+' uri="'+activity.components.uri.getValue()+'" id="'+activity.id+'"/>\n'
             break;
         default:
             console.warn("could not render activity to XML, type unknown: ["+processorType+"]")

@@ -367,6 +367,10 @@ function createMenu3D(configuration)
                 label:    'body',
                 function: 'createBody',                
             },
+            {
+                label:    'clean headers',
+                function: 'createRemoveHeaders',                
+            },
         ]
     }
 
@@ -524,6 +528,15 @@ function createMenu3D(configuration)
             {
                 label:    'pdf',
                 function: 'createPDF',                
+            },
+            {
+                label:    'mail >',
+                submenu: [
+                    {
+                        label:    'smtp',
+                        function: 'createSMTP'         
+                    },
+                ]             
             },
         ]
     }

@@ -75,7 +75,8 @@
       {
         setCamelVersion3();
         setCamelNamespaceSpring();
-        camelSourceEnvelope = CAMEL_SOURCE_ENVELOPE.camelContext
+        // camelSourceEnvelope = CAMEL_SOURCE_ENVELOPE.camelContext
+        camelSourceEnvelope = CAMEL_SOURCE_ENVELOPE.camelK
       }
 
       function getCamelSourceEnvelope()
@@ -1413,7 +1414,8 @@ let configObj = getActiveActivity()
           switchConfigPane("introconfig");
           return;
         }
-
+// switchConfigPane('ui-config-aggregate');
+// return
         if(activity.components.detachable && activity.components.detachable.detached)
         {
           //ignore when activity is detached

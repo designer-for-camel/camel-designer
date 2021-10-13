@@ -419,6 +419,13 @@ function createPDF(definition)
     return createGenericEndpointTo({definition: definition})
 }
 
+function createSMTP(definition)
+{
+    // definition = definition || new DOMParser().parseFromString('<toD uri="smtp://standalone.demo-mail.svc:3025?from=camel@apache.com&amp;to=demo@demo.com&amp;subject=camel-demo&amp;password=demo&amp;username=demo"/>', "text/xml").documentElement
+    definition = definition || new DOMParser().parseFromString('<to uri="smtp://standalone.demo-mail.svc:3025?username=demo&amp;password=demo"/>', "text/xml").documentElement
+    return createGenericEndpointTo({definition: definition})
+}
+
 // function createGenericEndpointTo(definition, type)
 function createGenericEndpointTo(definition)
 {
@@ -558,7 +565,8 @@ function configEndpointAddOptionNameValue(divOptions, name, value)
 
 function createKafkaStart(definition)
 {
-    definition = definition || new DOMParser().parseFromString('<from uri="kafka:topic1?brokers=YOUR_BROKER_SERVICE_URI"/>', "text/xml").documentElement
+    // definition = definition || new DOMParser().parseFromString('<from uri="kafka:topic1?brokers=YOUR_BROKER_SERVICE_URI"/>', "text/xml").documentElement
+    definition = definition || new DOMParser().parseFromString('<from uri="kafka:topic1?brokers=my-cluster-kafka-bootstrap:9092&amp;autoOffsetReset=earliest"/>', "text/xml").documentElement
     return createGenericEndpointFrom(definition)
 }
 
@@ -2709,6 +2717,34 @@ function createProcess(definition)
 
     return activity
 }
+
+function createRemoveHeaders(definition)
+{
+  //default definition if not provided
+  definition = definition || {definition: new DOMParser().parseFromString('<removeHeaders pattern="*"/>', "text/xml").documentElement}
+
+  // let activity = createActivity({type: 'body', definition: definition});
+  definition.type = 'remove-headers'
+  let activity = createActivity(definition);
+
+  //add expression component (and load definition)
+  //activity.setAttribute('expression', {position: "0 -0.7 0", configMethod: [updateConfigBody]})
+  // activity.components.expression.setDefinition(definition)
+  //activity.components.expression.setDefinition(definition.definition)
+
+  //this is the label inside the geometry (activity descriptor)
+  var text = createText();
+  activity.appendChild(text);
+  text.setAttribute('value', 'clean\nheaders');
+  text.setAttribute('color', 'white');
+  text.setAttribute('align', 'center');
+  text.setAttribute('side', 'double');
+
+  goLive(activity);
+
+  return activity
+}
+
 
 /*
 function editLabel(label){

@@ -181,6 +181,7 @@ function createActivity(metadata)
   var golive = true
   var dragndrop = true
   var clickable = true
+  var dynamic   = false
 
   if('detachable' in metadata){
     detachable = metadata.detachable
@@ -205,6 +206,10 @@ function createActivity(metadata)
   {
     //when XML tag is 'to', we need to identify the Camel component
     if(metadata.definition.tagName == 'to' || metadata.definition.tagName == 'from'){
+      processorType = metadata.definition.attributes.uri.value.split(":")[0];
+    }
+    else if(metadata.definition.tagName == 'toD'){
+      dynamic = true;
       processorType = metadata.definition.attributes.uri.value.split(":")[0];
     }
     else{
@@ -288,6 +293,9 @@ function createActivity(metadata)
     newActivity.setAttribute('golive','')
   }
 
+  if(dynamic){
+    newActivity.setAttribute('dynamic','')
+  }
   return newActivity;
 }
 

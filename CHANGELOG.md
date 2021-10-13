@@ -130,6 +130,8 @@ DataFormats included:
 - Mouse and VR controllers alignment (same underlying implementation)
 - Introduced 'Aggregator' definitions (EIP pattern)
 - Introduced 'Process' definitions (EIP pattern *Message Translator*)
+- Introduced action to clean headers (in Camel `<removeHeaders/>`)
+- New MAIL (SMTP) endpoint to send emails to mail server
 - `<choice>` statement improvements:
   - Menu includes option for 1/2/3 conditions (+1 for `<otherwise>` branch) \
     If more needed, add them in the code and reload the visual editor.
