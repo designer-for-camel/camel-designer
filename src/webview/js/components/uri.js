@@ -154,12 +154,30 @@ AFRAME.registerComponent('uri', {
         }
 
         //get options
-        let options = new URLSearchParams(this.attributes).toString();
+        // let options = new URLSearchParams(this.attributes).toString();
+        let options = ""
+
+        for (var key in this.attributes){
+
+            //'saxon' attribute only when language is xpath
+            // if(key == "saxon" && this.language != "xpath"){
+            //     continue
+            // }
+            if(options.length > 0){
+                options+="&amp;"
+            }
+
+            options += key+'='+this.attributes[key] 
+
+            // attributesXml+= ' '+key+'="'+this.attributes[key]+'"'
+        }
+
 
         //XML escape string
         if(options.length > 0)
         {
-            options = "?"+options.replace(/&/g,"&amp;")
+            // options = "?"+options.replace(/&/g,"&amp;")
+            options = "?"+options
         }
         
         if(this.scheme == 'dataformat'){

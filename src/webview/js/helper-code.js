@@ -198,6 +198,11 @@ function createRouteDefinitions(routes)
             case 'file':
                 createFileStart(definition);
                 break;
+
+            case 'google-sheets-stream':
+                createGoogleSheetsStart(definition);
+                break;  
+
             default:
 
                 //we might have a custom configured consumer
@@ -292,11 +297,21 @@ function createActivityFromSource(type, delay, definition, lastAction) {
         case 'removeHeaders':
             return createActivityDelayed(createRemoveHeaders, delay, definition, lastAction);            
     
+        case 'google-drive':
+            return createActivityDelayed(createGoogleDrive, delay, definition.definition, lastAction);
+        case 'google-sheets':
+            return createActivityDelayed(createGoogleSheets, delay, definition.definition, lastAction);            
+        case 'smtp':
+            return createActivityDelayed(createSMTP, delay, definition.definition, lastAction);            
         case 'kafka':
+            return createActivityDelayed(createKafka, delay, definition.definition, lastAction);            
+    
+
+        // case 'kafka':
         case 'file':
         case 'ftp':
         case 'pdf':
-        case 'smtp':
+        // case 'smtp':
                 return createActivityDelayed(createGenericEndpointTo, delay, definition, lastAction);
 
         case 'split':

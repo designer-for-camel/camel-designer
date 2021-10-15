@@ -8,6 +8,10 @@ Utils.preloadAssets = ()=>{
 
     let assets_arr = [
         { type: 'img', id: 'aframeCheckboxMark', crossorigin: 'anonymous', src: `${AFRAME.ASSETS_PATH}/images/CheckmarkIcon.png`},
+        { type: 'img', id: 'icon-gdrive',        crossorigin: 'anonymous', src: `${AFRAME.ASSETS_PATH}/icons/google-drive.png`},
+        { type: 'img', id: 'icon-gsheets',       crossorigin: 'anonymous', src: `${AFRAME.ASSETS_PATH}/icons/google-sheets.png`},
+        { type: 'img', id: 'icon-kafka',         crossorigin: 'anonymous', src: `${AFRAME.ASSETS_PATH}/icons/kafka.png`},
+        { type: 'img', id: 'icon-mail',          crossorigin: 'anonymous', src: `${AFRAME.ASSETS_PATH}/icons/mail.png`},
     ]
 
     let assets = document.querySelector('a-assets')

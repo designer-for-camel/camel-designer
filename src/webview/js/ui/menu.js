@@ -149,7 +149,8 @@ function createMenuOption(container, menu, axisX)
     menuItem.setAttribute('animation__stickout',         {property: 'position', dur: 0, to: axisX+' '+position+' .05', startEvents: 'mouseenter'});
     menuItem.setAttribute('animation__stickout_reverse', {property: 'position', dur: 0, to: axisX+' '+position+' 0',   startEvents: 'mouseleave'});    
     menuItem.setAttribute('position', '0 '+position+' 0')
-    menuItem.id = 'menu-button-'+menu.label
+    // menuItem.id = 'menu-button-'+menu.label
+    menuItem.id = 'menu-button-'+container.id+'-'+menu.label
 
     if(menu.class){
         menuItem.classList.add(menu.class)
@@ -191,7 +192,8 @@ function createMenuOption(container, menu, axisX)
     //if option is a submenu
     if(menu.submenu){
 
-        let menuId = 'menu-'+menu.label
+        // let menuId = 'menu-'+menu.label
+        let menuId = 'menu-'+container.id+'-'+menu.label
 
         //create sub-container for submenu options
         let subContainer = document.createElement('a-entity')
@@ -345,6 +347,23 @@ function createMenu3D(configuration)
             {
                 label:    'ftp',
                 function: 'createFtpStart',                
+            },
+            {
+                label:    'google >',
+                submenu: [
+
+                    // PENDING
+                    // {
+                    //     label:    'drive',
+                    //     function: 'createGoogleDriveStart'
+                    // },
+
+
+                    {
+                        label:    'sheets',
+                        function: 'createGoogleSheetsStart'
+                    },
+                ]             
             },
         ]
     }
@@ -538,6 +557,19 @@ function createMenu3D(configuration)
                     },
                 ]             
             },
+            {
+                label:    'google >',
+                submenu: [
+                    {
+                        label:    'drive',
+                        function: 'createGoogleDrive'         
+                    },
+                    {
+                        label:    'sheets',
+                        function: 'createGoogleSheets'         
+                    },
+                ]             
+            },
         ]
     }
 
@@ -711,8 +743,8 @@ function createMenu3D(configuration)
 function createCustomEndpointFrom(uri)
 {
     definition = new DOMParser().parseFromString(`<from uri="${uri}"/>`, "text/xml").documentElement
-    // return createGenericEndpointFrom({definition: definition})
-    return createGenericEndpointFrom(definition)
+    return createGenericEndpointFrom({definition: definition})
+    // return createGenericEndpointFrom(definition)
 }
 
 function createCustomEndpointTo(uri)
@@ -844,14 +876,20 @@ function createMenu3Dcontrol()
     // console.log("frame dimensions: " + height +" "+width);
 
     // let position = -width/2+' '+height/2+' -4'
-    let position = '1 '+height/2+' -4'
+    // let position = '1 '+height/2+' -4'
+    let position = {
+        x: 1,
+        y: height/2,
+        z: -4
+    }
 
     let handle = document.getElementById(controlId)
     
     //if one exists, we discard and recreate
     if(handle){
         //keep original position
-        position = handle.getAttribute('position')
+        // position = handle.getAttribute('position')
+        position = handle.object3D.position
         camera.removeChild(handle)
     }
 
@@ -862,7 +900,12 @@ function createMenu3Dcontrol()
     handle.setAttribute('radius', '.15')
     handle.setAttribute('height', '.051')
     // handle.setAttribute('position', -width/2+' '+height/2+' -4')
-    handle.setAttribute('position', position)
+    // handle.setAttribute('position', position)
+    handle.object3D.position.set(
+        position.x, 
+        position.y, 
+        position.z
+    )
 
     //make interactive
     handle.classList.add('interactive')

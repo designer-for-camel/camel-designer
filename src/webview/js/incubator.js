@@ -396,14 +396,12 @@ function updateConfigEndpointTo(activity)
 function createKafka(definition)
 {
     definition = definition || new DOMParser().parseFromString('<to uri="kafka:topic1?brokers=YOUR_BROKER_SERVICE_URI&amp;autoOffsetReset=earliest"/>', "text/xml").documentElement
-    // return createGenericEndpointTo(definition)
-    return createGenericEndpointTo({definition: definition})
+    return createGenericEndpointTo({definition: definition, icon: "#icon-kafka"})
 }
 
 function createFile(definition)
 {
     definition = definition || new DOMParser().parseFromString('<to uri="file:directory?fileName=YOUR_FILE_NAME"/>', "text/xml").documentElement
-    // return createGenericEndpointTo(definition)
     return createGenericEndpointTo({definition: definition})
 }
 
@@ -423,8 +421,35 @@ function createSMTP(definition)
 {
     // definition = definition || new DOMParser().parseFromString('<toD uri="smtp://standalone.demo-mail.svc:3025?from=camel@apache.com&amp;to=demo@demo.com&amp;subject=camel-demo&amp;password=demo&amp;username=demo"/>', "text/xml").documentElement
     definition = definition || new DOMParser().parseFromString('<to uri="smtp://standalone.demo-mail.svc:3025?username=demo&amp;password=demo"/>', "text/xml").documentElement
-    return createGenericEndpointTo({definition: definition})
+    return createGenericEndpointTo({definition: definition, icon: "#icon-mail"})
 }
+
+function createGoogleDrive(definition)
+{
+    definition = definition || new DOMParser().parseFromString('<to uri="google-drive://drive-files/insert?clientId=YOUR_ID&amp;clientSecret=YOUR_SECRET&amp;accessToken=YOUR_TOKEN&amp;refreshToken=YOUR_REFRESH_TOKEN"/>', "text/xml").documentElement
+    return createGenericEndpointTo({definition: definition, icon: "#icon-gdrive"})
+}
+
+function createGoogleSheets(definition)
+{
+    definition = definition || new DOMParser().parseFromString('<to uri="google-sheets://data/update?clientId=YOUR_ID&amp;clientSecret=YOUR_SECRET&amp;accessToken=YOUR_TOKEN&amp;refreshToken=YOUR_REFRESH_TOKEN&amp;spreadsheetId=YOUR_SPREADSHEET_ID"/>', "text/xml").documentElement
+    return createGenericEndpointTo({definition: definition, icon: "#icon-gsheets"})
+}
+
+//PENDING
+function createGoogleDriveStart(definition)
+{
+    definition = definition || new DOMParser().parseFromString('', "text/xml").documentElement
+    return createGenericEndpointFrom({definition: definition, icon: "#icon-gsheets"})
+}
+
+function createGoogleSheetsStart(definition)
+{
+    definition = definition || new DOMParser().parseFromString('<from uri="google-sheets-stream://data?clientId=YOUR_ID&amp;clientSecret=YOUR_SECRET&amp;accessToken=YOUR_TOKEN&amp;refreshToken=YOUR_REFRESH_TOKEN&amp;spreadsheetId=YOUR_SPREADSHEET_ID"/>"/>', "text/xml").documentElement
+    return createGenericEndpointFrom({definition: definition, icon: "#icon-gsheets"})
+}
+
+
 
 // function createGenericEndpointTo(definition, type)
 function createGenericEndpointTo(definition)
@@ -442,6 +467,25 @@ function createGenericEndpointTo(definition)
   activity.setAttribute('uri', {position: "0 -0.7 0", configMethod: [updateConfigEndpointTo]})
 //   activity.components.uri.setDefinition(definition)
   activity.components.uri.setDefinition(definition.definition)
+
+  if(definition.icon){
+    //no type label
+    type=''
+
+    var img = document.createElement('a-image');
+    activity.appendChild(img);
+    img.setAttribute('side', 'double');
+    img.setAttribute('src', definition.icon);
+    activity.setAttribute('opacity', '.2');
+
+    // var disc = document.createElement('a-ring');
+    // activity.appendChild(disc);
+    // disc.setAttribute('side', 'double');
+    // disc.setAttribute('src', definition.icon);
+    // disc.setAttribute('radius-inner', 0.00001);
+    // disc.setAttribute('radius-outer', 0.5);
+    // disc.setAttribute('opacity', '.8');
+  }
 
   //this is the label inside the geometry (activity descriptor)
   var text = createText();
@@ -567,13 +611,15 @@ function createKafkaStart(definition)
 {
     // definition = definition || new DOMParser().parseFromString('<from uri="kafka:topic1?brokers=YOUR_BROKER_SERVICE_URI"/>', "text/xml").documentElement
     definition = definition || new DOMParser().parseFromString('<from uri="kafka:topic1?brokers=my-cluster-kafka-bootstrap:9092&amp;autoOffsetReset=earliest"/>', "text/xml").documentElement
-    return createGenericEndpointFrom(definition)
+    // return createGenericEndpointFrom(definition)
+    return createGenericEndpointFrom({definition: definition, icon: "#icon-kafka"})
 }
 
 function createFileStart(definition)
 {
     definition = definition || new DOMParser().parseFromString('<from uri="file:directory1"/>', "text/xml").documentElement
-    return createGenericEndpointFrom(definition)
+    // return createGenericEndpointFrom(definition)
+    return createGenericEndpointFrom({definition: definition})
 }
 
 
@@ -582,16 +628,21 @@ function createFtpStart(definition)
     // definition = definition || new DOMParser().parseFromString('<from uri="file:directory1"/>', "text/xml").documentElement
     definition = definition || new DOMParser().parseFromString('<from uri="ftp://demoserver:21/directoryName?username=YOUR_USERNAME&amp;password=YOUR_PASSWORD"/>', "text/xml").documentElement
 
-    return createGenericEndpointFrom(definition)
+    // return createGenericEndpointFrom(definition)
+    return createGenericEndpointFrom({definition: definition})
 }
 
 function createGenericEndpointFrom(definition)
 {
   //default type will be the scheme of the uri (e.g. 'file' in uri="file:name")
-  type = definition.getAttribute('uri').split(":")[0];
+  type = definition.definition.getAttribute('uri').split(":")[0];
+
+  //defaults
+  definition.type = 'from'
+  definition.detachable = false
 
   //create
-  let activity = createActivity({type: "from", definition: definition, detachable: false});
+  let activity = createActivity(definition);
 
   //customise to make it a START activity
   activity.setAttribute('material', {color: '#52F40C', transparent: true, opacity: 0.5});
@@ -599,7 +650,26 @@ function createGenericEndpointFrom(definition)
 
   //add uri component (and load definition)
   activity.setAttribute('uri', {position: "0 0.7 0", configMethod: [updateConfigEndpointTo]})
-  activity.components.uri.setDefinition(definition)
+  activity.components.uri.setDefinition(definition.definition)
+
+  if(definition.icon){
+    //no type label
+    type=''
+
+    // var img = document.createElement('a-image');
+    // activity.appendChild(img);
+    // img.setAttribute('side', 'double');
+    // img.setAttribute('src', definition.icon);
+    // // activity.setAttribute('opacity', '.2');
+
+    var disc = document.createElement('a-ring');
+    activity.appendChild(disc);
+    disc.setAttribute('side', 'double');
+    disc.setAttribute('src', definition.icon);
+    disc.setAttribute('radius-inner', 0.00001);
+    disc.setAttribute('radius-outer', 0.5);
+    disc.setAttribute('opacity', '.99');
+  }
 
   //this is the label inside the geometry (activity descriptor)
   var text = createText();
@@ -613,7 +683,6 @@ function createGenericEndpointFrom(definition)
 
   return activity
 }
-
 
 
 
@@ -2368,9 +2437,9 @@ function defineDataFormatAsOneLiner(definition)
 
     //variable to keep the URI options for 1 line definition
     let options = ""
-    if(attributes.length > 0){
-        options = "?"
-    }
+    // if(attributes.length > 0){
+    //     options = "?"
+    // }
 
     //special case for JSON which requires a library
     if(dataFormatType == "json"){
@@ -2394,6 +2463,10 @@ function defineDataFormatAsOneLiner(definition)
         else{
             options += "&amp;"+attributes[i].name + "=" +attributes[i].value
         }
+    }
+
+    if(attributes.length > 0){
+        options = "?"+options
     }
 
     //returns DataFormat definition as a one line definition
