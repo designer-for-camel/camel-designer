@@ -16,7 +16,7 @@ Please bear in mind this *VSCode* extension is in 'early-prototype' phase and is
 * Click in the text editor to:
   - switch between routes
   - select activities to configure
-* Predefined EIPs (e.g. *Choice* / *Split*)
+* Predefined EIPs (e.g. *Choice* / *Split* / *Aggregator*)
 * DataFormat definitions
 * Error handling with Try/Catch/Finally statements
 * Open Camel XML files and render visually.
@@ -40,17 +40,6 @@ To start using the extension and generate your Camel definitions:
 ## How-To guide
 
 To get more familiar with the available functionality, check the [*HOW-TO*](./docs/how-to.md) guide which includes step by step details and helpful animations.
-
-## Pending code improvements
-
-- Current XML rendering for Camel routes uses 3D objects to navigate.
-  Applying an XSLT transform on the HTML nodes might improve the process to rendering the source code. 
-
-## List of future candidate features
-
-- option to create 2/3/4 ways in choices and forks
-- possibility to add comments
-- scrolling controls, zoom in/out controls, general UI improvements 
 
 ## Known Issues
 
