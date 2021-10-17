@@ -75,8 +75,43 @@
       {
         setCamelVersion3();
         setCamelNamespaceSpring();
-        // camelSourceEnvelope = CAMEL_SOURCE_ENVELOPE.camelContext
         camelSourceEnvelope = CAMEL_SOURCE_ENVELOPE.camelK
+      }
+
+      //initialises settings for Camel K development
+      function setCamelK()
+      {
+        setCamelVersion3();
+        setCamelNamespaceSpring();
+        camelSourceEnvelope = CAMEL_SOURCE_ENVELOPE.camelK
+        syncEditor()
+      }
+
+      //initialises settings for Camel 3 on Spring
+      function setCamelVersion3Spring()
+      {
+        setCamelVersion3()
+        setCamelNamespaceSpring()
+        camelSourceEnvelope = CAMEL_SOURCE_ENVELOPE.camelContext
+        syncEditor()
+      }
+
+      //initialises settings for Camel 2 on Spring
+      function setCamelVersion2Spring()
+      {
+        setCamelVersion2()
+        setCamelNamespaceSpring()
+        camelSourceEnvelope = CAMEL_SOURCE_ENVELOPE.camelContext
+        syncEditor()
+      }
+
+      //initialises settings for Camel 2 on Blueprint
+      function setCamelVersion2Blueprint()
+      {
+        setCamelVersion2()
+        setCamelNamespaceBlueprint()
+        camelSourceEnvelope = CAMEL_SOURCE_ENVELOPE.camelContext
+        syncEditor()
       }
 
       function getCamelSourceEnvelope()

@@ -2818,6 +2818,32 @@ function createRemoveHeaders(definition)
   return activity
 }
 
+//function invoked my 'window resize' events
+//certain UI element's position needs to be recalculated (i.e Menus)
+function manageUI(){
+
+    // console.log("window was resized !")
+
+    //obtain MENU bar
+    let handle = document.getElementById("handle");
+
+    //place item as per proportions on screen
+    setUiItemLocation(handle, .75, .95)
+
+    //obtain current position
+    let refPos = handle.object3D.position
+    
+    //obtain control menu
+    handle = document.getElementById("handle-control");
+
+    //position after MENU bar
+    handle.object3D.position.set(
+        refPos.x + 6,
+        refPos.y,
+        refPos.z
+    )
+}
+
 
 /*
 function editLabel(label){

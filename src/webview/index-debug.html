@@ -91,7 +91,7 @@
   </head>
 
 
-  <body onload="init()">
+  <body onload="init()" onresize="manageUI()">
 
       <!-- This is the list of activities -->
       <routenav class="prev"><button class="button" onclick="nextRoute()">&lt;</button></routenav>
@@ -530,8 +530,8 @@
       }
 
       function run () {
-        createMenu3Dcontrol()
         createMenu3D()
+        createMenu3Dcontrol()
       }
 
       scene.addEventListener('enter-vr', function () {

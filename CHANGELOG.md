@@ -124,10 +124,8 @@ DataFormats included:
 - CamelContext now includes the attribute `streamCache="true"` (this helps on demos when body contains a stream)
 - REST methods (except `GET`) now include the default attribute `type="String"` (allows Swagger to display a text input)
 
-## Unpublished
+## 0.9.0
 
-- VR mode enabled (for browsers, not VSCode)
-- Mouse and VR controllers alignment (same underlying implementation)
 - Introduced 'Aggregator' definitions (EIP pattern)
 - Introduced 'Process' definitions (EIP pattern *Message Translator*)
 - Introduced action to clean headers (in Camel `<removeHeaders/>`)
@@ -139,6 +137,10 @@ DataFormats included:
     If more needed, add them in the code and reload the visual editor.
   - Vertical position of transition (choice --> activity) determines order of branches in the code \
   Drag'n'drop 1st branch activity to change order of conditions in the code.
-- New 3D forms to configure activities (to replace 2D HTML ones). New configurators for:
+- Default code generation now set to Camel K
+- Menu option to switch Camel code type (under control menu)
+- Menu option to select Camel route
+- VR mode enabled (for browsers, not VSCode)
+- Mouse and VR controllers alignment (same underlying implementation)- New 3D forms to configure activities (to replace 2D HTML ones). New configurators for:
   - Aggregator
   - Route name

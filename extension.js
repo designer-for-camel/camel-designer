@@ -93,13 +93,27 @@ function activate(context) {
                   //obtain text on Editor
                   var docText = e.document.getText();
 
-                  //work on the text to replace Camel definitions
-                  //other non Camel elements are left 'as is'
-                  var closingElement = '</'+message.payload.envelope+'>'
-                  var newText = docText.substring(0, docText.indexOf('<'+message.payload.envelope)) +
-                                message.payload.code +
-                                docText.substring(docText.indexOf(closingElement)+closingElement.length, docText.length)
-                                
+                  //helper variable
+                  var newText
+
+                  // type X to Camel K scenario, we replace ALL text with incoming update
+                  if(message.payload.envelope == "routes"){
+                    newText = message.payload.code
+                  }
+                  // Camel K to type X scenario, we replace ALL text with incoming update
+                  else if(docText.trim().startsWith("<routes ")){
+                    newText = message.payload.code
+                  }
+                  // String/Blueprint scenario, code before/after Camel needs to be preserved
+                  else{
+                    //work on the text to replace Camel definitions
+                    //other non Camel elements are left 'as is'
+                    var closingElement = '</'+message.payload.envelope+'>'
+                    newText = docText.substring(0, docText.indexOf('<'+message.payload.envelope)) +
+                                  message.payload.code +
+                                  docText.substring(docText.indexOf(closingElement)+closingElement.length, docText.length)
+                  }
+       
                   //the full content is selected (to be replaced)
                   var firstLine = e.document.lineAt(0);
                   var lastLine = e.document.lineAt(e.document.lineCount - 1);

@@ -144,8 +144,10 @@ function createMenuOption(container, menu, axisX)
     menuItem.setAttribute('depth', '.05')
     menuItem.setAttribute('width', '1')
     menuItem.setAttribute('height', '.3')
-    menuItem.setAttribute('color', 'grey')
+    menuItem.setAttribute('color', 'gray')
+    // menuItem.setAttribute('color', '#454545')
     menuItem.setAttribute('opacity', '.4')
+    // menuItem.setAttribute('opacity', '.9')
     menuItem.setAttribute('animation__stickout',         {property: 'position', dur: 0, to: axisX+' '+position+' .05', startEvents: 'mouseenter'});
     menuItem.setAttribute('animation__stickout_reverse', {property: 'position', dur: 0, to: axisX+' '+position+' 0',   startEvents: 'mouseleave'});    
     menuItem.setAttribute('position', '0 '+position+' 0')
@@ -162,6 +164,7 @@ function createMenuOption(container, menu, axisX)
 
         //mark with label
         appendLabel(menuItem, menu.label, menu.labelWrapCount)
+        
 
         //register custom consumers/producers
         if(menu.function == "createCustomEndpointFrom"){
@@ -662,28 +665,14 @@ function createMenu3D(configuration)
     //keep reference to camera
     var camera = document.getElementById("main-camera");
 
-    //obtain camera component
-    let cam = camera.components.camera.camera; 
-
-    //define the distance where the menu will be placed
-    //and calculate viewable height and width in browser window 
-    let distance = 4
-    var height = 2 * distance * Math.tan(cam.fov / 2 / 180 * Math.PI);
-    var width = height * cam.aspect;
-
-    //calculate percentage position where the menu will be placed
-    height = height * .6
-    width = width * .8
-
-    // console.log("frame dimensions: " + height +" "+width);
-
     //Create the menu handler (grabber to drag'n'drop)
     let handle = document.createElement('a-cylinder')
     handle.id = 'handle'
     handle.setAttribute('color', '#454545')
     handle.setAttribute('radius', '.15')
     handle.setAttribute('height', '.051')
-    handle.setAttribute('position', -width/2+' '+height/2+' -4')
+    // handle.setAttribute('position', -width/2+' '+height/2+' -4')
+    setUiItemLocation(handle, .75, .95)
 
     //make interactive
     handle.classList.add('interactive')
@@ -730,14 +719,51 @@ function createMenu3D(configuration)
     handle.appendChild(menu3D)
 
     //create hint for handler
-    let hint = document.createElement("a-entity")
-    hint.setAttribute('hint', 'message: Drag the menu from the round shape')
-    hint.setAttribute('rotation', '-90 0 0')
-    hint.setAttribute('scale', '.5 .5 .5')
-    handle.appendChild(hint)
+    // let hint = document.createElement("a-entity")
+    // hint.setAttribute('hint', 'message: Drag the menu from the round shape')
+    // hint.setAttribute('rotation', '-90 0 0')
+    // hint.setAttribute('scale', '.5 .5 .5')
+    // handle.appendChild(hint)
 
     //attach menu to camera
     camera.appendChild(handle)
+}
+
+function setUiItemLocation(item, heightFactor, widthFactor){
+
+    //MENU POSITIONING:
+    //    (see comments on head of function)
+    //References:
+    //Resources on how to obtain A-Frame canvas dimensions:
+    //   - https://stackoverflow.com/questions/44974596/how-to-fit-a-plane-to-the-a-canvas
+    //   - http://irfu.cea.fr/Projets/PYMSES/_images/pymses_pespective_camera.png
+    //   - https://jsfiddle.net/cpg890nm/1/
+
+    //keep reference to camera
+    var camera = document.getElementById("main-camera");
+
+    //obtain camera component
+    let cam = camera.components.camera.camera; 
+
+    //define the distance where the menu will be placed
+    //and calculate viewable height and width in browser window 
+    let distance = 4
+    var height = 2 * distance * Math.tan(cam.fov / 2 / 180 * Math.PI);
+    var width = height * cam.aspect;
+
+    //calculate percentage position where the menu will be placed
+    height = height * heightFactor
+    width = width * widthFactor
+
+    // console.log("frame dimensions: " + height +" "+width);
+
+    //set item's position as per calculated coordinates
+    // item.setAttribute('position', -width/2+' '+height/2+' -4')
+    item.object3D.position.set(
+        -width/2,
+        height/2,
+        -4
+    )
 }
 
 function createCustomEndpointFrom(uri)
@@ -802,47 +828,65 @@ function tempVR(){
 function createMenu3Dcontrol()
 // function createMenu3Dcontrol(configuration)
 {
-
-
     let defMenuRoutes = 
     {
-        name: 'route...',
-        class: 'route',
+        name: 'control...',
+        class: 'control',
         enabled: true,
         menu: [
+
             {
-                label:    '   edit   >',
+                label:    'route >',
+                submenu: [
+
+
+                    {
+                        label:    'edit >',
+                        submenu: [
+                            {
+                                label:    'new',
+                                function: 'newRoute'
+                            },
+                            // {
+                            //     label:    'delete',
+                            //     function: 'deleteRoute'   
+                            // },
+                            {
+                                label:    'rename',
+                                function: 'editRouteName'
+                            }
+                        ]             
+                    },
+
+                    {
+                        label:    'select >',
+                        submenu: [
+                        ]             
+                    },
+
+                ]             
+            },
+            {
+                label:    '  code  >',
                 submenu: [
                     {
-                        label:    'new',
-                        function: 'newRoute'
+                        label:    'Camel K',
+                        function: 'setCamelK'
                     },
                     {
-                        label:    'delete',
-                        function: 'deleteRoute'   
+                        label:    'Camel 3',
+                        function: 'setCamelVersion3Spring'   
                     },
                     {
-                        label:    'rename',
-                        function: 'editRouteName'
+                        label:    'camel 2\n(spring)',
+                        function: 'setCamelVersion2Spring'
+                    },
+                    {
+                        label:    'camel 2\n(blueprint)',
+                        function: 'setCamelVersion2Blueprint'
                     }
                 ]             
             },
-            // {
-            //     label:    'timer',
-            //     function: 'createTimer',                
-            // },
-            // {
-            //     label:    'kafka',
-            //     function: 'createKafkaStart',                
-            // },
-            // {
-            //     label:    'file',
-            //     function: 'createFileStart',                
-            // },
-            // {
-            //     label:    'ftp',
-            //     function: 'createFtpStart',                
-            // },
         ]
     }
 
@@ -875,14 +919,22 @@ function createMenu3Dcontrol()
 
     // console.log("frame dimensions: " + height +" "+width);
 
+    let menuPos = document.getElementById('handle').object3D.position
+
     // let position = -width/2+' '+height/2+' -4'
     // let position = '1 '+height/2+' -4'
+    // let position = {
+    //     x: 1,
+    //     y: height/2,
+    //     z: -4
+    // }
     let position = {
-        x: 1,
-        y: height/2,
-        z: -4
+        x: menuPos.x+6,
+        y: menuPos.y,
+        z: menuPos.z
     }
 
+    
     let handle = document.getElementById(controlId)
     
     //if one exists, we discard and recreate
@@ -925,7 +977,7 @@ function createMenu3Dcontrol()
                 arguments: routes[i].id
             }
 
-        defMenuRoutes.menu.push(option)
+        defMenuRoutes.menu[0].submenu[1].submenu.push(option)
     }
 
     //create all menus
