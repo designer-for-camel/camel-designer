@@ -24,6 +24,15 @@ var te;
 var vd;
 var td;
 
+const camel = {
+  K:         'k',
+  SPRING:    'spring',
+  BLUEPRINT: 'blueprint',
+  UNKNOWN:   'unknown',
+};
+
+var codeType;
+
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 /**
@@ -96,24 +105,53 @@ function activate(context) {
                   //helper variable
                   var newText
 
-                  // type X to Camel K scenario, we replace ALL text with incoming update
-                  if(message.payload.envelope == "routes"){
-                    newText = message.payload.code
+                  if(docText.includes("<beans ")){
+                    codeType = camel.SPRING
                   }
-                  // Camel K to type X scenario, we replace ALL text with incoming update
-                  else if(docText.trim().startsWith("<routes ")){
-                    newText = message.payload.code
+                  else if(docText.includes("<blueprint ")){
+                    codeType = camel.BLUEPRINT
                   }
-                  // String/Blueprint scenario, code before/after Camel needs to be preserved
+                  else if(docText.includes("<routes ")){
+                    codeType = camel.K
+                  }
                   else{
-                    //work on the text to replace Camel definitions
-                    //other non Camel elements are left 'as is'
-                    var closingElement = '</'+message.payload.envelope+'>'
-                    newText = docText.substring(0, docText.indexOf('<'+message.payload.envelope)) +
-                                  message.payload.code +
-                                  docText.substring(docText.indexOf(closingElement)+closingElement.length, docText.length)
+                    codeType = camel.UNKNOWN
                   }
-       
+
+                  // case [X-to-CamelK] scenario
+                  if(message.payload.envelope == "routes"){
+
+                    //For current Camel K code, header flags to be preserved
+                    if(codeType == camel.K){
+                      //work on the text to replace Camel definitions
+                      //other non Camel elements are left 'as is'
+                      var closingElement = '</'+message.payload.envelope+'>'
+                      newText = docText.substring(0, docText.indexOf('<'+message.payload.envelope)) +
+                                    message.payload.code +
+                                    docText.substring(docText.indexOf(closingElement)+closingElement.length, docText.length)
+                    }
+                    else{
+                      //for current Camel types other than Camel K, we replace ALL
+                      newText = message.payload.code
+                    }
+                  }
+                  // case [X-to-NOTCamelK] scenario
+                  else {
+                    //if current is Camel K, we replace ALL
+                    if(codeType == camel.K){
+                      newText = message.payload.code
+                    }
+                    else{
+                      //work on the text to replace Camel definitions
+                      //other non Camel elements are left 'as is'
+                      var closingElement = '</'+message.payload.envelope+'>'
+                      newText = docText.substring(0, docText.indexOf('<'+message.payload.envelope)) +
+                                    message.payload.code +
+                                    docText.substring(docText.indexOf(closingElement)+closingElement.length, docText.length)
+
+                    }
+                  }
+                  
                   //the full content is selected (to be replaced)
                   var firstLine = e.document.lineAt(0);
                   var lastLine = e.document.lineAt(e.document.lineCount - 1);

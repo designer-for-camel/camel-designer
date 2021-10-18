@@ -613,6 +613,9 @@ function autoDetectCamelSettings(source)
   {
     camelSourceEnvelope = CAMEL_SOURCE_ENVELOPE.camelK
   }
+  else{
+    camelSourceEnvelope = CAMEL_SOURCE_ENVELOPE.camelContext
+  }
 }
 
 //experimental

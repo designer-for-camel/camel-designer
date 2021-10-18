@@ -144,3 +144,8 @@ DataFormats included:
 - Mouse and VR controllers alignment (same underlying implementation)- New 3D forms to configure activities (to replace 2D HTML ones). New configurators for:
   - Aggregator
   - Route name
+
+## 0.9.1
+
+- fix: Camel code switching wasn't working as expected (CamelK/Spring/Blueprint) \
+  **Note**: improved, but not fully stable yet, code to be reviewed
