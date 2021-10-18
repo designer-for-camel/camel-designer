@@ -605,11 +605,11 @@ function autoDetectCamelSettings(source)
   }
 
   //Auto-detect Camel envelope wrapping Camel definitions
-  if(source.includes(CAMEL_SOURCE_ENVELOPE.routeContext))
+  if(source.includes('<'+CAMEL_SOURCE_ENVELOPE.routeContext+' '))
   {
     camelSourceEnvelope = CAMEL_SOURCE_ENVELOPE.routeContext
   }
-  else if(source.includes(CAMEL_SOURCE_ENVELOPE.camelK))
+  else if(source.includes('<'+CAMEL_SOURCE_ENVELOPE.camelK+' '))
   {
     camelSourceEnvelope = CAMEL_SOURCE_ENVELOPE.camelK
   }

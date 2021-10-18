@@ -145,13 +145,13 @@ function activate(context) {
                       //work on the text to replace Camel definitions
                       //other non Camel elements are left 'as is'
                       var closingElement = '</'+message.payload.envelope+'>'
-                      newText = docText.substring(0, docText.indexOf('<'+message.payload.envelope)) +
+                      newText = docText.substring(0, docText.indexOf('<'+message.payload.envelope+' ')) +
                                     message.payload.code +
-                                    docText.substring(docText.indexOf(closingElement)+closingElement.length, docText.length)
+                                    docText.substring(docText.lastIndexOf(closingElement)+closingElement.length, docText.length)
 
                     }
                   }
-                  
+
                   //the full content is selected (to be replaced)
                   var firstLine = e.document.lineAt(0);
                   var lastLine = e.document.lineAt(e.document.lineCount - 1);
