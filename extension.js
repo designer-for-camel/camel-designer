@@ -57,13 +57,11 @@ function activate(context) {
         {
             retainContextWhenHidden: true,
             enableScripts: true,
-            // localResourceRoots: [vscode.Uri.file(path.join(context.extensionPath, 'src', 'webview')).with({ scheme: 'vscode-resource' })]
-            localResourceRoots: [vscode.Uri.file(path.join(context.extensionPath)).with({ scheme: 'vscode-resource' })]
         });
 
       //Path to local source HTML (index.html)
       const onDiskPath = vscode.Uri.file(path.join(context.extensionPath, 'src', 'webview', 'index.html'));
-      const indexHtml = onDiskPath.with({ scheme: 'vscode-resource' });
+      const indexHtml = currentPanel.webview.asWebviewUri(onDiskPath);
       console.log('path: ' + indexHtml.path);
       console.log('path: ' + indexHtml.fsPath);
       console.log('path: ' + indexHtml);
@@ -71,7 +69,7 @@ function activate(context) {
       if(vd == null)
       {
         // And set its HTML content
-        currentPanel.webview.html = getWebviewContent(context);
+        currentPanel.webview.html = getWebviewContent(context, currentPanel);
       }
       else
       {
@@ -375,14 +373,13 @@ function activate(context) {
 exports.activate = activate;
 
 //Obtains the HTML with paths replaced
-function getWebviewContent(context) {
+function getWebviewContent(context, panel) {
   const indexPath = vscode.Uri.file(path.join(context.extensionPath, 'src', 'webview', 'index.html'));
-  const indexHtml = indexPath.with({ scheme: 'vscode-resource' });
+  const indexHtml = panel.webview.asWebviewUri(indexPath);
 
   //These are needed to replace paths in the HTML content using 'eval'
-  // const srcPath = vscode.Uri.file(path.join(context.extensionPath, 'src', 'webview'));
   const srcPath = vscode.Uri.file(path.join(context.extensionPath));
-  const srcPathScheme = srcPath.with({ scheme: 'vscode-resource' });
+  const srcPathScheme = panel.webview.asWebviewUri(srcPath);
 
   //We run 'eval' as a workaround to apply variable substitutions to set file paths
   let source = eval("`"+fs.readFileSync(indexHtml.fsPath, 'utf8')+"`");
