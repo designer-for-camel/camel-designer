@@ -77,7 +77,7 @@
 		"jsdom-global": "3.0.2",
 		"mocha": "^6.1.4",
 		"requirejs": "^2.3.6",
-		"three": "^0.125.0",
+		"three": "^0.137.0",
 		"typescript": "^3.3.1",
 		"vscode-test": "^1.0.2",
 		"webgl-mock-threejs": "0.0.1"
