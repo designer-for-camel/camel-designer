@@ -9,7 +9,6 @@
 - included in menu a 'help' category with access to 'how-to' documentation
 - included in configuration panels access to 'how-to' documentation
 
-
 ## 0.9.2
 
 - **IMPORTANT**: install this version for users on VSCode 1.62.x onwards.
