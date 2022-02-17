@@ -195,17 +195,101 @@ function activate(context) {
               currentPanel.webview.postMessage({ command: 'configuration-load' , payload: customComponents});
               return
 
-            case 'atlasmap-start':
-              console.log('starting AtlasMap');
-              vscode.window.showErrorMessage(message.payload);
-              //vscode.commands.executeCommand("atlasmap.start");
-              // let test = vscode.commands.executeCommand("editor.action.webvieweditor.selectAll");
+            case 'documentation-url':
+              console.log('loading extension configuration')
+              vscode.env.openExternal(vscode.Uri.parse(message.payload.url))
+              return
 
-              // test
-              // .then(function(value) {
-              //         console.log("last 'create' action completed");
-              //         syncStartUpEnabled = false;
-              //       })
+            case 'atlasmap-new':
+              console.log('new AtlasMap file')
+
+              //verify AtlasMap extension is valid
+              if(isAtlasMapExtensionInstallationValid() == false){
+                return
+              }
+
+              //invoke AtlasMap to create a new ADM file
+              let created = vscode.commands.executeCommand("atlasmap.file.create")
+              created.then(function(value) {
+                      console.log("last 'create' action completed");
+
+                      //find ADM files in workspaces
+                      let found = vscode.workspace.findFiles('**/*.adm')
+                      found.then(function(files) {
+                              console.log("got ADM files: value: "+files);
+
+                              //ATTENTION: currently not covering a multi-workspaces use case
+                              //we assume only 1 workspace is open (index=0)
+                              let currentPath = vscode.workspace.workspaceFolders[0].uri.path
+
+                              //helper for ADMs
+                              let adms = []
+        
+                              for(i in files)
+                              {
+                                //add JSON (as Camel Designer wants it) with relative path of ADM
+                                adms.push({"label":files[i].path.split(currentPath).pop().substring(1)})
+                              }
+        
+                              //send list to webview
+                              currentPanel.webview.postMessage({ command: 'atlasmap-files-list' , payload: adms, newadm: true});
+                            })
+                    })
+
+              return
+
+            case 'atlasmap-edit':
+              console.log('edit AtlasMap file')
+              
+              //verify AtlasMap extension is valid
+              if(isAtlasMapExtensionInstallationValid() == false){
+                return
+              }
+
+              //obtain full ADM uri
+              let admuri = vscode.workspace.workspaceFolders[0].uri.path + "/" + message.payload.admfile
+
+              //(async) check if the ADM exists in the workspace
+              // let adm = vscode.workspace.findFiles(admuri)
+              let adm = vscode.workspace.findFiles('**/'+message.payload.admfile)
+              adm.then(function(value) {
+                //if does not exist, display error
+                if(value.length == 0){
+                  vscode.window.showErrorMessage("ADM not found: "+message.payload.admfile);
+                  return
+                }
+
+                //invoke VSCode to open ADM file
+                vscode.commands.executeCommand('vscode.open', vscode.Uri.file(admuri));
+                return
+              })
+            
+              return
+
+            case 'atlasmap-get-adms':
+              console.log('locating ADM files in workspace');
+
+              //find ADM files in workspace
+              let files = vscode.workspace.findFiles('**/*.adm')
+              files.then(function(value) {
+                      console.log("got ADM files: value: "+value);
+
+                      //TODO: what if you have multiple workspaces
+                      let currentPath = vscode.workspace.workspaceFolders[0].uri.path
+
+                      //holder
+                      let adms = []
+
+                      //iterate list of files
+                      for(let i = 0; i < value.length; i++)
+                      {
+                        //keep only relative path in workspace
+                        adms.push({"label":value[i].path.split(currentPath).pop().substring(1)})
+                      }
+                      
+                      //return list of available ADM files in workspace
+                      currentPanel.webview.postMessage({ command: 'atlasmap-files-list' , payload: adms});
+              })
 
               console.log(vscode.window.visibleTextEditors);
               return;
@@ -479,4 +563,31 @@ async function sendCamelTracingPoll(url, webview)
     } else {
         console.error("Tracing error, could not talk to Jolokia: " + response.status);
     }
+}
+
+//returns true if a valid installation of AtlasMap extension is found
+//returns false otherwise
+function isAtlasMapExtensionInstallationValid(){
+
+  let amv = vscode.extensions.getExtension('redhat.atlasmap-viewer')
+
+  if(!amv){
+    vscode.window.showErrorMessage("AtlasMap extension seems not installed or is disabled.");
+    return false
+  }
+
+  //we expect a minimum of [0][1][2]
+  let version = amv.packageJSON.version.split(".")
+
+  if(version[1] == "0"){
+    vscode.window.showErrorMessage("Expected AtlasMap v0.1.2 or higher, version installed is: "+amv.packageJSON.version);
+    return false
+  }
+
+  if(parseInt(version[2]) < 2){
+    vscode.window.showErrorMessage("Expected AtlasMap v0.1.2 or higher, version installed is: "+amv.packageJSON.version);
+    return false
+  }
+
+  return true
 }

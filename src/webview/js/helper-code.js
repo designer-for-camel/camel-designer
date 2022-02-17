@@ -29,6 +29,9 @@ function importSource()
             reader.onload = function() {
                 console.log(reader.result);
 
+                //attempt to detect Camel settings to use
+                autoDetectCamelSettings(reader.result)
+                
                 loadSourceCode(reader.result);
 
                             //test
@@ -321,6 +324,10 @@ function createActivityFromSource(type, delay, definition, lastAction) {
         case 'doTry':
             return createActivityDelayed(createTryCatch, delay, definition.definition, lastAction);
 
+        
+        case 'atlas':
+        case 'atlasmap':
+            return createActivityDelayed(createAtlasMap, delay, definition.definition, lastAction);
 
         //The following 3 types adhere to DataFormats
         case 'dataformat':
@@ -409,7 +416,8 @@ function getCamelSource()
 
     
     //when it runs in VSCode
-    if ( top !== self ) { // we are in the iframe
+    //if ( top !== self ) { // we are in the iframe
+    if (runningAsVscodeWebview()) {
         vscodePostMessage('insert', {
             code: mycode.text,
             metadata: getMetadata(),
@@ -780,6 +788,22 @@ function renderActivity(activity, mycode, iterator) {
         case 'dataformat':
             //assumes activity is an endpoint (<to>) and has URI
             mycode.text += mycode.tab+'<to uri="'+activity.components.uri.getValue()+'" id="'+activity.id+'"/>\n'
+            break;
+
+        case 'atlasmap':
+            //default scheme is for Camel v3
+            let uri = "atlasmap:"
+
+            //AtlasMap has a different scheme for v2
+            if(camelVersion == CAMEL_RELEASE.v2){
+                uri = "atlas:"
+            }
+
+            //full URI
+            uri = uri + activity.components.uri.getValue().split(":",2)[1]
+
+            //assumes activity is an endpoint (<to>) and has URI
+            mycode.text += mycode.tab+'<to uri="'+uri+'" id="'+activity.id+'"/>\n'
             break;
 
         case 'to':

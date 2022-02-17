@@ -12,6 +12,7 @@ Utils.preloadAssets = ()=>{
         { type: 'img', id: 'icon-gsheets',       crossorigin: 'anonymous', src: `${AFRAME.ASSETS_PATH}/icons/google-sheets.png`},
         { type: 'img', id: 'icon-kafka',         crossorigin: 'anonymous', src: `${AFRAME.ASSETS_PATH}/icons/kafka.png`},
         { type: 'img', id: 'icon-mail',          crossorigin: 'anonymous', src: `${AFRAME.ASSETS_PATH}/icons/mail.png`},
+        { type: 'img', id: 'icon-atlasmap',      crossorigin: 'anonymous', src: `${AFRAME.ASSETS_PATH}/icons/atlasmap.png`},
     ]
 
     let assets = document.querySelector('a-assets')

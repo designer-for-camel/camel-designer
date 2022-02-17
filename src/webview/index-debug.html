@@ -473,8 +473,8 @@
       <a-entity id="rig">
         <a-camera id="main-camera" look-controls-enabled="false" position="0 0 0" wasd-controls-enabled="true"></a-camera>
 
-        <a-entity laser-controls="hand: left" ></a-entity>
-        <a-entity id="myvrcontroller" laser-controls="hand: right" raycaster="objects: .interactive"></a-entity>
+        <a-entity rotation="90 0 0" laser-controls="hand: left" ></a-entity>
+        <a-entity rotation="90 0 0" id="myvrcontroller" laser-controls="hand: right" raycaster="objects: .interactive"></a-entity>
 
       </a-entity>
 
@@ -492,12 +492,12 @@
             <a-text font="roboto" align="center" position="3.5 2.5 0" scale="2 2 2" value="Rename Route"></a-text>
             <a-text   position="1 1.25 0" value="Name: "></a-text>
             <a-input  position="2   1.25 0" width="3" value="value 1"></a-input>
-            <a-button position="5.6 1.25 0" onclick="renameActiveRoute(this.previousElementSibling.getAttribute('value'));this.parentEl.parentEl.components.form.setActive(false)"></a-button>
+            <a-button value="apply" position="5.6 1.25 0" onclick="renameActiveRoute(this.previousElementSibling.getAttribute('value'));this.parentEl.parentEl.components.form.setActive(false)"></a-button>
           </a-entity>
         </a-form>
 
         <a-form handgrip id="ui-config-aggregate" position="-1 -1.5 -2" active="false">
-          <a-plane-rounded id="3d-config-aggr" opacity=".5" width="6" height="3.1" radius="0.05" scale="0.3 0.3 0.3" color="grey">
+          <a-plane-rounded id="3d-config-aggr" opacity=".5" width="1.7" height="1" radius="0.05" color="grey">
           </a-plane-rounded>
           <a-entity scale=".3 .3 .3">
             <a-text     position="1.1 2.5 0" value="Expression language: "></a-text>
@@ -512,6 +512,20 @@
 
             <a-text  align="right" position="2 0.75 0" value="completionSize"></a-text>
             <a-input position="2.1 0.75 0" placeholder="Username" color="black" width="2" value="value 2"></a-input>
+          </a-entity>
+        </a-form>
+
+        <a-form handgrip id="ui-config-atlasmap" position="-1 -1.25 -2" active="false">
+          <a-plane-rounded id="3d-config-aggr" opacity=".5" width="1.8" height=".6" radius="0.05" color="grey">
+          </a-plane-rounded>
+          <a-entity scale=".3 .3 .3">           
+            <a-text     position="1.1 1.5 0" value="ADM file: "></a-text>
+            <a-dropdown position="3.1 1.5 0" width="2"
+                        menu='{"name":"dd-atlasmap","label":"atlasmapmenu","class":"ui","enabled":true,"menu":[{"label":"demo.adm"}]}'></a-dropdown>
+
+            <a-button enabled="false" value="Edit" position="5.0 1.5 0" onclick="atlasMapAdmEdit()"></a-button>
+            <a-button enabled="false" value="New..." position="5.0 1.0 0" onclick="atlasMapAdmNew()"></a-button>      
+            <a-button value="delete" position="5.3 0.3 0" onclick="deleteConfigActivity()"></a-button>      
           </a-entity>
         </a-form>
     `;

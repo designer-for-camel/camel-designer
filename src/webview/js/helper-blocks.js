@@ -344,9 +344,6 @@ function createLog(metadata)
     log.getElementsByTagName("a-text")[0].firstChild.setAttribute('value', '"'+metadata.definition.getAttribute('message')+'"');
   }
 
-  //test
-  //vscodePostMessage('atlasmap-start')
-
   return log
 }
 
@@ -694,7 +691,8 @@ function goLive(activity, givenPos, sources, scale, staticLink, parent, handleRe
 function syncEditor()
 {
   //only when it runs in VSCode
-  if ( top !== self ) { // we are in the iframe
+  //if ( top !== self ) { // we are in the iframe
+  if (runningAsVscodeWebview()) {
     if(syncEditorEnabled && !syncStartUpEnabled) {
       getCamelSource();
     }
@@ -705,9 +703,9 @@ function syncEditor()
 function syncMetadata()
 {
   //only when it runs in VSCode
-  if ( top !== self ) { // we are in the iframe
+  //if ( top !== self ) { // we are in the iframe
+  if (runningAsVscodeWebview()) {
     if(syncEditorEnabled && !syncStartUpEnabled) {
-      
       vscodePostMessage('metadata', {
         metadata: getMetadata()
       });

@@ -5,7 +5,8 @@
 function vscodePostMessage(command, payload)
 {
   //when it runs in VSCode
-  if ( top !== self && !syncStartUpEnabled)
+  // if ( top !== self && !syncStartUpEnabled)
+  if (runningAsVscodeWebview() && !syncStartUpEnabled)
   { // we are in the iframe
     vscode.postMessage({
         command: command,
@@ -13,6 +14,13 @@ function vscodePostMessage(command, payload)
     })
   }
   //return document.getElementById(routes[0]);
+}
+
+//returns true if instance is running in a VSCode webview
+//otherwise we assume it's running in a browser
+function runningAsVscodeWebview()
+{
+  return top !== self
 }
 
 //Adds the activity to the scene in ordered manner

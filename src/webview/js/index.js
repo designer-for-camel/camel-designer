@@ -195,6 +195,7 @@
       {
         console.info("... now using Blueprint XML namespace.")
         camelNamespace = CAMEL_NAMESPACE.blueprint
+        setCamelVersion2()
       }
 
       //sets Spring namespace
@@ -250,7 +251,11 @@
                   loadMetadata(message.metadata);
                   syncStartUpEnabled = false;
 
-                  //Once finished, we need to sync the changes, (new ID values may have been applied)
+                  //Once comms are back...
+                  //obtain available ADMs to list in configuration dropdown
+                  vscodePostMessage('atlasmap-get-adms')
+
+                  //we need to sync the changes, (new ID values may have been applied)
                   syncEditor();
                   break;
 
@@ -290,6 +295,13 @@
 
 
                   break;
+
+              case 'atlasmap-files-list':
+            
+                //update AtlasMap configuration dropdown
+                updateAtlasMapList(message.payload, message.newadm)
+
+                break;
           }
         });
 
@@ -1384,8 +1396,18 @@ let configObj = getActiveActivity()
       function switchConfigPane(newConfigPane)
       {
         let pane = document.getElementById(currentConfigPane);
-        pane.style.visibility = "hidden";
 
+        //deactivate current configuration pane
+        if(pane.localName == 'a-form'){
+          //3D pane deactivation
+          pane.setAttribute('active', false)
+        }
+        else{
+          //2D pane deactivation
+          pane.style.visibility = "hidden";
+        }
+
+        //set new pane as current
         currentConfigPane = newConfigPane;
 
         //hide default (empty) configuration panel 
@@ -1393,26 +1415,22 @@ let configObj = getActiveActivity()
           return
         }
 
+        //obtain 2D/3D pane from its ID
+        pane = document.getElementById(currentConfigPane);
+
         //New 3D configuration forms
-        if(newConfigPane == 'ui-config-aggregate'){
-          //obtain 3D configuration form
-          pane = document.getElementById(currentConfigPane);
+        if(pane.localName == 'a-form'){
           //obtain activity to configure
           let activity = getActiveActivity()
           //if activity has a definition component
           if(activity.components.definition){
             //load configuration into form
-            pane.components.form.configure(getActiveActivity())
+            pane.components.form.configure(activity)
           }
           return
         }
-        else{
-          //ensure the 3D configuration panel is deactivated
-          pane = document.getElementById('ui-config-aggregate')
-          pane.setAttribute('active', false)          
-        }
 
-        pane = document.getElementById(currentConfigPane);
+        //pane = document.getElementById(currentConfigPane);
         pane.style.visibility = "visible";
 
         //Added auto-focus for quick editing
@@ -1511,7 +1529,12 @@ case 'split-start':
 case 'aggregate-start':
     newConfigPane = "ui-config-aggregate"
     break;
-    
+
+//Simpler 3D configuration panel
+case 'atlasmap':
+    newConfigPane = "ui-config-atlasmap"
+    break;
+
 case 'catch-start':
     newConfigPane = "config-catch";
     updateConfigCatch();

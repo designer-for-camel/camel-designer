@@ -410,6 +410,26 @@ function createMenu3D(configuration)
                 label:    'call (direct)',
                 function: 'createDirect',                
             },
+
+
+            {
+                label: 'transform >',
+                submenu: [
+                    {
+                        label:    'AtlasMap',
+                        function: 'createAtlasMap',                
+                    },
+                    // {
+                    //     label:    'mock ADMs',
+                    //     function: 'updateAtlasMapList',                
+                    // },
+                    // {
+                    //     label:    'mock ADMs 2',
+                    //     function: 'updateAtlasMapList2',                
+                    // },
+                ]
+            },
+
             {
                 label: 'choice >',
                 submenu: [
@@ -531,6 +551,10 @@ function createMenu3D(configuration)
         class: 'producer', 
         enabled: false, 
         menu: [
+                // {
+                //     label:    'AtlasMap',
+                //     function: 'createAtlasMap',                
+                // },
             {
                 label:    'call (direct)',
                 function: 'createDirect',                
@@ -865,7 +889,7 @@ function createMenu3Dcontrol()
                     },
 
                 ]             
-            },
+        },
             {
                 label:    '  code  >',
                 submenu: [
@@ -886,6 +910,19 @@ function createMenu3Dcontrol()
                         function: 'setCamelVersion2Blueprint'
                     }
                 ]             
+            },
+        ]
+    }
+
+    let defMenuHelp  = 
+    {
+        name: 'help...',
+        class: 'help', 
+        enabled: true, 
+        menu: [
+            {
+                label:    'how to...',
+                function: 'openDocumentation',                
             },
         ]
     }
@@ -984,14 +1021,14 @@ function createMenu3Dcontrol()
     let menuRoutes = createMenuButton(defMenuRoutes)
     menuRoutes.setAttribute('position', '.5 0 0')
 
-    // let menuSet = createMenuButton(defMenuSet)
-    // menuSet.setAttribute('position', '1.5 0 0')
+    let menuHelp = createMenuButton(defMenuHelp)
+    menuHelp.setAttribute('position', '1.5 0 0')
 
 
     //create menu container
     let menu3D = document.createElement("a-entity")
     menu3D.appendChild(menuRoutes)
-    // menu3D.appendChild(menuSet)
+    menu3D.appendChild(menuHelp)
 
     //rotate handle, and counter-rotate menu (to compensate parent's rotation)
     handle.setAttribute('rotation', '90 0 0')

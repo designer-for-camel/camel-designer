@@ -64,7 +64,8 @@ AFRAME.registerComponent('tracing', {
         ///////////////////////////////////////////////////////
         // when it runs in VSCode, http in/out is delegated, as the webview has restrictions
         ///////////////////////////////////////////////////////
-        if ( top !== self && !syncStartUpEnabled)
+        //if ( top !== self && !syncStartUpEnabled)
+        if ( runningAsVscodeWebview() && !syncStartUpEnabled)
         { // we are in the iframe
             vscode.postMessage({
                 command: 'tracing-enable',
@@ -114,7 +115,8 @@ AFRAME.registerComponent('tracing', {
         ///////////////////////////////////////////////////////
         // when it runs in VSCode, http in/out is delegated, as the webview has restrictions
         ///////////////////////////////////////////////////////
-        if ( top !== self && !syncStartUpEnabled)
+        //if ( top !== self && !syncStartUpEnabled)
+        if ( runningAsVscodeWebview() && !syncStartUpEnabled)
         { // we are in the iframe
             vscode.postMessage({
                 command: 'tracing-poll-traces',

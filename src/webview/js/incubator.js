@@ -2528,6 +2528,9 @@ function defineDataFormatAsOneLiner(definition)
         // start.setAttribute('definition', {element: fullDefinition})
         start.setAttribute('definition', null)
         start.components.definition.setDefinition(fullDefinition)
+        
+        //setup form configurator for Aggregator
+        createAggregatorConfigurator()
 
         //As we're creating many boxes and re-positioning, the camera is all over the place
         //so we reset it where we want it to be 
@@ -2541,6 +2544,86 @@ function defineDataFormatAsOneLiner(definition)
       //now we're done, we switch back on, and we sync.
       syncEditorEnabled = true;
       syncEditor();
+    }
+
+    //creates a 3D panel configurator for the Aggregator EIP
+    //this function is intimately related to the 3D Form definition for Aggregators
+    function createAggregatorConfigurator(){
+
+        let form = document.getElementById('ui-config-aggregate')
+
+        //if the form already has its configurator, nothing to do
+        if(form.components.form.configurator){
+            return
+        }
+
+        let configurator = {configure: function(form) {
+
+            //here 'this' is the 1st argument from the dynamic call 'configure.call(activity, form)'
+            let activity = this
+
+            //get UI elements
+            let list   = form.querySelector('a-dropdown')
+            let saxon   = form.querySelector('a-checkbox')
+            let inputs = Array.from(form.querySelectorAll('a-input'))
+      
+            //get language
+            let language = activity.components.expression.getLanguage()
+      
+            //set UI checkbox
+            saxon.setAttribute('visible', (language == "xpath"))
+            saxon.setAttribute('checked', activity.components.expression.getLanguageAttributes().saxon == true)
+      
+            //set UI language
+            list.setAttribute('value', language)
+      
+            //set UI actions on dropdown selection
+            list.onclick = function(){
+              let language = list.getAttribute('value')
+              
+              //update language
+              activity.components.expression.setLanguage(language)
+              
+              //show/hide checkbox
+              list.nextElementSibling.setAttribute('visible', language == 'xpath')
+      
+              syncEditor()
+            }
+      
+            //set UI actions checkbox selection
+            saxon.onclick = function(){
+              //is it checked
+              let checked = saxon.getAttribute('checked') == "true"
+      
+              //update activity parameter
+              activity.components.expression.setLanguageAttribute('saxon', checked)
+      
+              syncEditor()
+            }
+      
+            //set UI correlation expression
+            inputs[0].setAttribute('value', activity.components.expression.getValue())
+            inputs[0].components.input.setFunctionOnUpdate(function(){
+              activity.components.expression.setValue(inputs[0].getAttribute('value'))
+            })
+      
+            //set UI attributes
+            inputs[1].setAttribute('value', activity.components.definition.getAttributes().strategyRef)
+            inputs[1].components.input.setFunctionOnUpdate(function(){
+              console.log('strategy action')      
+              activity.components.definition.setAttribute('strategyRef', inputs[1].getAttribute('value'))
+            })
+      
+            inputs[2].setAttribute('value', activity.components.definition.getAttributes().completionSize)
+            inputs[2].components.input.setFunctionOnUpdate(function(){
+              console.log('strategy action')      
+              activity.components.definition.setAttribute('completionSize', inputs[2].getAttribute('value'))
+            })
+          } 
+        }       
+
+        //set the configurator in the form
+        form.components.form.setConfigurator(configurator)
     }
 
     function createAggregateAnimation(){
@@ -2929,3 +3012,237 @@ function editLabel(label){
       syncEditorEnabled = true;
       syncEditor();
     }
+
+//Creates an AtlasMap activity
+function createAtlasMap(definition)
+{
+    if(camelVersion == CAMEL_RELEASE.v3)    {
+        definition = definition || new DOMParser().parseFromString('<to uri="atlasmap:demo.adm"/>', "text/xml").documentElement
+    }
+    else{
+        definition = definition || new DOMParser().parseFromString('<to uri="atlas:demo.adm"/>', "text/xml").documentElement
+    }
+    definition = {definition: definition, icon: "#icon-atlasmap"}
+
+    //default type will be the scheme of the uri (e.g. 'file' in uri="file:name")
+    type = definition.definition.getAttribute('uri').split(":")[0];
+
+    //create
+    definition.type = 'atlasmap'
+    let activity = createActivity(definition);
+
+    //add uri component (and load definition)
+    activity.setAttribute('uri', {position: "0 -0.7 0", configMethod: []}) //no need for config method
+    activity.components.uri.setDefinition(definition.definition)
+
+    //add component necessary for 3D configuration forms
+    activity.setAttribute('definition', null)
+    activity.components.definition.setDefinition(definition.definition)
+
+    //setup form configurator for atlasmap
+    createAtlasMapConfigurator()
+
+    if(definition.icon){
+        //no type label
+        type=''
+
+        var img = document.createElement('a-image');
+        activity.appendChild(img);
+        img.setAttribute('side', 'double');
+        img.setAttribute('src', definition.icon);
+        activity.setAttribute('opacity', '.2');
+    }
+
+    //this is the label inside the geometry (activity descriptor)
+    var text = createText();
+    activity.appendChild(text);
+    text.setAttribute('value', type);
+    text.setAttribute('color', 'white');
+    text.setAttribute('align', 'center');
+    text.setAttribute('side', 'double');
+
+    goLive(activity);
+
+    //obtain available ADMs to list in configuration dropdown
+    vscodePostMessage('atlasmap-get-adms')
+
+    return activity
+}
+
+
+//creates a 3D panel configurator for the AtlasMap activity
+//this function is intimately related to the 3D Form definition for AtlasMap
+function createAtlasMapConfigurator(){
+
+    let form = document.getElementById('ui-config-atlasmap')
+
+    //if the form already has its configurator, nothing to do
+    if(form.components.form.configurator){
+        return
+    }
+    
+    let configurator = {configure: function(form) {
+
+        //here 'this' is the 1st argument from the dynamic call 'configure.call(activity, form)'
+        let activity = this
+
+        //get UI elements
+        let list   = form.querySelector('a-dropdown')
+
+        //set UI language
+        list.setAttribute('value', activity.components.uri.getTarget())
+
+        //set UI actions on dropdown selection
+        list.onclick = function(){
+            let adm = list.getAttribute('value')
+            
+            activity.components.uri.setTarget(adm)
+
+            syncEditor()
+        }
+        } 
+    }       
+
+    //set the configurator in the form
+    form.components.form.setConfigurator(configurator)
+}
+
+//Invokes AtlasMap's extension to edit an exisiting data mapping definition
+function atlasMapAdmEdit()
+{
+    //obtain activity
+    let activity = getActiveActivity()
+
+    //obtain selected ADM
+    let adm = activity.components.uri.getTarget()
+
+    //invoke AtlasMap
+    vscodePostMessage('atlasmap-edit', {admfile: adm})
+}
+
+//Invokes the AtlasMap's extension to create a new data mapping definition
+function atlasMapAdmNew()
+{
+    vscodePostMessage('atlasmap-new')
+}
+
+
+//TEST function to inspect AtlasMap behaviour
+function updateAtlasMapList2(admlist)
+{
+    //set default list if none passed
+    admlist = admlist || [
+        // {"label":"maps/map2.adm"},
+        // {"label":"adm2.adm"},
+        // {"label":"adm3.adm"},
+        // {"label":"adm4.adm"}
+        ]
+
+        updateAtlasMapList(admlist, true)
+}
+
+//Updates the list of available ADMs in the AtlasMap configuration panel
+// - admlist: list of current ADM files in the workspace
+// - newadm: when true it indicates a new ADM file was created
+function updateAtlasMapList(admlist, newadm)
+{
+    //obtain the form
+    let form = document.getElementById('ui-config-atlasmap').children[1]
+
+    //we obtain the dropdown element
+    let list = form.querySelector('a-dropdown')
+
+    //the 'New' buttom is OFF by default. We switch ON when working with VSCode 
+    form.querySelectorAll('a-button')[0].setAttribute('enabled', true)
+    form.querySelectorAll('a-button')[1].setAttribute('enabled', true)
+
+    //set default list if none passed (when there is no interaction with the VS extension)
+    admlist = admlist || [
+                                {"label":"maps/map2.adm"},
+                                {"label":"adm2.adm"},
+                                {"label":"adm3.adm"}
+                                ]
+
+    //if the list is empty (no ADM files in the workspace), we include a demo entry
+    if(admlist.length == 0){
+        admlist.push({"label":"demo.adm"})
+    }
+
+    for (var entry in admlist){
+
+        let wrapcount = 20
+
+        if(admlist[entry].label.length > wrapcount){
+            wrapcount = admlist[entry].label.length + 1
+        }
+
+        //this helps to display the label in 1 single line
+        // admlist[entry]['labelWrapCount'] = admlist[entry].label.length + 1
+        admlist[entry]['labelWrapCount'] = wrapcount
+    }
+
+    //setup menu full structure
+    menu = {
+        "name":"dd-atlasmap",
+        "label":"atlasmapmenu",
+        "class":"ui",
+        "enabled":true,
+        "menu": admlist}
+
+    //keep current configuration
+    let oldMenu = list.components.dropdown.getMenuEntries()
+
+    //update the current dropdown menu with the new list
+    list.components.dropdown.setMenu(menu)
+
+    //if a new ADM was created
+    if(newadm){
+        //we compare old/new lists to determine which from the list is the new ADM file 
+        for (var i in oldMenu){
+            for (var j in admlist){
+                if(oldMenu[i] == admlist[j].label){
+                    admlist.splice(j,1) 
+                    break
+                }
+            }
+        }
+
+        //we assume the remaining file in the list is the new ADM
+        //when the user creates a new ADM file, we update the activity's configuration 
+        list.components.dropdown.setValue(admlist[0].label)
+        getActiveActivity().components.uri.setTarget(admlist[0].label)
+        
+        //as we're updating the activity's ADM, we synchorise the code
+        syncEditor();
+        return
+    }
+
+    //when NOT a new ADM file, and...
+    //when we update the dropdown menu, it's important to maintain the current
+    //ADM file the activity is using
+    list.components.dropdown.setValue(getActiveActivity().components.uri.getTarget())
+}
+
+//this function opens a documentation URL.
+function openDocumentation(code){
+
+    let url
+    code = code || "how-to"
+
+    switch(code) {
+
+        case 'how-to':
+            url = "https://github.com/designer-for-camel/camel-designer/blob/master/docs/how-to.md#how-to"
+            break;
+
+        default:
+            url = "https://github.com/designer-for-camel/camel-designer/blob/master/docs/how-to.md#how-to"
+    }
+
+    if(runningAsVscodeWebview()){
+        vscodePostMessage('documentation-url', {url: url})
+    }
+    else{
+        window.open(url)
+    }
+}

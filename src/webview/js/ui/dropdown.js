@@ -2,6 +2,7 @@ AFRAME.registerComponent('dropdown', {
     schema: {
         //menu: {}
         value: { type: "string", default: "" },
+        width: { type: "number", default: 1 },
         menu: {
             default: [],
             parse: function (value) {
@@ -16,6 +17,18 @@ AFRAME.registerComponent('dropdown', {
     init: function () {
 
         let menu = this.data.menu
+
+        this.setMenu(menu)
+    },
+    setMenu: function (menu) {
+
+        //if the dropdown was already pre-populated, we reset
+        if(this.el.firstChild)
+        {
+            this.el.removeChild(this.el.firstChild)
+        }
+
+        //let menu = this.data.menu
 
         let menuCount = Object.entries(menu.menu).length
 
@@ -32,14 +45,24 @@ AFRAME.registerComponent('dropdown', {
         setButtonEnabled(groupButton, menu.enabled)
     
         groupButton.setAttribute('depth', '.05')
-        groupButton.setAttribute('width', '1')
+        // groupButton.setAttribute('width', '1')
+        groupButton.setAttribute('width', this.data.width)
         groupButton.setAttribute('height', '.3')
         groupButton.setAttribute('animation__scale',         {property: 'opacity', dur: 0, to: '.6', startEvents: 'mouseenter'});
         groupButton.setAttribute('animation__scale_reverse', {property: 'opacity', dur: '0', to: '.4',   startEvents: 'mouseleave'});
     
+        // let atlasmapActivity = getActiveActivity()
+
+        // let ddlabel = menu.menu[0].label
+
+        // if(atlasmapActivity){
+        //     ddlabel = getActiveActivity().components.uri.getTarget()
+        // }
+
         //set label to menu button
         // appendLabel(groupButton, menu.name)
         let label = appendLabel(groupButton, menu.menu[0].label)
+        // let label = appendLabel(groupButton, ddlabel)
         label.setAttribute('color', 'white')
 
         //create menu options in a container
@@ -67,7 +90,7 @@ AFRAME.registerComponent('dropdown', {
 
             let menuItem = document.createElement('a-box')
             menuItem.setAttribute('depth', '.05')
-            menuItem.setAttribute('width', '1')
+            menuItem.setAttribute('width', this.data.width)
             menuItem.setAttribute('height', '.3')
             menuItem.setAttribute('color', 'grey')
             // menuItem.setAttribute('opacity', '.9')
@@ -80,7 +103,23 @@ AFRAME.registerComponent('dropdown', {
                 menuItem.classList.add(item.class)
                 menuItem.classList.add('menu-button')
             }
-        
+
+            //mark with label
+            let label = appendLabel(menuItem, item.label, item.labelWrapCount)
+            label.setAttribute('position', '0 0 .03')
+            
+            //event listener for menu option
+            menuItem.addEventListener('click', function(){       
+                
+                let dropdown = this.parentEl.parentEl.parentEl
+
+                //we set the value to the dropdown element
+                dropdown.setAttribute('value',this.firstElementChild.getAttribute('value'))
+                dropdown.components.dropdown.setWrapCount(this.firstElementChild.getAttribute('wrap-count'))
+
+            });
+
+/*
             //if the menu has a function
             if(item.function){
         
@@ -117,7 +156,7 @@ AFRAME.registerComponent('dropdown', {
             else{
                 appendLabel(menuItem, item.label)
             }
-        
+        */
             //add option to container
             menuContainer.appendChild(menuItem)
 
@@ -188,6 +227,20 @@ AFRAME.registerComponent('dropdown', {
 
 
     },
+
+    getMenuEntries: function() {
+
+        let entries = this.el.querySelectorAll("a-entity > a-box > a-text")
+
+        let menu = []
+
+        for(let i=0; i<entries.length; i++){
+            menu[i]=entries[i].getAttribute('value')
+        }
+
+        return menu
+    },
+
     update: function (oldData) {
         //at creation time there is no data, so we ignore the invocation
         if(Object.keys(oldData).length === 0){
@@ -205,6 +258,13 @@ AFRAME.registerComponent('dropdown', {
         labelSelectedOption.setAttribute('value', value)
     },
 
+    setWrapCount: function(value){
+        // this.parentEl.parentEl.firstElementChild.setAttribute('value', this.firstElementChild.getAttribute('value'))
+        let labelSelectedOption = this.el.firstChild.firstChild
+        labelSelectedOption.setAttribute('wrap-count', value)
+    },
+
+
     tick: function () {},
     remove: function () {},
     pause: function () {},
@@ -217,6 +277,7 @@ AFRAME.registerComponent('dropdown', {
     },
     mappings: {
         value: "dropdown.value",
+        width: "dropdown.width",
         menu: "dropdown.menu"
     }
   });

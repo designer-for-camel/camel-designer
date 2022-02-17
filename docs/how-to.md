@@ -6,8 +6,9 @@ This section describes how to perform some of the most common user actions with 
  - [Define REST definitions](#define-rest-definitions)
  - [Navigate the code](#navigate-the-code)
  - [Organise activities](#organise-activities)
- - [Working with Groups](#working-with-groups)
- - [Working with Try-Catch blocks](#working-with-try-catch-blocks)
+ - [Work with Groups](#work-with-groups)
+ - [Work with Try-Catch blocks](#work-with-try-catch-blocks)
+ - [Work with the AtlasMap activity](#work-with-the-atlasmap-activity)
  - [Trace Camel Exchanges](#trace-camel-exchanges)
  - [Extend menu options](#extend-menu-options)
 
@@ -104,7 +105,7 @@ The animation below illustrates how to detach/attach activities:
 
 <br>
 
-## Working with Groups
+## Work with Groups
 
 Certain EIP patterns may contain activities inside a *Group*, for example the *Split* pattern. Visually, these groups are represented in *Camel Designer* as boxes containing activities.
 
@@ -124,7 +125,7 @@ The animation below illustrates how to interact with a group of activities:
 
 <br>
 
-## Working with Try-Catch blocks
+## Work with Try-Catch blocks
 
 Camel Designer includes *Try-Catch* definitions (mapping to Camel's DSL *Try-Catch-Finally* blocks). They are visually represented as a collection of *Groups* (see section: [Working with Groups](#working-with-groups)), one for *Try* activities, a second one for *Catch* activities, and a final one for *Finally* activities.
 
@@ -137,6 +138,28 @@ To define the exceptions to catch, click on the *Catch* activity (*Catch* group)
 The animation below illustrates how to interact with a *Try-Catch* blocks:
 
 ![Exceptions](images/readme/vs-extension-exceptions.gif)  
+
+<br>
+
+
+## Work with the AtlasMap activity
+
+[AtlasMap](https://www.atlasmap.io/) is a visual data mapping editor to define Java, XML, CSV and JSON transformations interchangeably. Camel Designer integrates with AtlasMap's VSCode extension to create and edit mapping definitions.
+
+In Camel Designer, to add an AtlasMap activity, select the ```transform > AtlasMap``` option from the menu bar. This action will append a new AtlasMap activity after the currently selected activity (highlighted by a yellow ring). The configuration panel shows a default ```demo.adm``` selection. The dropdown list contains a list of available ADM (AtlasMap Data Mapping) files in your workspace.
+
+ - ### Edit an existing ADM file
+   From Camel Designer, edit (or open) an ADM in your workspace by selecting the ADM file from the dropdown list, and clicking ```edit```. This action will launch the AtlasMap viewer in a new tab and load the selected ADM definition.
+
+ - ### Create a new ADM file
+   From Camel Designer, create a new ADM file by clicking the button ```new```. This action will launch the AtlasMap extension, it will prompt you to select a workspace and the name of your ADM file, and finally will open the viewer with an empty mapping definition.
+
+   ![AtlasMap](images/readme/vs-extension-atlasmap.gif)  
+
+<br>
+
+> **Note:** \
+The ```delete``` button in the configuration panel deletes the activity only, it does **NOT** delete the ADM file in your workspace.
 
 <br>
 

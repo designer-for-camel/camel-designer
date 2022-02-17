@@ -5,8 +5,28 @@ AFRAME.registerComponent('form', {
     },
     init: function () {
 
-      this.interactiveElements = Array.from(this.el.querySelectorAll('.interactive'))
-      this.setActive(this.data.active)
+      let height = this.el.firstElementChild.getAttribute("height")
+      let scale = this.el.children[1].getAttribute("scale")
+      let scaley = this.el.firstElementChild.object3D.scale.y
+
+      let helpButton = document.createElement('a-button')
+      helpButton.setAttribute("scale", scale)
+      helpButton.setAttribute("value", "?")
+      helpButton.setAttribute("width", ".3")
+      helpButton.setAttribute("wrapcount", "2")
+      // helpButton.setAttribute("position", ".35 " + ((height*scaley)-.3) + " 0")
+      helpButton.setAttribute("position", ".1 " + ((height)-.1) + " 0")
+      helpButton.setAttribute("onclick", "openDocumentation()")
+      helpButton.setAttribute("enabled", "false")
+
+      //we append it to the round-plane
+      this.el.children[0].appendChild(helpButton)   
+
+//<a-button value="?" width=".3" wrapcount="2" position=".35 1.8 0" onclick="openDocumentation()"></a-button>
+            
+      //keep record of all interactive elements
+      //this.interactiveElements = Array.from(this.el.querySelectorAll('.interactive'))
+      //this.setActive(this.data.active)
     },
 
     setActive: function(active){
@@ -14,8 +34,17 @@ AFRAME.registerComponent('form', {
         this.interactiveElements.forEach(element => {
           element.classList.add('interactive')
         });
+
+        //hack: make '?' (help) button also to be interactive
+        //on initialisation, the query to find interactive elements does not find the help button
+        //so we ensure on activation it always is interactive
+        this.el.children[0].firstElementChild.setAttribute("enabled", "true")
       }
       else{
+
+        //keep record of all interactive elements
+        this.interactiveElements = Array.from(this.el.querySelectorAll('.interactive'))
+
         //while inactive, ensure elements are not interactive
         this.interactiveElements.forEach(element => {
           element.classList.remove('interactive')
@@ -26,9 +55,25 @@ AFRAME.registerComponent('form', {
       this.el.setAttribute('visible', active)
     },
 
-    // setInteractive: function(interactive)
-
     configure: function(activity) {
+
+      this.currentActivity = activity
+
+      this.el.setAttribute('active',true)
+
+      this.configurator.configure.call(activity, this.el)
+    },
+
+    setConfigurator: function(configurator) {
+
+      if(this.configurator)
+        return
+
+      this.configurator = configurator
+    },
+
+/*
+    configure_DEPRECATED: function(activity) {
 
       this.currentActivity = activity
 
@@ -92,6 +137,8 @@ AFRAME.registerComponent('form', {
         activity.components.definition.setAttribute('completionSize', inputs[2].getAttribute('value'))
       })
     },
+*/
+
 
     update: function () {
       console.log('form update')
