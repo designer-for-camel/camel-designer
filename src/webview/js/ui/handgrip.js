@@ -23,7 +23,7 @@ AFRAME.registerComponent('handgrip', {
     init: function (data) {
         this.el.setAttribute('geometry','primitive: cylinder; height: 0.01; radius: 0.1;')
         this.el.setAttribute('material','color: grey')
-        this.el.getObject3D('mesh').rotateX(90)
+        this.el.getObject3D('mesh').rotateX(Math.PI/2)
 
         this.el.classList.add('interactive')
         this.el.setAttribute('clickable','')

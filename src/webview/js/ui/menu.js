@@ -541,7 +541,12 @@ function createMenu3D(configuration)
             //     label:    "pipeline",
             //     function: "createPipeline"                
             // }
+            {
+                label:    "mapHTTP",
+                function: "createMapHttp"                
+            }
 
+            
         ]
     }
 
@@ -1113,3 +1118,38 @@ function createMenu3Dcontrol()
   }
 
 
+/*
+  AFRAME.registerComponent('menu', {
+    schema: {
+        //menu: {}
+        // value: { type: "string", default: "" },
+        // width: { type: "number", default: 1 },
+        // wrapcount: { type: "number" },
+        // enabled: { type: "boolean", default: true }
+    },
+    init: function () {
+
+        let menu = this.data.menu
+
+    },
+    update: function (oldData) {
+    },
+    tick: function () {},
+    remove: function () {},
+    pause: function () {},
+    play: function () {}
+  });
+  
+  AFRAME.registerPrimitive('a-menu', {
+    defaultComponents: {
+      button: {}
+    },
+    mappings: {
+        // menu: "dropdown.menu"
+        // value: "button.value",
+        // width: "button.width",
+        // wrapcount: "button.wrapcount",
+        // enabled: "button.enabled"
+    }
+  });
+  */

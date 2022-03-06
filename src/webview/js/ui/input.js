@@ -60,58 +60,56 @@ AFRAME.registerComponent('input', {
 
   init: function () {
 
-    //create button entity
+    //To display an input box with a cursor (blinker) when editing
+    //this component has 3 main parts:
+    // - white background
+    // - text
+    // - text + blinker
+    // Due to the nature of fonts giving character different sizes, it is very difficult to calculate the blinker's position.
+    // The strategy to overcome this problem is to have 2 identical labels, except the second ends with the cursor character '|'.
+    // Then, when blinking, we visually alternate the 2 labels.
+
+    //create white background for input box
     let input = document.createElement('a-plane-rounded')
-    // input.setAttribute('value', 'white')
     input.setAttribute('color', 'white')
     input.setAttribute('width', this.data.width)
     input.setAttribute('height', '.3')
     input.setAttribute('radius', '.05')
     input.setAttribute('position', '0 -.15 .003')
 
-
+    //create primary label for input box
     let label = document.createElement('a-text')
     label.setAttribute('value', this.data.value);
     input.appendChild(label)
-    // let label = appendLabel(input, this.data.value)
     label.setAttribute('position', "0 0.15 0.003")
     label.setAttribute('align', 'left');
     label.setAttribute('color', 'black');
     label.setAttribute('wrap-count', '')
     this.label = label
 
-    // UiInput.focus(label)
-    // label.addEventListener('uiinputsubmit', listener);
-
-    // input.appendChild(label)
-
-
+    //create secondary label with blinker
     let blinker = document.createElement('a-text')
-    // blinker.setAttribute('value', this.data.value);
     input.appendChild(blinker)
-    // let blinker = appendLabel(input, "|")
     blinker.setAttribute('position', "0 0.15 0.003")
     blinker.setAttribute('visible', 'false')
-    // blinker.setAttribute('scale', '1.05 1.05 1');
     blinker.setAttribute('align', 'left');
     blinker.setAttribute('color', 'black');
     blinker.setAttribute('wrap-count', '')
     this.blinker = blinker
-    input.appendChild(blinker)
+
+    //not visible by default
     this.blinkerVisible = false
-    // this.blinkerTick()
 
-
+    //add input to component
     this.el.appendChild(input)
 
-    // UiInput.focus(label)
-    // UiInput.setValue(this.data.value)
-
+    //make interactive (clickable)
     input.classList.add('interactive')
-    // input.setAttribute('clickable', '')
 
+    //helper
     let that = this
 
+    //give focus when clicked
     this.el.addEventListener('click', function() {
         console.log('input click: '+that.id)
         that.focus(that)
@@ -124,28 +122,30 @@ AFRAME.registerComponent('input', {
       this.blink()
     }
     else{
+      //restore primary label
+      component.label.setAttribute('visible', 'true')
       component.blinker.setAttribute('visible', 'false')
       this.blinkerVisible = false
     }
-
-    let l = component.blinker.getAttribute('visible')
-    // console.log("blinker: "+l)
   },
   
   focus: function(input){
-    // return this.label.getAttribute('value')
     input.blinker.setAttribute('visible', 'true')
-    // UiInput.focus(input)
     UiInput.focus(this.el)
     this.blink()
-    document.getElementById('main-camera').setAttribute('wasd-controls-enabled', false)
 
+    //when user edits input, we need to ensure WASD controls are disabled
+    // document.getElementById('main-camera').setAttribute('wasd-controls-enabled', false)
+    document.getElementById('rig').setAttribute('wasd-controls-enabled', false)
   },
 
   unfocus: function(){
-    document.getElementById('main-camera').setAttribute('wasd-controls-enabled', true)
+    //when editing ends, we can restore WASD controls
+    // document.getElementById('main-camera').setAttribute('wasd-controls-enabled', true)
+    document.getElementById('rig').setAttribute('wasd-controls-enabled', true)
 
-    // return this.label.getAttribute('value')
+    //restore primary label
+    this.label.setAttribute('visible', 'true')
     this.blinker.setAttribute('visible', 'false')
   },
 
@@ -220,7 +220,10 @@ AFRAME.registerComponent('input', {
 
       // component.blinker.setAttribute('position', position+" 0.28 0")
       component.blinker.setAttribute('value', value+"|")
+
+      //replace primary label with secondary
       component.blinker.setAttribute('visible', 'true')
+      component.label.setAttribute('visible', 'false')
       this.blinkerVisible = true
   },
 

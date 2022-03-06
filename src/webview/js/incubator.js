@@ -1741,7 +1741,13 @@ function createActivityGroup(groupName, labelStart, labelEnd, definition, connec
 
   //create root activity  
   let rootActivity = createActivity({type: typeStart, scale: scale, detachable: false});
+
+  //we make the group start activity static
+  //ATTENTION: removing the DOM attribute does not remove internally the a-frame component
   rootActivity.removeAttribute('dragndrop')
+
+  //we need to manually flush, otherwise further checks on the component will be corrupt/inaccurate/wrong
+  rootActivity.components.dragndrop.flushToDOM();
 
   //these classes help parenting and redrawing links
   rootActivity.classList.add('group-start')
@@ -2910,6 +2916,10 @@ function manageUI(){
     //obtain MENU bar
     let handle = document.getElementById("handle");
 
+    //seems like sometimes during HTML intialisation the handle has not loaded yet
+    // if(!handle)
+        // return
+
     //place item as per proportions on screen
     setUiItemLocation(handle, .75, .95)
 
@@ -2982,8 +2992,8 @@ function editLabel(label){
         if(!definition)
         {
             //default definition if not given
-            // definition = new DOMParser().parseFromString('<pipeline><log message="split message"/></pipeline>', 'application/xml').documentElement;
-            definition = new DOMParser().parseFromString('<pipeline></pipeline>', 'application/xml').documentElement;
+            definition = new DOMParser().parseFromString('<pipeline><log message="split message"/></pipeline>', 'application/xml').documentElement;
+            // definition = new DOMParser().parseFromString('<pipeline></pipeline>', 'application/xml').documentElement;
         }
     
         //we keep a copy of the full definition
@@ -3246,3 +3256,23 @@ function openDocumentation(code){
         window.open(url)
     }
 }
+
+
+
+//EXPERIMENTAL =====================
+
+function createMapHttp(definition)
+{
+    definition = definition || new DOMParser().parseFromString('<to uri="http://demoserver:80/resource"/>', "text/xml").documentElement
+    // definition = definition || new DOMParser().parseFromString('<pipeline><to uri="http://demoserver:80/resource"/></pipeline>', "text/xml").documentElement
+    // definition = definition || new DOMParser().parseFromString('<pipeline><log message="split message"/></pipeline>', 'application/xml').documentElement;
+
+    let activity = createGenericEndpointTo({definition: definition})
+
+    activity.setAttribute("mapping","")
+    activity.setAttribute('processor-type', "map-http");
+
+
+    return activity
+}
+

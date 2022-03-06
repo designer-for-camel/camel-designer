@@ -10,7 +10,9 @@ AFRAME.registerComponent('inputlistener', {
 
         // document.addEventListener('keydown', this.notify);
         // document.addEventListener('keyup', this.notify);
-        document.addEventListener('keypress', this.notify);
+
+        //TO DO: 'keypress' is deprecated, should be updated with 'keydown'
+        document.addEventListener('keypress', this.notify); //keypress registers character values (e.g. arrow keys don't trigger keypress)
         document.addEventListener('keydown', this.backspace);
 
         this.that = this
@@ -41,6 +43,11 @@ AFRAME.registerComponent('inputlistener', {
     //when this function executes', 'this' references DOCUMENT
     //to update component variables, first the component needs to be found
     notify: function(event) {
+
+        //user might be pressing keys without having focussed on any 3D input box
+        if(UiInput.getActiveElement() == null){
+            return
+        }
 
         console.log("inputlistener: "+event.type+"/"+event.key)
         console.log("element with focus: "+UiInput.activeElement.tagName)
@@ -76,6 +83,11 @@ AFRAME.registerComponent('inputlistener', {
     backspace: function(event) {
 
         console.log("inputlistener backspace: "+event.type+"/"+event.key)
+
+        //user might be pressing keys without having focussed on any 3D input box
+        if(UiInput.getActiveElement() == null){
+            return
+        }
 
         if(event.key == "Backspace"){
             let el = UiInput.getActiveElement()

@@ -296,6 +296,16 @@ function createActivity(metadata)
   if(dynamic){
     newActivity.setAttribute('dynamic','')
   }
+
+        //experimental
+        // let previous = getActiveActivity()
+        // if(previous){
+        //   var rope = document.createElement('a-rope');
+        //   rope.setAttribute("start", previous.id)
+        //   rope.setAttribute("end", newActivity.id)
+        //   getActiveRoute().appendChild(rope)
+        // }
+
   return newActivity;
 }
 

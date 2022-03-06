@@ -1,0 +1,44 @@
+ref:
+    https://www.videlibri.de/cgi-bin/xidelcgi
+
+
+<data>
+{
+  "f1":"v1",
+  "f2":"v2",
+  "f3":{"f4":"v4","f5":"v5"},
+  "f6":[1,2,"3"],
+  "f7":[{"f8":"v8"},{"f9":"v9"}],
+  "f10":[1,"2",{"f11":"v11"}]  
+}
+</data>
+
+
+<map xmlns="http://www.w3.org/2005/xpath-functions">
+  <string key="f1">v1</string>
+  <string key="f2">v2</string>
+  <map key="f3">
+    <string key="f4">v4</string>
+    <string key="f5">v5</string>
+  </map>
+  <array key="f6">
+    <number>1</number>
+    <number>2</number>
+    <string>3</string>
+  </array>
+  <array key="f7">
+    <map>
+      <string key="f8">v8</string>
+    </map>
+    <map>
+      <string key="f9">v9</string>
+    </map>
+  </array>
+  <array key="f10">
+    <number>1</number>
+    <string>2</string>
+    <map>
+      <string key="f11">v11</string>
+    </map>
+  </array>
+</map>

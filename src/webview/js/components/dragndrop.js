@@ -35,7 +35,9 @@ AFRAME.registerComponent("clickable", {
                                             }
 
                                             //activate dragging
-                                            this.el.addState("dragging");
+                                            if(this.el.components.dragndrop){
+                                                this.el.addState("dragging");
+                                            }
 
                                             //SHIFT + CLICK = DETACH
                                             if(this.el.components.detachable && this.el.components.detachable.shiftPressed)
@@ -50,13 +52,14 @@ AFRAME.registerComponent("clickable", {
                                         if (this.el.is("dragging")) {
                                             this.el.removeState("dragging");
 
-                                            //special case for choice activities:
-                                            //repositioning first choice activity may change the order of conditions in the code
-                                            let preceding = getPreviousActivity(this.el)
-                                            if(preceding && preceding.getAttribute('processor-type') == 'choice-start'){
-                                                syncEditor()
+                                            if(!this.el.components.dragndrop.data.standalone){
+                                                //special case for choice activities:
+                                                //repositioning first choice activity may change the order of conditions in the code
+                                                let preceding = getPreviousActivity(this.el)
+                                                if(preceding && preceding.getAttribute('processor-type') == 'choice-start'){
+                                                    syncEditor()
+                                                }
                                             }
-
                                             syncMetadata()
                                         }
                                     }
@@ -72,6 +75,12 @@ AFRAME.registerComponent("clickable", {
                                     //REST methods/directs should stop propagation as their parent also react to clicks
                                     if(this.el.hasAttribute('method') || this.el.hasAttribute('rest-direct')){
                                         e.stopPropagation()
+                                    }
+
+                                    //ignore event if event originates in a mapper
+                                    //this prevents camera movement from the command below.
+                                    if(e.target.closest('a-map-tree')){
+                                        return
                                     }
 
                                     //This check prevents an error thrown when detaching/reattaching activities
@@ -123,7 +132,16 @@ AFRAME.registerComponent("clickable", {
 // - and we use the concept of 'similar triangles' to calculate the new coordinates X and Y
 AFRAME.registerComponent("dragndrop", {
     dependencies: ["clickable"],
+    
+    schema: {
+        standalone: {default: false}
+        // standalone: {type: 'boolean', default: false}
+      },
+
     init: function() {
+
+        //drag'n'drop elements are set interactive by default
+        this.el.classList.add('interactive')
 
         // this.range = 0;
         // this.dist = 0;
@@ -156,6 +174,79 @@ AFRAME.registerComponent("dragndrop", {
         //                  |-translation-|
         this.translation= {x: 0, y: 0}
         
+
+        //select configuration panel
+        this.stateHandler = e => {
+
+            //if the dragging state has been just added we initialise variables
+            if (e.detail == "dragging") {
+                
+                //when it is in a group and has a frame
+                if(this.groupFrame)
+                {
+                    //we keep its original height
+                    this.originalHeight = this.groupFrame.getAttribute('height')
+                    this.originalPosY   = this.groupFrame.object3D.position.y
+                }
+
+                //we obtain the Raycaster's direction vector
+                this.updateDirection()
+                
+                //We use the concept of 'similar triangles' to calculate the new coordinates
+                //The Z axis helps us to obtain the factor to use to calculate X and Y
+                let relation
+                if(this.isCameraChild){
+                    relation = this.el.object3D.position.z / this.direction.z
+                }
+                else{
+
+                    if(this.el.sceneEl.is('vr-mode')){
+
+                        let controllerPosition = new THREE.Vector3()
+                        document.getElementById('myvrcontroller').object3D.getWorldPosition(controllerPosition)
+
+                        // relation = -(controllerPosition.z / this.direction.z)
+
+                        let targetWorldPosition = new THREE.Vector3()
+                        this.el.object3D.getWorldPosition(targetWorldPosition)
+
+                        relation = Math.abs((controllerPosition.z-targetWorldPosition.z) / this.direction.z)
+                    }
+                    else{
+                        // relation = -(this.el.sceneEl.camera.el.object3D.position.z / this.direction.z)
+                        // relation = -(this.el.sceneEl.camera.el.parentElement.object3D.position.z / this.direction.z)
+
+                        let cameraWorldPosition = new THREE.Vector3()
+                        let targetWorldPosition = new THREE.Vector3()
+                        this.el.sceneEl.camera.el.object3D.getWorldPosition(cameraWorldPosition)
+                        this.el.object3D.getWorldPosition(targetWorldPosition)
+        
+                        relation = Math.abs((cameraWorldPosition.z-targetWorldPosition.z) / this.direction.z)
+
+                    }
+                }
+
+                //variable to take in consideration inner coordinates (entities inside entities)
+                let childShift = {x: 0, y: 0}
+                
+                //if entity is a child of a parent entity 
+                if(this.el.parentNode.tagName == "A-BOX")
+                {
+                    //we add up the parent's coordinates
+                    childShift.x = this.el.parentNode.object3D.position.x
+                    childShift.y = this.el.parentNode.object3D.position.y
+                }
+             
+                //the resulting translation is calculated from the starting coordinates to the new coordinates + SHIFT
+                this.translation.x = this.el.object3D.position.x - (this.direction.x * relation) + childShift.x
+                this.translation.y = this.el.object3D.position.y - (this.direction.y * relation) + childShift.y
+            }
+        }
+        //we register a listener to react to the event 'stateadded'
+        this.el.addEventListener("stateadded", this.stateHandler)
+
+
+/*
         //we register a listener to react to the event 'stateadded'
         this.el.addEventListener("stateadded", e => {
 
@@ -212,7 +303,7 @@ AFRAME.registerComponent("dragndrop", {
                 this.translation.y = this.el.object3D.position.y - (this.direction.y * relation) + childShift.y
             }
         })
-
+*/
         //we initialise variables
         this.direction = new AFRAME.THREE.Vector3();
         this.target = new AFRAME.THREE.Vector3();
@@ -270,13 +361,23 @@ AFRAME.registerComponent("dragndrop", {
             if(this.el.sceneEl.is('vr-mode')){
                 let controllerPosition = new THREE.Vector3()
                 document.getElementById('myvrcontroller').object3D.getWorldPosition(controllerPosition)
-                relation = -(controllerPosition.z / this.direction.z)
+                // relation = -(controllerPosition.z / this.direction.z)
 
-                // relation = -(document.getElementById('myvrcontroller').object3D.position.z / this.direction.z)
+                let targetWorldPosition = new THREE.Vector3()
+                this.el.object3D.getWorldPosition(targetWorldPosition)
+
+                relation = Math.abs((controllerPosition.z-targetWorldPosition.z) / this.direction.z)
             }
             else{
                 // relation = -(this.el.sceneEl.camera.el.object3D.position.z / this.direction.z)
-                relation = -(this.el.sceneEl.camera.el.parentElement.object3D.position.z / this.direction.z)
+                // relation = -(this.el.sceneEl.camera.el.parentElement.object3D.position.z / this.direction.z)
+
+                let cameraWorldPosition = new THREE.Vector3()
+                let targetWorldPosition = new THREE.Vector3()
+                this.el.sceneEl.camera.el.object3D.getWorldPosition(cameraWorldPosition)
+                this.el.object3D.getWorldPosition(targetWorldPosition)
+
+                relation = Math.abs((cameraWorldPosition.z-targetWorldPosition.z) / this.direction.z)
             }
 
 
@@ -392,7 +493,8 @@ AFRAME.registerComponent("dragndrop", {
             }
 
             //if not a REST component (they don't have links to update)
-            if( ! this.el.hasAttribute('rest-dsl')){
+            // if( ! this.el.hasAttribute('rest-dsl')){
+            if( !this.data.standalone && ! this.el.hasAttribute('rest-dsl')){
                 this.adjustLinks();
             }
         }
@@ -460,6 +562,12 @@ AFRAME.registerComponent("dragndrop", {
     //         }
     //     }        
     // }
+
+    
+    remove: function () {
+        //clean event listeners
+        this.el.removeEventListener("stateadded", this.stateHandler)
+    },
 
 
 });

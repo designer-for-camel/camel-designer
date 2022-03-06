@@ -177,7 +177,14 @@ function getActiveActivity()
     return document.querySelector("#selector-rest-activity").parentNode
   }
 
-  return document.querySelector("#selector").parentNode
+  let selector = document.querySelector("#selector")
+
+  if(selector){
+    return document.querySelector("#selector").parentNode
+  }
+  else{
+    return
+  }
 }
 
 //Returns the activity with circle around

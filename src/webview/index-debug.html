@@ -53,6 +53,14 @@
     <script src="js/ui/inputlistener.js"></script>
     <script src="js/components/plane-rounded.js"></script>
     <script src="js/components/definition.js"></script>
+    
+    <script src="js/components/rope.js"></script>
+    <script src="js/mapper/mappable.js"></script>
+    <script src="js/mapper/map-entry.js"></script>
+    <script src="js/mapper/map-tree.js"></script>
+    <script src="js/mapper/mapping.js"></script>
+    <script src="js/ui/textarea.js"></script>
+
  
     <script src="js/ui/utils.js"></script>
     <script src="js/ui/input.js"></script>
@@ -470,13 +478,68 @@
       <a-sky color="black"></a-sky>
 
 
-      <a-entity id="rig">
-        <a-camera id="main-camera" look-controls-enabled="false" position="0 0 0" wasd-controls-enabled="true"></a-camera>
-
+      <!-- <a-entity id="rig" > -->
+      <a-entity id="rig" wasd-controls>
+        <!-- <a-camera id="main-camera" look-controls-enabled="false" position="0 0 0" wasd-controls-enabled="true"></a-camera>
+        <a-camera id="map-camera"  look-controls-enabled="false" position="0 100 0" wasd-controls-enabled="true" active="false"></a-camera> -->
+        <a-camera id="main-camera" look-controls-enabled="false" position="0 0 0"   wasd-controls-enabled="false"></a-camera>
+        <!-- <a-camera id="map-camera"  look-controls-enabled="false" position="0 0 0" wasd-controls-enabled="false" active="false"></a-camera> -->
+        
         <a-entity rotation="90 0 0" laser-controls="hand: left" ></a-entity>
         <a-entity rotation="90 0 0" id="myvrcontroller" laser-controls="hand: right" raycaster="objects: .interactive"></a-entity>
 
       </a-entity>
+
+
+
+      <!-- EXPERIMENTA START -->
+
+<!--   
+      <a-box color="green" id="cube1" class="interactive" mappable position="-2 0 0">
+      </a-box> -->
+
+      <!-- <a-form handgrip position="-1 0 -2.5" scale="2 2 2">
+        <a-plane-rounded opacity=".2" width="1" height="2" radius="0.05" color="grey">
+          <a-map-entry id="map-src-1" value="A" position=".1 1 0" width=".4" onclick="console.log('new element');this.components['map-entry'].trigger(event)"></a-map-entry>
+        </a-plane-rounded>
+      </a-form> -->
+
+    <!-- <a-entity handgrip position="-3 3 2">
+      <a-map-entry id="map-src-1" value="A" position=".35 -.3 0" width=".4" onclick="console.log('new element');this.components['map-entry'].trigger(event)"></a-map-entry>
+    </a-entity>
+    <a-entity handgrip position="-4 -2 2">
+      <a-map-entry id="map-src-2" value="A" position=".35 -.3 0" width=".4" onclick="console.log('new element');this.components['map-entry'].trigger(event)"></a-map-entry>
+    </a-entity> -->
+
+
+    <a-entity handgrip position="2 1 2">
+      <a-map-entry id="map-dst" value="B" position=".35 -.3 0" width=".4" onclick="console.log('new element');this.components['map-entry'].trigger(event)"></a-map-entry>
+    </a-entity>
+
+
+    <!-- <a-button value="JSON" width=".4" position="-4 0 3" onclick="testMapTreeJson()"></a-button>
+    <a-button value="XML" width=".4" position="-4 -1 3" onclick="testMapTreeXml()"></a-button> -->
+
+    <!-- <a-button value="MAP camera"  width=".4" position="-5 -1 3" onclick="document.querySelector('#map-camera').setAttribute('camera', 'active', true)"></a-button> -->
+    <!-- <a-button value="MAIN camera" width=".4" position="-5 99 3" onclick="enableRouteView(event)"></a-button> -->
+
+
+      <!-- <a-text color="orange" id="cube2" dragndrop="standalone: true" position="3 1 0" value="field-1" scale="2 2 2"></a-text> -->
+
+      <!-- <a-box color="red" id="cube3" dragndrop="standalone: true" position="3 -1 0"
+            animation__mouseenter="property: components.material.material.color; type: color; to: blue; startEvents: mouseenter; dur: 500";
+            animation__mouseleave="property: components.material.material.color; type: color; to: red; startEvents: mouseleave; dur: 500";
+      ></a-box> -->
+
+      <!-- <a-rope start="cube1" end="cube3"></a-rope> -->
+
+
+      <!-- <a-entity handgrip id="test-ta" position="0 0 0" scale="2 2 2">
+        <a-textarea rotation="0 0 0" scale="1 1 1" position=".6 .25 0" cols="20" rows="4" textvalue="this is a multiline textarea" colortext="white" colorbackground="blue" colorbackgrounddisabled="grey" disabled="false"></a-textarea>
+      </a-entity> -->
+
+      <!-- EXPERIMENTA END -->
+
 
 
 	  </a-scene>

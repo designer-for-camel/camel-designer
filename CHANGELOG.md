@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.X.0
+
+- Fix: smoother 3D input box when blinking. \
+- Fix: WASD controls now always in-sync with camera position
+
+
 ## 0.10.0
 
 - New AtlasMap endpoint to create data mappings. \

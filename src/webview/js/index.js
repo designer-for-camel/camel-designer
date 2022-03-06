@@ -1042,6 +1042,14 @@ let configObj = getActiveActivity()
           }
 
 
+          let posActivity = getPositionInScene(activity);
+          
+          setCameraPosition(posActivity)
+      }
+
+
+      function setCameraPosition(position)
+      {
           var camera = document.getElementById('rig')
           // var camera = document.getElementById("main-camera");
 
@@ -1055,8 +1063,7 @@ let configObj = getActiveActivity()
               this.removeAttribute('animation__focus');
           });
 
-
-          let posActivity = getPositionInScene(activity);
+          // let posActivity = getPositionInScene(activity);
           // let posCamera = camera.getAttribute('position');
 
         //   let target = {
@@ -1065,10 +1072,15 @@ let configObj = getActiveActivity()
         //         z: 7}
 
           //Since A-Frame v1.0.0 the camera angle seems different, so we have adjusted
+          // let target = {
+          //   x: posActivity.x,
+          //   // y: cameraY,
+          //   y: posActivity.y,
+          //   z: cameraZ}
+
           let target = {
-            x: posActivity.x,
-            // y: cameraY,
-            y: posActivity.y,
+            x: position.x,
+            y: position.y,
             z: cameraZ}
 
           camera.setAttribute('animation__focus', {property: 'position', dur: '1000', to: target, loop: false, easing: "easeInOutQuad"});
