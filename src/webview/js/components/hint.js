@@ -45,7 +45,8 @@ AFRAME.registerComponent('hint', {
         remove.classList.add('interactive')
 
         //remove action when clicked
-        remove.addEventListener('click', function(){
+        remove.addEventListener('click', function(event){
+            event.stopPropagation()
             this.parentElement.parentElement.removeChild(this.parentElement)           
         },{ once: true });
 

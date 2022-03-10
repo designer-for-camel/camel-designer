@@ -10,7 +10,8 @@ AFRAME.registerComponent('rope', {
     color: {type: 'color', default: '#74BEC1'},
     radius: {type: 'number', default: 0.05},
     opacity: {type: 'number', default: 1},
-    visible: {default: true}
+    visible: {default: true},
+    attached: {type: 'boolean', default: false},
   },
 
   //multiple: true,
@@ -155,6 +156,19 @@ AFRAME.registerComponent('rope', {
         return
     }
     
+    //we always reset both ends. On datamodel reloads the start element changes
+    this.start = document.getElementById(this.data.start)
+    this.end   = document.getElementById(this.data.end)
+
+    //sometimes activities are deleted (like setHeader/setProperty)
+    //those may cause loss of mapping fields
+    //on those cases we eliminate the rope (mapping)
+    if(!this.start || !this.end){
+      this.el.parentElement.removeChild(this.el)
+      return
+    }
+
+
     let vStart = new THREE.Vector3
     let vEnd   = new THREE.Vector3
     this.start.object3D.getWorldPosition(vStart)
@@ -243,17 +257,27 @@ AFRAME.registerComponent('rope', {
         this.start.object3D.getWorldPosition(this.posStart)      
         this.end.object3D.getWorldPosition(this.posEnd)      
 
-        //we obtain vectors
-        let v1 = vStart.clone().negate()
-        let v2 = this.start.object3D.position.clone()
+
+        let v1,v2
+
+        //when rope becomes fully attached (when source and target are mapped)
+        if(this.data.attached){
+          //we use
+          v1 = vEnd.clone().negate()
+          v2 = this.end.object3D.position.clone()
+        }
+        //when user is still dragging the rope to a target field (constructing)
+        else{
+          v1 = vStart.clone().negate()
+          v2 = this.start.object3D.position.clone()
+        }
 
         //add them
         v1.add(v2)
         
         //set rope's position at vector's
         this.el.object3D.position.set(v1.x, v1.y, v1.z)
-    }
-
+      }
   },
 
 
@@ -279,6 +303,7 @@ AFRAME.registerPrimitive('a-rope', {
         radius: "rope.radius",
         opacity: "rope.opacity",
         visible: "rope.visible",
+        attached: "rope.attached",
         // width: "dropdown.width",
         // menu: "dropdown.menu"
     }

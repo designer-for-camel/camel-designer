@@ -3263,14 +3263,50 @@ function openDocumentation(code){
 
 function createMapHttp(definition)
 {
-    definition = definition || new DOMParser().parseFromString('<to uri="http://demoserver:80/resource"/>', "text/xml").documentElement
+    // definition = definition || new DOMParser().parseFromString('<to uri="http://demoserver:80/resource"/>', "text/xml").documentElement
     // definition = definition || new DOMParser().parseFromString('<pipeline><to uri="http://demoserver:80/resource"/></pipeline>', "text/xml").documentElement
     // definition = definition || new DOMParser().parseFromString('<pipeline><log message="split message"/></pipeline>', 'application/xml').documentElement;
 
-    let activity = createGenericEndpointTo({definition: definition})
+    // let code = `<pipeline id="to-8-pipeline">
+    //                 <setHeader name="Content-Type" id="to-8-mapping-target-Content-Type">
+    //                     <simple>`+'${body}'+`</simple>
+    //                 </setHeader>
+    //                 <to uri="http://demoserver:80/resource" id="to-8"/>
+    //             </pipeline>`
+
+    let code = `<pipeline id="to-8-pipeline">
+                <setHeader name="Content-Type" id="to-8-mapping-target-Content-Type">
+                    <simple>`+'${header.clientid} ${body}'+`</simple>
+                </setHeader>
+                <to uri="http://demoserver:80/resource" id="to-8"/>
+            </pipeline>`
+
+    definition = definition || new DOMParser().parseFromString(code, "text/xml").documentElement
+
+    // var iterator = definition.evaluate('/pipeline/to', definition, null, XPathResult.ANY_TYPE, null);
+    
+    let endpoint = definition.querySelector('to')
+    // let endpoint = definition.removeChild(definition.lastChild)
+
+    // let activity = createGenericEndpointTo({definition: definition})
+    let activity = createGenericEndpointTo({definition: endpoint})
 
     activity.setAttribute("mapping","")
     activity.setAttribute('processor-type', "map-http");
+
+    definition.removeChild(endpoint)
+
+    // let mappings = definition.querySelectorAll(':not(to)')
+    // let mappings = definition.children
+
+    // //this action will ensure there is a default source data tree
+    // activity.components.mapping.refreshProcessContext()
+
+    let mappings = Array.from(definition.children)
+    // mappings = mappings.pop()
+
+    // activity.components.mapping.processCamelParsing(mappings)
+    activity.components.mapping.setInitMappings(mappings)
 
 
     return activity

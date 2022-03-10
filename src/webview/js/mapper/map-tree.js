@@ -1,26 +1,27 @@
 AFRAME.registerComponent('map-tree', {
     schema: {
-
         tree: { type: "string"},
-        // source: { type: "string"},
         istarget: { type: "boolean", default: false},
-
-        // tree: {
-        //     default: [],
-        //     parse: function (value) {
-        //       return JSON.parse(value)
-        //     },
-        //     stringify: function (value) {
-        //       return JSON.stringify(value)
-        //     }
-        //   },
         type: { type: "string", default: "json" },
-
-        // type: { type: "string", default: "json" },
-         
+        processvars: { type: "boolean", default: false}, 
     },
+
     init: function () {
         console.log('map-tree init')
+
+        //map-tree creates a tree of child elements (data entries)
+        //because they initialise asynchronously we listen for completion events until all are done
+        //then we can initialise mappings (if any)
+        this.initCounter = 0
+        this.el.addEventListener('map-entry-init-complete', function(){
+            this.initCounter--
+            if(this.initCounter == 0 && !this.data.istarget){
+                this.el.closest('[mapping]').components.mapping.initialiseMappings()
+            }
+        }.bind(this));
+
+
+        this.el.id = this.data.istarget ? this.el.parentEl.id + "-target" : this.el.parentEl.id + "-source"
 
         this.el.setAttribute("handgrip", "")
 
@@ -28,7 +29,11 @@ AFRAME.registerComponent('map-tree', {
 
         let rootLabel = "{json}"
 
-        if(this.type == 'headers'){
+        if(!this.data.istarget && this.data.processvars){
+            rootLabel = "exchange"
+        }
+
+        if(this.data.istarget && this.type == 'headers'){
             rootLabel = "headers"
             this.type = "json"
         }
@@ -69,13 +74,15 @@ AFRAME.registerComponent('map-tree', {
 
 
         // let root = this.createLeaf(parent, field)
+        let root
+
 
         if(this.type == 'xml'){
             branch = branch.children
         }
 
         if(this.type == 'json'){
-            let root = this.createLeaf(parent, field, field)
+            root = this.createLeaf(parent, field, field)
           
             for (const key in branch) {
 
@@ -94,7 +101,7 @@ AFRAME.registerComponent('map-tree', {
         }
         else{
 
-            let root = this.createLeaf(parent, field, field)
+            root = this.createLeaf(parent, field, field)
 
             for (let key = 0; key < branch.length; key++) {
             // for (const key in branch) {
@@ -108,15 +115,16 @@ AFRAME.registerComponent('map-tree', {
                     this.createLeaf(root, branch[key].localName, branch[key].textContent)
                 }
             }   
-
-
         }
 
+        return root
     },
 
     // createLeaf: function(parent, field, icon){
     createLeaf: function(parent, field, value){
 
+        //for every child we create we increment the counter
+        this.initCounter++
 
         //element clicked
         //the event originates at the top level mapper button
@@ -134,6 +142,25 @@ AFRAME.registerComponent('map-tree', {
         childMapButton.setAttribute("width", .4)
         childMapButton.setAttribute("enabled", false)
         childMapButton.setAttribute("istarget", this.data.istarget)
+        childMapButton.id = this.el.id + "-" + value
+
+        if(this.data.processvars && parent.attributes.value){
+  
+            if(parent.attributes.value.value == "exchange")
+                childMapButton.setAttribute("vartype", "body")
+            else
+                childMapButton.setAttribute("vartype", parent.attributes.value.value)
+
+            // if(parent.attributes.value.value == 'headers'){
+            //     childMapButton.setAttribute("expr-simple", "${header."+value+"}")
+            // }
+            // else if(parent.attributes.value.value == 'properties'){
+            //     childMapButton.setAttribute("expr-simple", "${exchangeProperty."+value+"}")
+            // }
+            // else if(value == 'body'){
+            //     childMapButton.setAttribute("expr-simple", "${body}")
+            // }
+        }
 
         parent.appendChild(childMapButton)
 
@@ -175,6 +202,7 @@ AFRAME.registerComponent('map-tree', {
         tree: "map-tree.tree",
         istarget: "map-tree.istarget",
         type: "map-tree.type",
+        processvars: "map-tree.processvars"
     }
   });
 

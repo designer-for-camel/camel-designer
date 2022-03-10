@@ -806,6 +806,27 @@ function renderActivity(activity, mycode, iterator) {
             mycode.text += mycode.tab+'<to uri="'+uri+'" id="'+activity.id+'"/>\n'
             break;
 
+
+
+
+        case 'map-http':
+
+            mycode.text += mycode.tab+'<pipeline id="'+activity.id+'-pipeline">\n'
+
+                mycode.text += activity.components.mapping.processCamelRendering(mycode.tab) 
+
+                let too = activity.hasAttribute("dynamic") ? "<toD" : "<to"
+                //assumes activity is an endpoint (<to>) and has URI
+                mycode.text += mycode.tab+'  '+too+' uri="'+activity.components.uri.getValue()+'" id="'+activity.id+'"/>\n'
+
+            mycode.text += mycode.tab+'</pipeline>\n'
+
+
+            break;
+
+
+
+
         case 'to':
             let to = activity.hasAttribute("dynamic") ? "<toD" : "<to"
             //assumes activity is an endpoint (<to>) and has URI

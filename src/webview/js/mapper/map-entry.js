@@ -1,4 +1,4 @@
-var mapEntryId = 0
+// var mapEntryId = 0
 
 AFRAME.registerComponent('map-entry', {
     schema: {
@@ -12,7 +12,7 @@ AFRAME.registerComponent('map-entry', {
     init: function () {
 
         // let sharedId = +(new Date()).getTime()
-        let sharedId = mapEntryId++
+        // let sharedId = mapEntryId++
 
         // let menu = this.data.menu
 
@@ -23,7 +23,8 @@ AFRAME.registerComponent('map-entry', {
 
         //create button entity
         let button = document.createElement('a-box')
-        button.id = "map-entry-button-" + sharedId
+        // button.id = "map-entry-button-" + sharedId
+        // button.id = this.el.parentElement.id + "-" + this.data.value
         button.setAttribute('opacity', '.3')
         button.setAttribute('depth', '.1')
         // button.setAttribute('width', '1')
@@ -99,12 +100,14 @@ AFRAME.registerComponent('map-entry', {
         mapPoint.setAttribute("position", posMapPoint + " 0 0")
         mapPoint.setAttribute("mappable","")
         mapPoint.classList.add("interactive")
-        mapPoint.id = "map-entry-link-point-" + sharedId
+        // mapPoint.id = "map-entry-link-point-" + sharedId
+        mapPoint.id = this.el.id + "-" + "link-point"
         this.el.appendChild(mapPoint)
 
 
         let back = document.createElement("a-plane")
-        back.id = "map-entry-plane-" + sharedId
+        // back.id = "map-entry-plane-" + sharedId
+        back.id = this.el.id + "-" + "plane"
         back.setAttribute("width",textWidth - .2)        
         back.setAttribute("height",".3")
         back.setAttribute("opacity","0")
@@ -154,6 +157,80 @@ AFRAME.registerComponent('map-entry', {
         // });
 
         // this.el.setAttribute("scale", "2 2 2")
+
+        this.el.emit('map-entry-init-complete');
+    },
+
+    getMappingExpression: function(){
+        return this.expression
+    },
+
+    setMappingExpression: function(mapping){
+
+        let element = mapping 
+
+        // let code = ""
+
+            let source = document.getElementById(element.getAttribute('start'))
+            
+            let sourceEntry = source.closest('a-map-entry')
+            let targetEntry = this.el
+
+            // let sourceField = sourceEntry.attributes.value.value
+            // let targetField = targetEntry.attributes.value.value
+
+            // let varType    = sourceEntry.attributes.vartype.value
+            // let setterType = targetEntry.attributes.vartype.value
+
+            if(!this.expression){
+                this.expression = {
+                    language: "simple",
+                    sources:[],
+                    target:{
+                        type: targetEntry.attributes.vartype.value,
+                        field: targetEntry.attributes.value.value
+                    }
+                }
+            }
+
+            this.expression.sources.push({
+                type: sourceEntry.attributes.vartype.value,
+                field: sourceEntry.attributes.value.value
+            })
+
+            // switch(varType) {
+            //     case 'properties':
+            //         expression = '${exchangeProperty.'+sourceField+'}'
+            //         break
+            //     case 'headers':
+            //         expression = '${header.'+sourceField+'}'
+            //         break;
+            //     case 'body':
+            //         expression = '${body}'
+            //         break;
+            // }
+
+            // switch(setterType) {
+            //     case 'properties':
+            //         code += tabulation+'  <setProperty '+getCamelAttributePropertyName()+'="'+targetField+'" id="'+targetEntry.id+'">\n'+
+            //                 tabulation+'    '+'<simple>'+expression+'</simple>'+'\n'+
+            //                 tabulation+'  </setProperty>\n'
+            //         break;
+            //     case 'headers':
+            //         code += tabulation+'  <setHeader '+getCamelAttributeHeaderName()+'="'+targetField+'" id="'+targetEntry.id+'">\n'+
+            //                 tabulation+'    '+'<simple>'+expression+'</simple>'+'\n'+
+            //                 tabulation+'  </setHeader>\n'
+            //         break;
+            //     case 'body':
+            //         code += tabulation+'  <setBody id="'+targetEntry.id+'">\n'+
+            //                 tabulation+'    '+'<simple>'+expression+'</simple>'+'\n'+
+            //                 tabulation+'  </setBody>\n'
+            //         break;
+            
+        
+        // this.expression = expression
+
+        this.el.setAttribute("ismapped", true)
     },
 
     trigger: function(event){

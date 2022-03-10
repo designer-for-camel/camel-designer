@@ -101,10 +101,23 @@ AFRAME.registerComponent("mappable", {
 
                                                 // this.tempRope.setAttribute("end", intersectedEls[0].id)
                                                 this.tempRope.setAttribute("end", linkPoint.id)
+
+
+                                                let mapEntry = linkPoint.parentElement
+
+                                                let rope = document.createElement('a-rope')
+                                                rope.setAttribute("start", this.el.id)
+                                                rope.setAttribute("end", linkPoint.id)
+                                                rope.setAttribute("attached", true)
+                                                mapEntry.appendChild(rope)
+
+                                                mapEntry.components['map-entry'].setMappingExpression(rope)
                                             }
-                                            else{
+
+                                            // }
+                                            // else{
                                                 this.tempRope.parentElement.removeChild(this.tempRope)
-                                            }
+                                            // }
 
                                             //we delete the simulated target since we have the real one
                                             this.tempTarget.parentElement.removeChild(this.tempTarget)
