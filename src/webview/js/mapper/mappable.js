@@ -27,6 +27,8 @@ AFRAME.registerComponent("mappable", {
                                             
                                         console.log("mappable mouse down: "+this.el.id)
 
+                        //we don't allow to map from target
+                        if(this.el.parentEl.components.mapentry.data.istarget){return}
 
                         //when the visual connector (the rope) is created, we endpoint is unknown, the user needs to drag'n'drop
                         //on the meantime we create a mock endpoint
@@ -95,23 +97,33 @@ AFRAME.registerComponent("mappable", {
                                             let intersectedEls = e.detail.cursorEl.components.raycaster.intersectedEls
                                             console.log("intersected: "+intersectedEls)
 
-                                            if(intersectedEls.length>0 && intersectedEls[0].localName == 'a-plane'){
-                                                let linkPoint = intersectedEls[0].previousElementSibling
-                                                linkPoint.object3D.position.x = -.2
+                                            // if(intersectedEls.length>0 && intersectedEls[0].localName == 'a-plane'){
+                                            if(  intersectedEls.length>0 && 
+                                                 intersectedEls[0].attributes.mappable && 
+                                                //  intersectedEls[0].parentElement.attributes.istarget == true){
+                                                intersectedEls[0].parentElement.components.mapentry.data.istarget){
+
+
+                                                let linkPointSource = this.el.previousElementSibling
+                                                // linkPointTarget.object3D.position.x = -.2
+
+                                                let linkPointTarget = intersectedEls[0].previousElementSibling
+                                                linkPointTarget.object3D.position.x = -.2
 
                                                 // this.tempRope.setAttribute("end", intersectedEls[0].id)
-                                                this.tempRope.setAttribute("end", linkPoint.id)
+                                                this.tempRope.setAttribute("end", linkPointTarget.id)
 
 
-                                                let mapEntry = linkPoint.parentElement
+                                                let mapEntry = linkPointTarget.parentElement
 
                                                 let rope = document.createElement('a-rope')
-                                                rope.setAttribute("start", this.el.id)
-                                                rope.setAttribute("end", linkPoint.id)
+                                                // rope.setAttribute("start", this.el.id)
+                                                rope.setAttribute("start", linkPointSource.id)
+                                                rope.setAttribute("end", linkPointTarget.id)
                                                 rope.setAttribute("attached", true)
                                                 mapEntry.appendChild(rope)
 
-                                                mapEntry.components['map-entry'].setMappingExpression(rope)
+                                                mapEntry.components.mapentry.setMappingExpression(rope)
                                             }
 
                                             // }

@@ -1,19 +1,20 @@
-AFRAME.registerComponent('map-tree', {
+AFRAME.registerComponent('maptree', {
     schema: {
-        tree: { type: "string"},
-        istarget: { type: "boolean", default: false},
-        type: { type: "string", default: "json" },
+        tree:        { type: "string"},
+        // rootname:    { type: "string",  default: "{JSON}"},
+        istarget:    { type: "boolean", default: false},
+        type:        { type: "string",  default: "json"},
         processvars: { type: "boolean", default: false}, 
     },
 
     init: function () {
-        console.log('map-tree init')
+        console.log('maptree init')
 
-        //map-tree creates a tree of child elements (data entries)
+        //maptree creates a tree of child elements (data entries)
         //because they initialise asynchronously we listen for completion events until all are done
         //then we can initialise mappings (if any)
         this.initCounter = 0
-        this.el.addEventListener('map-entry-init-complete', function(){
+        this.el.addEventListener('mapentry-init-complete', function(){
             this.initCounter--
             if(this.initCounter == 0 && !this.data.istarget){
                 this.el.closest('[mapping]').components.mapping.initialiseMappings()
@@ -27,20 +28,25 @@ AFRAME.registerComponent('map-tree', {
 
         this.type = this.data.type
 
-        let rootLabel = "{json}"
+        // let rootLabel = "{json}"
 
-        if(!this.data.istarget && this.data.processvars){
-            rootLabel = "exchange"
-        }
+        // let rootLabel = this.data.rootname
 
-        if(this.data.istarget && this.type == 'headers'){
-            rootLabel = "headers"
-            this.type = "json"
-        }
+        // if(!this.data.istarget && this.data.processvars){
+        //     rootLabel = "exchange"
+        // }
+
+        // if(this.data.istarget && this.type == 'headers'){
+        //     rootLabel = "headers"
+        //     this.type = "json"
+        // }
 
         if(this.type == 'json'){
             this.tree = JSON.parse(this.data.tree)
-            this.createBranch(this.tree, this.el, rootLabel)
+            let rootLabel = Object.keys(this.tree)[0]
+            // this.createBranch(this.tree, this.el, rootLabel)
+            this.createBranch(this.tree[rootLabel], this.el, rootLabel)
+            
             // this.createLeaf(this.el, "}", "}")
 
         }
@@ -82,7 +88,7 @@ AFRAME.registerComponent('map-tree', {
         }
 
         if(this.type == 'json'){
-            root = this.createLeaf(parent, field, field)
+            root = this.createLeaf(parent, field, field, false)
           
             for (const key in branch) {
 
@@ -92,7 +98,8 @@ AFRAME.registerComponent('map-tree', {
                     
                 }
                 else{
-                    this.createLeaf(root, key, key)
+                    // this.createLeaf(root, key, key)
+                    this.createLeaf(root, key, branch[key])
                     // this.createLeaf(parent, key, key)
                 }
             }
@@ -121,7 +128,17 @@ AFRAME.registerComponent('map-tree', {
     },
 
     // createLeaf: function(parent, field, icon){
-    createLeaf: function(parent, field, value){
+    createLeaf: function(parent, field, value, ismappable){
+
+        // if(!mappable){
+        //     mappable = mappable
+        // }
+        // else{
+        //     mappable = true
+        // }
+        
+
+
 
         //for every child we create we increment the counter
         this.initCounter++
@@ -136,20 +153,28 @@ AFRAME.registerComponent('map-tree', {
             value = field
         }
 
+        let enabled = false
+
+        if(this.data.istarget && field == "headers"){
+            enabled = true
+        }
+
         let childMapButton = document.createElement('a-map-entry')
         childMapButton.setAttribute("position",".2 -.5 0")
+        childMapButton.setAttribute("field", field)
         childMapButton.setAttribute("value", value)
         childMapButton.setAttribute("width", .4)
-        childMapButton.setAttribute("enabled", false)
+        childMapButton.setAttribute("enabled", enabled)
+        childMapButton.setAttribute("ismappable", ismappable)
         childMapButton.setAttribute("istarget", this.data.istarget)
-        childMapButton.id = this.el.id + "-" + value
+        childMapButton.id = this.el.id + "-" + field
 
-        if(this.data.processvars && parent.attributes.value){
+        if(this.data.processvars && parent.attributes.field){
   
-            if(parent.attributes.value.value == "exchange")
+            if(parent.attributes.field.value == "exchange")
                 childMapButton.setAttribute("vartype", "body")
             else
-                childMapButton.setAttribute("vartype", parent.attributes.value.value)
+                childMapButton.setAttribute("vartype", parent.attributes.field.value)
 
             // if(parent.attributes.value.value == 'headers'){
             //     childMapButton.setAttribute("expr-simple", "${header."+value+"}")
@@ -196,13 +221,14 @@ AFRAME.registerComponent('map-tree', {
   
   AFRAME.registerPrimitive('a-map-tree', {
     defaultComponents: {
-        'map-tree': {}
+        'maptree': {}
     },
     mappings: {
-        tree: "map-tree.tree",
-        istarget: "map-tree.istarget",
-        type: "map-tree.type",
-        processvars: "map-tree.processvars"
+        tree: "maptree.tree",
+        // rootname: "maptree.rootname",
+        istarget: "maptree.istarget",
+        type: "maptree.type",
+        processvars: "maptree.processvars"
     }
   });
 
@@ -214,10 +240,10 @@ AFRAME.registerComponent('map-tree', {
     console.log("in test map tree JSON")
 
     let map = document.createElement('a-map-tree')
-    console.log('map-tree element created in code')
+    console.log('maptree element created in code')
 
     document.querySelector('a-scene').appendChild(map)
-    console.log('map-tree added to scene')
+    console.log('maptree added to scene')
 
     let mapTree = {
         field1: "value1",
@@ -234,7 +260,7 @@ AFRAME.registerComponent('map-tree', {
 
     map.setAttribute("tree", JSON.stringify(mapTree))
 
-    console.log('map-tree access to component')
+    console.log('maptree access to component')
   }
 
   function testMapTreeXml(){
@@ -260,10 +286,10 @@ AFRAME.registerComponent('map-tree', {
 
 
     let map = document.createElement('a-map-tree')
-    console.log('map-tree element created in code')
+    console.log('maptree element created in code')
 
     document.querySelector('a-scene').appendChild(map)
-    console.log('map-tree added to scene')
+    console.log('maptree added to scene')
 
     // var xml = "<book><title>Harry Potter</title></book>"
     let mapTree = `

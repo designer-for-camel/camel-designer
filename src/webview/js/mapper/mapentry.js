@@ -1,15 +1,19 @@
 // var mapEntryId = 0
 
-AFRAME.registerComponent('map-entry', {
+AFRAME.registerComponent('mapentry', {
     schema: {
         //menu: {}
+        field: { type: "string", default: "" },
         value: { type: "string", default: "" },
         width: { type: "number", default: 1 },
         wrapcount: { type: "number" },
         enabled: { type: "boolean", default: true },
+        ismappable: { type: "boolean", default: true },
         istarget: { type: "boolean", default: false},
     },
     init: function () {
+
+        let textWidth = this.data.field.length / 10 + .5
 
         // let sharedId = +(new Date()).getTime()
         // let sharedId = mapEntryId++
@@ -21,9 +25,9 @@ AFRAME.registerComponent('map-entry', {
 
         // let menuCount = Object.entries(menu.menu).length
 
-        //create button entity
+        //this box serves the user to create new children map entries
         let button = document.createElement('a-box')
-        // button.id = "map-entry-button-" + sharedId
+        // button.id = "mapentry-button-" + sharedId
         // button.id = this.el.parentElement.id + "-" + this.data.value
         button.setAttribute('opacity', '.3')
         button.setAttribute('depth', '.1')
@@ -43,13 +47,19 @@ AFRAME.registerComponent('map-entry', {
             button.setAttribute('visible', false)
             // this.el.setAttribute('visible', false)
         }
+        
+        button.object3D.position.setX(textWidth)
         button.object3D.position.setZ(button.object3D.position.z+0.05)
-    
+        // button.setAttribute("onclick", "this.components.mapentry.trigger(event)")
+        this.childCount = 0
+        button.onclick = function(event){
+            this.createChild(++this.childCount)            
+        }.bind(this);
+
 
         //set label to menu button
-        // appendLabel(groupButton, menu.name)
-        let label = appendLabel(button, this.data.value, this.data.wrapcount)
-        // label.object3D.position.set(0,0,5)
+        // let label = appendLabel(button, this.data.field, this.data.wrapcount)
+        let label = appendLabel(button, "+", this.data.wrapcount)
         label.setAttribute('position', "0 0 .049")
         label.setAttribute('scale', '4 4 4')
 
@@ -68,7 +78,7 @@ AFRAME.registerComponent('map-entry', {
 
         // let label = appendLabel(this.el, this.data.value, this.data.wrapcount)
         let leaf = document.createElement('a-text')
-        leaf.setAttribute("value",this.data.value)
+        leaf.setAttribute("value",this.data.field)
         // leaf.setAttribute("width",width*5)
         // leaf.setAttribute("color","red")
         this.el.appendChild(leaf)
@@ -82,55 +92,63 @@ AFRAME.registerComponent('map-entry', {
 
         //this is only an approximation calculation
         //text width is a hard thing to obtain
-        let textWidth = this.data.value.length / 10 + .5
+        // let textWidth = this.data.field.length / 10 + .5
         let posMapPoint = textWidth
 
         if(this.data.istarget){
             posMapPoint = -.2
         }
 
+        //This box represents the source/target link point for the visual mapping
         let mapPoint = document.createElement('a-box')    
         mapPoint.setAttribute('opacity', '.3')
         mapPoint.setAttribute('depth', '.01')
         // button.setAttribute('width', '1')
         mapPoint.setAttribute('width', .1)
         mapPoint.setAttribute('height', .1)
-        mapPoint.setAttribute("mappable","")
+// mapPoint.setAttribute("mappable","")
         // mapPoint.setAttribute("position","1.5 0 0")
         mapPoint.setAttribute("position", posMapPoint + " 0 0")
-        mapPoint.setAttribute("mappable","")
-        mapPoint.classList.add("interactive")
-        // mapPoint.id = "map-entry-link-point-" + sharedId
+        // mapPoint.setAttribute("mappable","")
+        // mapPoint.classList.add("interactive")
+        // mapPoint.id = "mapentry-link-point-" + sharedId
         mapPoint.id = this.el.id + "-" + "link-point"
         this.el.appendChild(mapPoint)
 
 
         let back = document.createElement("a-plane")
-        // back.id = "map-entry-plane-" + sharedId
+        // back.id = "mapentry-plane-" + sharedId
         back.id = this.el.id + "-" + "plane"
         back.setAttribute("width",textWidth - .2)        
         back.setAttribute("height",".3")
         back.setAttribute("opacity","0")
+
+        if(this.data.ismappable){
+            back.setAttribute("mappable","")
+        }
+
         back.object3D.position.x = textWidth/2 - .2
         back.object3D.position.z = -.01
         this.el.appendChild(back)
 
         back.classList.add('interactive')
 
-  back.setAttribute('animation', {  startEvents:'mouseenter',
-                                  pauseEvents:'mouseleave',
-                                  property: 'opacity',
-                                  dur: '0',
-                                  from: 0,
-                                  to: .5,
-                                })
+        if(this.data.ismappable){
 
-  back.setAttribute('animation__2',{
-                                  startEvents:'mouseleave',
-                                  property: 'opacity',
-                                  dur: '0',
-                                  to: 0})
+            back.setAttribute('animation', {  startEvents:'mouseenter',
+                                            pauseEvents:'mouseleave',
+                                            property: 'opacity',
+                                            dur: '0',
+                                            from: 0,
+                                            to: .5,
+                                            })
 
+            back.setAttribute('animation__2',{
+                                            startEvents:'mouseleave',
+                                            property: 'opacity',
+                                            dur: '0',
+                                            to: 0})
+        }
 
 
 
@@ -143,7 +161,7 @@ AFRAME.registerComponent('map-entry', {
 
             let all = Array.from(topMapperButton.querySelectorAll('a-map-entry'))
             all.forEach(button => {
-                button.components['map-entry'].redraw(all)
+                button.components.mapentry.redraw(all)
             });            
         }
 
@@ -152,13 +170,13 @@ AFRAME.registerComponent('map-entry', {
         // const promise1 = new Promise((resolve, reject) => {
         //     let all = Array.from(document.querySelectorAll('a-map-entry'))
         //     all.forEach(button => {
-        //         button.components['map-entry'].redraw(all)
+        //         button.components.mapentry.redraw(all)
         //     });
         // });
 
         // this.el.setAttribute("scale", "2 2 2")
 
-        this.el.emit('map-entry-init-complete');
+        this.el.emit('mapentry-init-complete');
     },
 
     getMappingExpression: function(){
@@ -188,14 +206,16 @@ AFRAME.registerComponent('map-entry', {
                     sources:[],
                     target:{
                         type: targetEntry.attributes.vartype.value,
-                        field: targetEntry.attributes.value.value
+                        field: targetEntry.attributes.field.value,
+                        value: targetEntry.attributes.value.value
                     }
                 }
             }
 
             this.expression.sources.push({
                 type: sourceEntry.attributes.vartype.value,
-                field: sourceEntry.attributes.value.value
+                field: sourceEntry.attributes.field.value
+                // field: sourceEntry.attributes.value.value
             })
 
             // switch(varType) {
@@ -233,6 +253,13 @@ AFRAME.registerComponent('map-entry', {
         this.el.setAttribute("ismapped", true)
     },
 
+    createChild: function(counter){
+
+        let newheader = "header-"+counter
+
+        this.el.closest('a-map-tree').components.maptree.createLeaf(this.el, newheader, newheader, true)
+    },
+
     trigger: function(event){
         // event.stopPropagation()
         console.log('trigger function invoked')
@@ -256,7 +283,7 @@ AFRAME.registerComponent('map-entry', {
         childMapButton.setAttribute("position",".2 -.5 0")
         childMapButton.setAttribute("value","eL")
         childMapButton.setAttribute("width", .4)
-        // childMapButton.setAttribute("onclick", "this.components['map-entry'].trigger(event)")
+        // childMapButton.setAttribute("onclick", "this.components.mapentry.trigger(event)")
         //this.el.appendChild(childMapButton)
         source.appendChild(childMapButton)
 
@@ -280,7 +307,7 @@ AFRAME.registerComponent('map-entry', {
         // }
 
         // all.forEach(button => {
-        //     button.components['map-entry'].redraw(all)
+        //     button.components.mapentry.redraw(all)
         // });
 
     },
@@ -295,9 +322,9 @@ AFRAME.registerComponent('map-entry', {
 
         //let component = 
 
-        // this.hierarchy = this.parentEl.components['map-entry'].hierarchy + 1
+        // this.hierarchy = this.parentEl.components.mapentry.hierarchy + 1
         // if(this.el.parentEl.localName == 'a-map-entry'){
-        //     this.hierarchy = this.el.parentEl.components['map-entry'].hierarchy + 1
+        //     this.hierarchy = this.el.parentEl.components.mapentry.hierarchy + 1
         // }
 
         console.log('redraw in action')
@@ -332,7 +359,7 @@ AFRAME.registerComponent('map-entry', {
         // this.el.object3D.position.y = - .4 * pos
         this.el.object3D.position.y = - .4 * relativePos
 
-        //topButton.components['map-entry'].
+        //topButton.components.mapentry.
 
 
     },
@@ -368,14 +395,16 @@ AFRAME.registerComponent('map-entry', {
   
   AFRAME.registerPrimitive('a-map-entry', {
     defaultComponents: {
-        'map-entry': {}
+        'mapentry': {}
     },
     mappings: {
         // menu: "dropdown.menu"
-        value: "map-entry.value",
-        width: "map-entry.width",
-        wrapcount: "map-entry.wrapcount",
-        enabled: "map-entry.enabled",
-        istarget: "map-entry.istarget",
+        field: "mapentry.field",
+        value: "mapentry.value",
+        width: "mapentry.width",
+        wrapcount: "mapentry.wrapcount",
+        enabled: "mapentry.enabled",
+        ismappable: "mapentry.ismappable",
+        istarget: "mapentry.istarget",
     }
   });

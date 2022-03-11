@@ -56,8 +56,8 @@
     
     <script src="js/components/rope.js"></script>
     <script src="js/mapper/mappable.js"></script>
-    <script src="js/mapper/map-entry.js"></script>
-    <script src="js/mapper/map-tree.js"></script>
+    <script src="js/mapper/mapentry.js"></script>
+    <script src="js/mapper/maptree.js"></script>
     <script src="js/mapper/mapping.js"></script>
     <script src="js/ui/textarea.js"></script>
 
@@ -500,20 +500,20 @@
 
       <!-- <a-form handgrip position="-1 0 -2.5" scale="2 2 2">
         <a-plane-rounded opacity=".2" width="1" height="2" radius="0.05" color="grey">
-          <a-map-entry id="map-src-1" value="A" position=".1 1 0" width=".4" onclick="console.log('new element');this.components['map-entry'].trigger(event)"></a-map-entry>
+          <a-map-entry id="map-src-1" value="A" position=".1 1 0" width=".4" onclick="console.log('new element');this.components.mapentry.trigger(event)"></a-map-entry>
         </a-plane-rounded>
       </a-form> -->
 
     <!-- <a-entity handgrip position="-3 3 2">
-      <a-map-entry id="map-src-1" value="A" position=".35 -.3 0" width=".4" onclick="console.log('new element');this.components['map-entry'].trigger(event)"></a-map-entry>
+      <a-map-entry id="map-src-1" value="A" position=".35 -.3 0" width=".4" onclick="console.log('new element');this.components.mapentry.trigger(event)"></a-map-entry>
     </a-entity>
     <a-entity handgrip position="-4 -2 2">
-      <a-map-entry id="map-src-2" value="A" position=".35 -.3 0" width=".4" onclick="console.log('new element');this.components['map-entry'].trigger(event)"></a-map-entry>
+      <a-map-entry id="map-src-2" value="A" position=".35 -.3 0" width=".4" onclick="console.log('new element');this.components.mapentry.trigger(event)"></a-map-entry>
     </a-entity> -->
 
 
     <a-entity handgrip position="2 1 2">
-      <a-map-entry id="map-dst" value="B" position=".35 -.3 0" width=".4" onclick="console.log('new element');this.components['map-entry'].trigger(event)"></a-map-entry>
+      <a-map-entry id="map-dst" value="B" position=".35 -.3 0" width=".4" onclick="console.log('new element');this.components.mapentry.trigger(event)"></a-map-entry>
     </a-entity>
 
 

@@ -3275,6 +3275,10 @@ function createMapHttp(definition)
     //             </pipeline>`
 
     let code = `<pipeline id="to-8-pipeline">
+
+    <setHeader name="Exchange.HTTP_METHOD" id="to-8-mapping-target-method">
+    <simple>`+'${body}'+`</simple>
+  </setHeader>
                 <setHeader name="Content-Type" id="to-8-mapping-target-Content-Type">
                     <simple>`+'${header.clientid} ${body}'+`</simple>
                 </setHeader>
@@ -3291,7 +3295,24 @@ function createMapHttp(definition)
     // let activity = createGenericEndpointTo({definition: definition})
     let activity = createGenericEndpointTo({definition: endpoint})
 
-    activity.setAttribute("mapping","")
+    let datamodel = {http: {
+        parameters: {
+            method: "Exchange.HTTP_METHOD",
+            path:   "Exchange.HTTP_PATH",
+            query:  "Exchange.HTTP_QUERY"
+        },
+        headers: {
+            // "content-type": "Exchange.CONTENT_TYPE",
+            "content-type": "Content-Type",
+            accept:         "Accept",
+            authorization:  "Authorization",
+        }
+    }}
+
+    activity.setAttribute("mapping", {
+        datatarget: JSON.stringify(datamodel),
+        rootname: "http"
+    })
     activity.setAttribute('processor-type', "map-http");
 
     definition.removeChild(endpoint)

@@ -8,6 +8,14 @@ AFRAME.registerComponent('mapping', {
         wrapcount: { type: "number" },
         enabled: { type: "boolean", default: true },
         istarget: { type: "boolean", default: false},
+        datatarget: {
+            parse: function (value) {
+              return JSON.parse(value);
+            },
+            stringify: function (value) {
+              return JSON.stringify(value);
+            }
+          }
     },
 
     init: function () {
@@ -20,12 +28,14 @@ AFRAME.registerComponent('mapping', {
         mapButton.setAttribute("onclick", "this.parentEl.components.mapping.enableMapperView(event)")
         this.el.appendChild(mapButton)
            
-        let mapTree = {
-            "Content-Type": "",
-            Accept: "",
-            Authorization: "",
-        }
-    
+        // let mapTree = {
+        //     "Content-Type": "",
+        //     Accept: "",
+        //     Authorization: "",
+        // }
+        let mapTree = this.data.datatarget
+
+
         this.mapping = document.createElement('a-entity')
         this.mapping.id = this.el.id + "-mapping"
         this.mapping.setAttribute("position", "2 "+mapperPosition+" 1") // we place X=2 to create a smooth camera movent event for Route/Mapping transitions
@@ -34,7 +44,7 @@ AFRAME.registerComponent('mapping', {
         let map = document.createElement('a-map-tree')
         map.setAttribute("tree", JSON.stringify(mapTree))
         map.setAttribute("istarget", true)
-        map.setAttribute("type", "headers")
+        // map.setAttribute("type", "headers")
         map.setAttribute("processvars", true)
         map.setAttribute("position", "2 2 0")
         this.mapping.appendChild(map)
@@ -97,8 +107,6 @@ AFRAME.registerComponent('mapping', {
     },
 
     
-
-
     initialiseMappings: function()
     {
         if(!this.initMappings){
@@ -122,8 +130,8 @@ AFRAME.registerComponent('mapping', {
             //obtain source and target entries
             let source,target
             if(expression.includes('${body}')){
-                source = this.datasource.querySelector('a-map-entry[value="body"] > a-box.interactive')            
-                target = this.targetTree.querySelector('a-map-entry[value="'+field+'"] > a-box.interactive')
+                source = this.datasource.querySelector('a-map-entry[value="body"] > a-plane.interactive')            
+                target = this.targetTree.querySelector('a-map-entry[value="'+field+'"] > a-plane.interactive')
                 
                 this.createMapping(source, target, element)
             }
@@ -132,8 +140,8 @@ AFRAME.registerComponent('mapping', {
 
                 let header = expression.split('.')[1].split('}')[0]
 
-                source = this.datasource.querySelector('a-map-entry[value="'+header+'"] > a-box.interactive')            
-                target = this.targetTree.querySelector('a-map-entry[value="'+field+'"] > a-box.interactive')            
+                source = this.datasource.querySelector('a-map-entry[field="'+header+'"] > a-plane.interactive')            
+                target = this.targetTree.querySelector('a-map-entry[value="'+field+'"] > a-plane.interactive')            
      
                 this.createMapping(source, target, element)
             }
@@ -151,12 +159,12 @@ AFRAME.registerComponent('mapping', {
 
             //create the mapping
             let rope = document.createElement('a-rope')
-            rope.setAttribute("start", source.id)
-            rope.setAttribute("end", target.id)
+            rope.setAttribute("start", source.previousElementSibling.id)
+            rope.setAttribute("end", target.previousElementSibling.id)
             rope.setAttribute("attached", true)
             mapEntry.appendChild(rope)
 
-            mapEntry.components['map-entry'].setMappingExpression(rope)
+            mapEntry.components.mapentry.setMappingExpression(rope)
 
         }
         else{
@@ -173,44 +181,44 @@ AFRAME.registerComponent('mapping', {
         for (let i = 0; i < mappings.length; i++) {
             const element = mappings[i];
 
-            let expr = element.components['map-entry'].getMappingExpression()
+            let expr = element.components.mapentry.getMappingExpression()
             
-            // let source = document.getElementById(element.getAttribute('start'))
-            // let target = document.getElementById(element.getAttribute('end'))
-            
-            // let sourceEntry = source.closest('a-map-entry')
-            // let targetEntry = target.closest('a-map-entry')
+            let expression = ""
 
-            // let sourceField = sourceEntry.attributes.value.value
-            // let targetField = targetEntry.attributes.value.value
+            for (let i = 0; i < expr.sources.length; i++) {
+                const src = expr.sources[i];
 
-            // let varType    = sourceEntry.attributes.vartype.value
-            // let setterType = targetEntry.attributes.vartype.value
+                // let src = expr.sources[0]
 
-            let expression
-
-            let src = expr.sources[0]
-
-            switch(src.type) {
-                case 'properties':
-                    expression = '${exchangeProperty.'+src.field+'}'
-                    break
-                case 'headers':
-                    expression = '${header.'+src.field+'}'
-                    break;
-                case 'body':
-                    expression = '${body}'
-                    break;
+                switch(src.type) {
+                    case 'properties':
+                        expression += '${exchangeProperty.'+src.field+'} '
+                        break
+                    case 'headers':
+                        expression += '${header.'+src.field+'} '
+                        break;
+                    case 'body':
+                        expression += '${body} '
+                        break;
+                }
             }
+
+            //we eliminate trailing space added in for-loop
+            expression = expression.slice(0, -1)
 
             switch(expr.target.type) {
                 case 'properties':
-                    code += tabulation+'  <setProperty '+getCamelAttributePropertyName()+'="'+expr.target.field+'" id="'+element.id+'">\n'+
+                    code += tabulation+'  <setProperty '+getCamelAttributePropertyName()+'="'+expr.target.value+'" id="'+element.id+'">\n'+
                             tabulation+'    '+'<simple>'+expression+'</simple>'+'\n'+
                             tabulation+'  </setProperty>\n'
                     break;
+                case 'parameters':
+                    code += tabulation+'  <setHeader '+getCamelAttributeHeaderName()+'="'+expr.target.value+'" id="'+element.id+'">\n'+
+                            tabulation+'    '+'<simple>'+expression+'</simple>'+'\n'+
+                            tabulation+'  </setHeader>\n'
+                    break;
                 case 'headers':
-                    code += tabulation+'  <setHeader '+getCamelAttributeHeaderName()+'="'+expr.target.field+'" id="'+element.id+'">\n'+
+                    code += tabulation+'  <setHeader '+getCamelAttributeHeaderName()+'="'+expr.target.value+'" id="'+element.id+'">\n'+
                             tabulation+'    '+'<simple>'+expression+'</simple>'+'\n'+
                             tabulation+'  </setHeader>\n'
                     break;
@@ -222,72 +230,8 @@ AFRAME.registerComponent('mapping', {
             }
         }
 
-        //code += tabulation+'</pipeline>\n'
-
         return code
     },
-
-    processCamelRenderingV1: function(tabulation)
-    {
-        let mappings = this.el.querySelectorAll('a-rope')
-
-        // let code = tabulation+'<pipeline id="'+this.el.id+'-pipeline">\n'
-        let code = ""
-
-        for (let i = 0; i < mappings.length; i++) {
-            const element = mappings[i];
-
-            let source = document.getElementById(element.getAttribute('start'))
-            let target = document.getElementById(element.getAttribute('end'))
-            
-            let sourceEntry = source.closest('a-map-entry')
-            let targetEntry = target.closest('a-map-entry')
-
-            let sourceField = sourceEntry.attributes.value.value
-            let targetField = targetEntry.attributes.value.value
-
-            let varType    = sourceEntry.attributes.vartype.value
-            let setterType = targetEntry.attributes.vartype.value
-
-            let expression
-
-            switch(varType) {
-                case 'properties':
-                    expression = '${exchangeProperty.'+sourceField+'}'
-                    break
-                case 'headers':
-                    expression = '${header.'+sourceField+'}'
-                    break;
-                case 'body':
-                    expression = '${body}'
-                    break;
-            }
-
-            switch(setterType) {
-                case 'properties':
-                    code += tabulation+'  <setProperty '+getCamelAttributePropertyName()+'="'+targetField+'" id="'+targetEntry.id+'">\n'+
-                            tabulation+'    '+'<simple>'+expression+'</simple>'+'\n'+
-                            tabulation+'  </setProperty>\n'
-                    break;
-                case 'headers':
-                    code += tabulation+'  <setHeader '+getCamelAttributeHeaderName()+'="'+targetField+'" id="'+targetEntry.id+'">\n'+
-                            tabulation+'    '+'<simple>'+expression+'</simple>'+'\n'+
-                            tabulation+'  </setHeader>\n'
-                    break;
-                case 'body':
-                    code += tabulation+'  <setBody id="'+targetEntry.id+'">\n'+
-                            tabulation+'    '+'<simple>'+expression+'</simple>'+'\n'+
-                            tabulation+'  </setBody>\n'
-                    break;
-            }
-        }
-
-        //code += tabulation+'</pipeline>\n'
-
-        return code
-    },
-
-
 
 
     refreshProcessContext: function()
@@ -295,21 +239,21 @@ AFRAME.registerComponent('mapping', {
         let vars = findExpressionVariables()
 
         //sets up datamodel
-        let datamodel = {
+        let datamodel = {exchange:{
             headers: {},
             properties: {},
-            body: ""
-        }
+            body: "body"
+        }}
 
         //populates data with headers/properties
         for (let index = 0; index < vars.length; index++) {
            const element = vars[index];
 
             if(element.startsWith("header")){
-                datamodel.headers[element.split('.')[1]] = ""
+                datamodel.exchange.headers[element.split('.')[1]] = ""
             }
             else if(element.startsWith("exchangeProperty")){
-                datamodel.properties[element.split('.')[1]] = ""
+                datamodel.exchange.properties[element.split('.')[1]] = ""
             }
         }
 
@@ -376,14 +320,14 @@ AFRAME.registerComponent('mapping', {
   
 //   AFRAME.registerPrimitive('a-map-entry', {
 //     defaultComponents: {
-//         'map-entry': {}
+//         'mapentry': {}
 //     },
 //     mappings: {
 //         // menu: "dropdown.menu"
-//         value: "map-entry.value",
-//         width: "map-entry.width",
-//         wrapcount: "map-entry.wrapcount",
-//         enabled: "map-entry.enabled",
-//         istarget: "map-entry.istarget",
+//         value: "mapentry.value",
+//         width: "mapentry.width",
+//         wrapcount: "mapentry.wrapcount",
+//         enabled: "mapentry.enabled",
+//         istarget: "mapentry.istarget",
 //     }
 //   });
