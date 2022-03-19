@@ -46,7 +46,7 @@ AFRAME.registerComponent('mapping', {
         map.setAttribute("istarget", true)
         // map.setAttribute("type", "headers")
         map.setAttribute("processvars", true)
-        map.setAttribute("position", "2 2 0")
+        map.setAttribute("position", "1 2 0")
         this.mapping.appendChild(map)
     
         this.targetTree = map
@@ -67,9 +67,14 @@ AFRAME.registerComponent('mapping', {
         //this action will ensure there is a default source data tree
         this.refreshProcessContext()
 
-        // if(this.initMappings){
-        //     this.initialiseMappings()
-        // }
+
+        this.textarea = document.createElement('a-textarea')
+        this.textarea.setAttribute("cols", 20)
+        this.textarea.setAttribute("rows", 1)
+        this.textarea.setAttribute("scale", "2.5 2.5 2.5")
+        // this.textarea.setAttribute("disabled", true)
+        this.mapping.appendChild(this.textarea)
+
     },
 
     //Adds a new DataModel source to the Mapping element
@@ -79,7 +84,7 @@ AFRAME.registerComponent('mapping', {
     {
         processVariables = processVariables || false
 
-        let position = new THREE.Vector3(-3, 2, 0)
+        let position = new THREE.Vector3(-4, 2, 0)
 
         if(this.datasource){
             position = this.datasource.object3D.position.clone()
@@ -239,25 +244,32 @@ AFRAME.registerComponent('mapping', {
         let vars = findExpressionVariables()
 
         //sets up datamodel
-        let datamodel = {exchange:{
+        let datamodel = {
             headers: {},
             properties: {},
             body: "body"
-        }}
+        }
 
         //populates data with headers/properties
         for (let index = 0; index < vars.length; index++) {
            const element = vars[index];
 
             if(element.startsWith("header")){
-                datamodel.exchange.headers[element.split('.')[1]] = ""
+                datamodel.headers[element.split('.')[1]] = ""
             }
             else if(element.startsWith("exchangeProperty")){
-                datamodel.exchange.properties[element.split('.')[1]] = ""
+                datamodel.properties[element.split('.')[1]] = ""
             }
         }
 
-        this.addDataModelSource(datamodel, true)
+        let targetModel = {
+            name: "exchange",
+            datamodel: datamodel,
+            custom:{}
+        } 
+
+        // this.addDataModelSource(datamodel, true)
+        this.addDataModelSource(targetModel, true)
     },
 
 

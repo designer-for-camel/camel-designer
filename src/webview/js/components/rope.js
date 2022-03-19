@@ -34,10 +34,6 @@ AFRAME.registerComponent('rope', {
     this.start = start
     this.end = end
 
-
-    // this.posStart = start.object3D.position.clone()
-    // this.posEnd = end.object3D.position.clone()
-
     let vStart = new THREE.Vector3()
     let vEnd = new THREE.Vector3()
 
@@ -47,69 +43,29 @@ AFRAME.registerComponent('rope', {
     this.posStart = vStart
     this.posEnd   = vEnd
     
-    // ref: https://cubic-bezier.com/#.42,0,.57,1
-    // const curve = new THREE.CubicBezierCurve3(
-    //     new THREE.Vector3( -4.5, 0, 0 ),
-    //     new THREE.Vector3( -2, 0, 0 ),
-    //     new THREE.Vector3( 2, 3, 0 ),
-    //     new THREE.Vector3( 5, 3, 0 )
-    // );
-    
-
-    // let vStart = new THREE.Vector3()
-    // let vEnd = new THREE.Vector3()
-    // this.start.object3D.getWorldPosition(vStart)
-    // this.end.object3D.getWorldPosition(vEnd)
-
-    // let cp1X = this.start.object3D.position.x + (this.end.object3D.position.x - this.start.object3D.position.x)/4
-    // let cp1Y = this.start.object3D.position.y
-
-    // let cp2X = this.end.object3D.position.x - (this.end.object3D.position.x - this.start.object3D.position.x)/4
-    // let cp2Y = this.end.object3D.position.y
-
-    let cp1X = vStart.x + (vEnd.x - vStart.x)/4
+    let cp1X = vStart.x + Math.abs((vEnd.x - vStart.x))/2
     let cp1Y = vStart.y
+    let cp1Z = vStart.z
 
-    let cp2X = vEnd.x - (vEnd.x - vStart.x)/4
+    let cp2X = vEnd.x - Math.abs((vEnd.x - vStart.x))/2
     let cp2Y = vEnd.y
+    let cp2Z = vEnd.z
 
 
-
-    // this.curve = new THREE.CubicBezierCurve3(
-    //     this.start.object3D.position,
-    //     new THREE.Vector3( cp1X, cp1Y, 0 ),
-    //     new THREE.Vector3( cp2X, cp2Y, 0 ),
-    //     this.end.object3D.position,
-    // );
-
+    // ref: https://cubic-bezier.com/#.42,0,.57,1
     this.curve = new THREE.CubicBezierCurve3(
       vStart,
-      new THREE.Vector3( cp1X, cp1Y, 0 ),
-      new THREE.Vector3( cp2X, cp2Y, 0 ),
+      new THREE.Vector3( cp1X, cp1Y, cp1Z ),
+      new THREE.Vector3( cp2X, cp2Y, cp2Z ),
       vEnd,
-  );
+    );
 
-    /*
-    this.geometry = new THREE.TubeGeometry(this.curve, 50, this.data.radius, 20, false);
-    this.material = new THREE.MeshBasicMaterial({
-                                                    color:  this.data.color,
-                                                    opacity: this.data.opacity,
-                                                    transparent: !this.data.visible
-                                                })
-    var line = new THREE.Mesh(this.geometry, this.material);
-       
-    this.el.setObject3D(this.attrName, line)
-    */
    this.remesh()
+   this.shiftToRelativePosition(vStart, vEnd)
+
   },
 
   remesh: function(){
-    // this.curve = new THREE.CubicBezierCurve3(
-    //                     this.start.object3D.position,
-    //                     new THREE.Vector3( -2, 0, 0 ),
-    //                     new THREE.Vector3( 2, 3, 0 ),
-    //                     this.end.object3D.position,
-    //                   );
 
     this.geometry = new THREE.TubeGeometry(this.curve, 50, this.data.radius, 20, false);
     this.material = new THREE.MeshBasicMaterial({
@@ -168,116 +124,65 @@ AFRAME.registerComponent('rope', {
       return
     }
 
-
+    //obtain start/end world positions
     let vStart = new THREE.Vector3
     let vEnd   = new THREE.Vector3
     this.start.object3D.getWorldPosition(vStart)
     this.end.object3D.getWorldPosition(vEnd)
 
 
-    // if(this.posStart.equals(this.start.object3D.position) && this.posEnd.equals(this.end.object3D.position)){
-    // if(this.posStart.equals(vStart) && this.posEnd.equals(vEnd)){
-    if(this.curve.v1.equals(vStart) && this.curve.v3.equals(vEnd)){
+    if(this.curve.v0.equals(vStart) && this.curve.v3.equals(vEnd)){
         //if start/end didn't change, no need to re-mesh
         return
     }
     else{
         //ref: https://stackoverflow.com/questions/49266456/update-three-tubegeometry-path-on-the-fly
 
-        // this.posEnd = this.end.object3D.position
-
-
-
-
-        // let cp1X = this.start.object3D.position.x + Math.abs((this.end.object3D.position.x - this.start.object3D.position.x))/2
-        // let cp1Y = this.start.object3D.position.y
-    
-        // let cp2X = this.end.object3D.position.x - Math.abs((this.end.object3D.position.x - this.start.object3D.position.x))/2
-        // let cp2Y = this.end.object3D.position.y
-
         let cp1X = vStart.x + Math.abs((vEnd.x - vStart.x))/2
-        // let cp1Y = vStart.y
-    
-        let cp2X = vEnd.x - Math.abs((vEnd.x - vStart.x))/2
-        // let cp2Y = vEnd.y
+        let cp2X = vEnd.x   - Math.abs((vEnd.x - vStart.x))/2
 
-
-
-        let p1 = this.curve.v0.clone()
-        // p1.x += 4
+        let p1 = vStart.clone()
         p1.x = cp1X
 
-        let p2 = this.curve.v3.clone()
-        // p2.x -= 4
+        let p2 = vEnd.clone()
         p2.x = cp2X
 
-        // let p0 = this.start.object3D.position.clone()
-        // p0.x+=.5
-        // let p3 = this.end.object3D.position.clone()
-        // p3.x-=.5
-
-        let p0 = new THREE.Vector3()
-        this.start.object3D.getWorldPosition(p0)
-        // p0.subVectors(p0,this.start.object3D.position)
-        // p0.x+=.5
-        // vStart.negate()
-
-        // let v1 = vStart.clone().negate()
-        // let v2 = this.start.object3D.position.clone()
-        // p0.add(v1)
-        // p0.add(v2)
-
-
-        // p0 = this.start.object3D.position.clone().negate().add(vStart.negate())
-
-        let p3 = new THREE.Vector3()
-        this.end.object3D.getWorldPosition(p3)
-        // p3.subVectors(p3,this.end.object3D.position)
-        // p3.x-=.2
-
-        // let v3 = vEnd.clone().negate()
-        // let v4 = this.end.object3D.position.clone()
-        // p3.add(v3)
-        // p3.add(v4)
-        // p3.add(v1)
-
-        // this.curve.v1 = p1
-        // this.curve.v2 = p2
-        this.curve.v0 = p0
+        this.curve.v0 = vStart
         this.curve.v1 = p1
         this.curve.v2 = p2
-        this.curve.v3 = p3
-    
-
+        this.curve.v3 = vEnd
+   
         this.remesh()
-
-
-        //As data links (ropes) can be at any hierarchy level and not centred in their coordinates system
-        //we need to shift their position to visually match their parent's end's position
-        this.start.object3D.getWorldPosition(this.posStart)      
-        this.end.object3D.getWorldPosition(this.posEnd)      
-
-
-        let v1,v2
-
-        //when rope becomes fully attached (when source and target are mapped)
-        if(this.data.attached){
-          //we use
-          v1 = vEnd.clone().negate()
-          v2 = this.end.object3D.position.clone()
-        }
-        //when user is still dragging the rope to a target field (constructing)
-        else{
-          v1 = vStart.clone().negate()
-          v2 = this.start.object3D.position.clone()
-        }
-
-        //add them
-        v1.add(v2)
-        
-        //set rope's position at vector's
-        this.el.object3D.position.set(v1.x, v1.y, v1.z)
+        this.shiftToRelativePosition(vStart, vEnd)
       }
+  },
+
+  shiftToRelativePosition: function (vStart, vEnd) {
+    //As data links (ropes) can be at any hierarchy level and not centred in their coordinates system
+    //we need to shift their position to visually match their parent's end's position
+    this.start.object3D.getWorldPosition(this.posStart)      
+    this.end.object3D.getWorldPosition(this.posEnd)      
+
+
+    let v1,v2
+
+    //when rope becomes fully attached (when source and target are mapped)
+    if(this.data.attached){
+      //we use
+      v1 = vEnd.clone().negate()
+      v2 = this.end.object3D.position.clone()
+    }
+    //when user is still dragging the rope to a target field (constructing)
+    else{
+      v1 = vStart.clone().negate()
+      v2 = this.start.object3D.position.clone()
+    }
+
+    //add them
+    v1.add(v2)
+    
+    //set rope's position at vector's
+    this.el.object3D.position.set(v1.x, v1.y, v1.z)
   },
 
 

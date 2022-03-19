@@ -544,6 +544,10 @@ function createMenu3D(configuration)
             {
                 label:    "mapHTTP",
                 function: "createMapHttp"                
+            },
+            {
+                label:    "map data",
+                function: "createMapData"                
             }
 
             

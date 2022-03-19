@@ -10,6 +10,8 @@ AFRAME.registerComponent('maptree', {
     init: function () {
         console.log('maptree init')
 
+        this.childcount = 0
+
         //maptree creates a tree of child elements (data entries)
         //because they initialise asynchronously we listen for completion events until all are done
         //then we can initialise mappings (if any)
@@ -42,10 +44,13 @@ AFRAME.registerComponent('maptree', {
         // }
 
         if(this.type == 'json'){
-            this.tree = JSON.parse(this.data.tree)
-            let rootLabel = Object.keys(this.tree)[0]
+            this.targetmodel = JSON.parse(this.data.tree)
+            this.tree = this.targetmodel.datamodel
+            // let rootLabel = Object.keys(this.tree)[0]
+            let rootLabel = this.targetmodel.name
             // this.createBranch(this.tree, this.el, rootLabel)
-            this.createBranch(this.tree[rootLabel], this.el, rootLabel)
+            // this.createBranch(this.tree[rootLabel], this.el, rootLabel)
+            this.createBranch(this.tree, this.el, rootLabel)
             
             // this.createLeaf(this.el, "}", "}")
 
@@ -128,70 +133,72 @@ AFRAME.registerComponent('maptree', {
     },
 
     // createLeaf: function(parent, field, icon){
-    createLeaf: function(parent, field, value, ismappable){
-
-        // if(!mappable){
-        //     mappable = mappable
-        // }
-        // else{
-        //     mappable = true
-        // }
-        
-
+    createLeaf: function(parent, field, value, ismappable, childbuttonrecursive, childprefix){
 
 
         //for every child we create we increment the counter
         this.initCounter++
 
-        //element clicked
-        //the event originates at the top level mapper button
-        //we take the parent because the physical element is the box, child of the mapper button.
-
-        // let value = icon || "{"
-
         if(this.type == 'xml'){
             value = field
         }
 
-        let enabled = false
-
-        if(this.data.istarget && field == "headers"){
-            enabled = true
+        if(childprefix){
+            field += "-" + (++this.childcount) 
+            value += "-" + (  this.childcount) 
         }
 
-        let childMapButton = document.createElement('a-map-entry')
-        childMapButton.setAttribute("position",".2 -.5 0")
-        childMapButton.setAttribute("field", field)
-        childMapButton.setAttribute("value", value)
-        childMapButton.setAttribute("width", .4)
-        childMapButton.setAttribute("enabled", enabled)
-        childMapButton.setAttribute("ismappable", ismappable)
-        childMapButton.setAttribute("istarget", this.data.istarget)
-        childMapButton.id = this.el.id + "-" + field
+        let mapentry = document.createElement('a-map-entry')
+        mapentry.setAttribute("position",".2 -.5 0")
+        mapentry.setAttribute("field", field)
+        mapentry.setAttribute("value", value)
+        mapentry.setAttribute("width", .4)
+        mapentry.setAttribute("ismappable", ismappable)
+        mapentry.setAttribute("istarget", this.data.istarget)
+        mapentry.id = this.el.id + "-" + field
+
+        if(childbuttonrecursive){
+            mapentry.setAttribute("childbutton",    true)
+            mapentry.setAttribute("childprefix",    childprefix)
+            mapentry.setAttribute("childrecursive", childbuttonrecursive)
+        }
+        else if(this.targetmodel.custom[field]){
+            mapentry.setAttribute("childbutton",    true)
+            mapentry.setAttribute("childprefix",    this.targetmodel.custom[field].prefix)
+            mapentry.setAttribute("childrecursive", this.targetmodel.custom[field].recursive)
+        }
 
         if(this.data.processvars && parent.attributes.field){
   
             if(parent.attributes.field.value == "exchange")
-                childMapButton.setAttribute("vartype", "body")
+                mapentry.setAttribute("vartype", "body")
             else
-                childMapButton.setAttribute("vartype", parent.attributes.field.value)
-
-            // if(parent.attributes.value.value == 'headers'){
-            //     childMapButton.setAttribute("expr-simple", "${header."+value+"}")
-            // }
-            // else if(parent.attributes.value.value == 'properties'){
-            //     childMapButton.setAttribute("expr-simple", "${exchangeProperty."+value+"}")
-            // }
-            // else if(value == 'body'){
-            //     childMapButton.setAttribute("expr-simple", "${body}")
-            // }
+                mapentry.setAttribute("vartype", parent.attributes.field.value)
         }
 
-        parent.appendChild(childMapButton)
+        parent.appendChild(mapentry)
 
-        return childMapButton
-    
+        return mapentry  
     },
+
+
+    removeLeaf: function(mapentry){
+
+        let parent = mapentry.parentElement
+        parent.removeChild(mapentry)
+        this.redraw()
+    },
+
+    redraw: function(){
+
+        let topMapperButton = this.el.firstChild
+
+        let all = Array.from(topMapperButton.querySelectorAll('a-map-entry'))
+        all.forEach(button => {
+            button.components.mapentry.redraw(all)
+        });            
+    },
+
 
     setTree: function (tree) {
 

@@ -3267,23 +3267,23 @@ function createMapHttp(definition)
     // definition = definition || new DOMParser().parseFromString('<pipeline><to uri="http://demoserver:80/resource"/></pipeline>', "text/xml").documentElement
     // definition = definition || new DOMParser().parseFromString('<pipeline><log message="split message"/></pipeline>', 'application/xml').documentElement;
 
-    // let code = `<pipeline id="to-8-pipeline">
-    //                 <setHeader name="Content-Type" id="to-8-mapping-target-Content-Type">
-    //                     <simple>`+'${body}'+`</simple>
-    //                 </setHeader>
-    //                 <to uri="http://demoserver:80/resource" id="to-8"/>
-    //             </pipeline>`
-
     let code = `<pipeline id="to-8-pipeline">
+                    <setHeader name="Content-Type" id="to-8-mapping-target-Content-Type">
+                        <simple>`+'${body}'+`</simple>
+                    </setHeader>
+                    <to uri="http://demoserver:80/resource" id="to-8"/>
+                </pipeline>`
 
-    <setHeader name="Exchange.HTTP_METHOD" id="to-8-mapping-target-method">
-    <simple>`+'${body}'+`</simple>
-  </setHeader>
-                <setHeader name="Content-Type" id="to-8-mapping-target-Content-Type">
-                    <simple>`+'${header.clientid} ${body}'+`</simple>
-                </setHeader>
-                <to uri="http://demoserver:80/resource" id="to-8"/>
-            </pipeline>`
+//     let code = `<pipeline id="to-8-pipeline">
+
+//     <setHeader name="Exchange.HTTP_METHOD" id="to-8-mapping-target-method">
+//     <simple>`+'${body}'+`</simple>
+//   </setHeader>
+//                 <setHeader name="Content-Type" id="to-8-mapping-target-Content-Type">
+//                     <simple>`+'${header.clientid} ${body}'+`</simple>
+//                 </setHeader>
+//                 <to uri="http://demoserver:80/resource" id="to-8"/>
+//             </pipeline>`
 
     definition = definition || new DOMParser().parseFromString(code, "text/xml").documentElement
 
@@ -3295,7 +3295,8 @@ function createMapHttp(definition)
     // let activity = createGenericEndpointTo({definition: definition})
     let activity = createGenericEndpointTo({definition: endpoint})
 
-    let datamodel = {http: {
+    // let datamodel = {http: {
+    let datamodel = {
         parameters: {
             method: "Exchange.HTTP_METHOD",
             path:   "Exchange.HTTP_PATH",
@@ -3307,11 +3308,24 @@ function createMapHttp(definition)
             accept:         "Accept",
             authorization:  "Authorization",
         }
-    }}
+    // }}
+    }
+
+    let targetModel = {
+        name: "http",
+        datamodel: datamodel,
+        custom:{
+            "headers": {
+                prefix: "header",
+                recursive: false
+            }
+        },
+    } 
 
     activity.setAttribute("mapping", {
-        datatarget: JSON.stringify(datamodel),
-        rootname: "http"
+        // datatarget: JSON.stringify(datamodel),
+        datatarget: JSON.stringify(targetModel),
+        // rootname: "http"
     })
     activity.setAttribute('processor-type', "map-http");
 
@@ -3333,3 +3347,54 @@ function createMapHttp(definition)
     return activity
 }
 
+function createMapData(definition)
+{
+    let code = `<pipeline id="to-8-pipeline">
+                  <to uri="http://demoserver:80/resource" id="to-8"/>
+                </pipeline>`
+
+    definition = definition || new DOMParser().parseFromString(code, "text/xml").documentElement
+
+    
+    let endpoint = definition.querySelector('to')
+    
+    let activity = createGenericEndpointTo({definition: endpoint})
+
+    let datamodel = {                       
+                        target1: "value1",
+                        target2: "value2",
+                        target3: "value3",
+                        target4: {
+                            target5: "value5",
+                            target6: "value6",
+                            target7: "value7"
+                        },
+                    }
+    
+    let targetModel = {
+        name: "json data",
+        // datamodel: datamodel,
+        datamodel: {},
+        custom:{
+            "json data": {
+                prefix: "new",
+                recursive: true
+            }
+        },
+    } 
+    // let targetModel = {"json data": {}} 
+
+
+    activity.setAttribute("mapping", {
+        datatarget: JSON.stringify(targetModel),
+        // rootname: "JSON-DATA"
+    })
+    activity.setAttribute('processor-type', "map-data");
+
+    definition.removeChild(endpoint)
+
+    let mappings = []
+    activity.components.mapping.setInitMappings(mappings)
+
+    return activity
+}

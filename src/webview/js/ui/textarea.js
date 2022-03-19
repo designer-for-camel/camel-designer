@@ -15,7 +15,7 @@ if (typeof AFRAME === 'undefined') {
       backgroundColor: {type: 'color', default: 'white'},
       disabledBackgroundColor: {type: 'color', default: 'lightgrey'},
       disabled: {type: 'boolean', default: false},
-      text: {type: 'string', default: ''}
+      content: {type: 'string', default: ''}
     },
     init: function () {
       this.text = null;
@@ -30,7 +30,7 @@ if (typeof AFRAME === 'undefined') {
       this.background = document.createElement('a-plane');
     //   this.background = document.createElement('a-plane-rounded');
       this.background.setAttribute('color', this.data.disabled ? this.data.disabledBackgroundColor : this.data.backgroundColor);
-      this.background.setAttribute('clickable')
+      // this.background.setAttribute('clickable')
     //   this.background.setAttribute('dragndrop')
       this.background.classList.add('interactive')
       this.el.appendChild(this.background);
@@ -40,7 +40,7 @@ if (typeof AFRAME === 'undefined') {
       this.textAnchor = document.createElement('a-entity');
       this.el.appendChild(this.textAnchor);
       this.textAnchor.setAttribute('text', {
-        mode: 'pre',
+        // mode: 'pre',
         baseline: 'top',
         anchor: 'center',
         font: 'dejavu',
@@ -74,9 +74,12 @@ this.el.addEventListener('origin-changed', this._updateCursorGeometry.bind(this)
     //   this.focus()
     //   this.tick()
     //   this.focusout()
+
+
+      this.hide()
     },
     update: function (oldData) {
-      if (this.data.text !== oldData.text) {
+      if (this.data.content !== oldData.content) {
         this._updateTextarea();
       }
   
@@ -90,8 +93,18 @@ this.el.addEventListener('origin-changed', this._updateCursorGeometry.bind(this)
         this.cursorMesh.visible = !this.data.disabled;
         this.background.setAttribute('color', this.data.disabled ? this.data.disabledBackgroundColor : this.data.backgroundColor);
       }
+
+      if (this.data.rows !== oldData.rows) {
+        this.textarea.rows = this.data.rows;
+        this.textAnchor.setAttribute('position', {x: 0, y: this.charHeight * this.data.rows / 2, z: 0});
+        this.background.setAttribute('scale', {x: 1.05, y: this.charHeight * this.data.rows * 1.05, z: 1});      }
+
     },
-    focus: function () {
+
+    focus: function (event) {
+      if(event){
+        event.stopPropagation()
+      }
       this.textarea.focus();
       this.blinkEnabled = true
       this.hasFocus = true
@@ -118,7 +131,7 @@ this.el.addEventListener('origin-changed', this._updateCursorGeometry.bind(this)
   
       this.textarea.cols = this.data.cols;
       this.textarea.rows = this.data.rows;
-      this.textarea.value = this.data.text;
+      this.textarea.value = this.data.content;
       this.textarea.selectionStart = 0;
       this.textarea.selectionEnd = 0;
   
@@ -405,7 +418,58 @@ this.el.addEventListener('origin-changed', this._updateCursorGeometry.bind(this)
       }
       this.text = text;
       this._emit('text-changed');
+    },
+
+
+
+    //invokes callback with current text
+    callbackOnInput: function(callback, e){
+      //when the user hits enter
+      if (e.keyCode === 13){
+        callback(this.textarea.value)
+        e.preventDefault();
+        this.hide()
+      }
+    },
+
+    //deactivates and hides the textarea
+    hide: function(){
+      this.background.classList.remove('interactive')
+      this.el.setAttribute("visible", false)
+      this.textarea.removeEventListener('keydown', this.currentbinding)
+    },
+
+    //makes the textarea behave as an input box: one line text input element.
+    setInputMode: function(defaultvalue, maxlength, callback){
+      this.textarea.value = defaultvalue
+      // this.text = 
+      this.el.setAttribute("rows", "1")
+      this.textarea.setAttribute("wrap", "soft")
+
+      if(maxlength){
+        this.textarea.setAttribute("maxlength", maxlength)
+      }
+      else{
+        this.textarea.removeAttribute("maxlength")
+      }
+
+      this.background.classList.add('interactive')
+      this.el.setAttribute("visible", true)
+
+      this._emit('text-changed');
+
+      this.textarea.removeEventListener('keydown', this.currentbinding)
+      this.currentbinding = this.callbackOnInput.bind(this, callback)
+      this.textarea.addEventListener('keydown', this.currentbinding);
+    },
+    setNormalMode: function(){
+      this.textarea.removeAttribute("wrap")
+      this.textarea.removeAttribute("maxlength")
+
+      this.textarea.removeEventListener('keydown', this.disableReturnKey);
     }
+
+
   });
 
 
