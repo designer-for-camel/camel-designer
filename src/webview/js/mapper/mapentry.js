@@ -20,6 +20,11 @@ AFRAME.registerComponent('mapentry', {
         let textWidth = this.data.field.length / 10 + .5
         // let textWidth = this.data.field.length / 15 + .5
 
+        // let fpos    = 0
+        // let fwid    = 2
+        // let fdel    = fpos + fwid - .3
+        // let 
+
         //components.text.currentFont.widthFactor
         //object3D.children[0].scale
         //object3D.children[0].geometry.layout.glyphs.length
@@ -36,18 +41,20 @@ AFRAME.registerComponent('mapentry', {
         // let menuCount = Object.entries(menu.menu).length
 
         //this box allows the user to create new child map entries
-        let button = document.createElement('a-box')
+        // let button = document.createElement('a-box')
+        let button = document.createElement('a-plane')
         // button.id = "mapentry-button-" + sharedId
         // button.id = this.el.parentElement.id + "-" + this.data.value
         button.setAttribute('opacity', '.3')
-        button.setAttribute('depth', '.1')
+        // button.setAttribute('depth', '.05')
         // button.setAttribute('width', '1')
-        button.setAttribute('width', this.data.width)
+        // button.setAttribute('width', this.data.width)
+        button.setAttribute('width', .3)
         button.setAttribute('height', '.3')
         // button.setAttribute('animation__scale',         {property: 'opacity', dur: 0, to: '.6', startEvents: 'mouseenter'});
         // button.setAttribute('animation__scale_reverse', {property: 'opacity', dur: '0', to: '.4',   startEvents: 'mouseleave'});
         button.setAttribute('animation__scale',         {property: 'opacity', dur: 0, to: '.6', startEvents: 'mousedown'});
-        button.setAttribute('animation__scale_reverse', {property: 'opacity', dur: 0, to: '.4', startEvents: 'mouseup'});
+        button.setAttribute('animation__scale_reverse', {property: 'opacity', dur: 0, to: '.3', startEvents: 'mouseup'});
         
         // if(this.data.enabled){
         if(this.data.childbutton){
@@ -59,8 +66,9 @@ AFRAME.registerComponent('mapentry', {
             // this.el.setAttribute('visible', false)
         }
         
-        button.object3D.position.setX(textWidth)
-        button.object3D.position.setZ(button.object3D.position.z+0.05)
+        // button.object3D.position.setX(textWidth)
+        button.object3D.position.setX(2.2)
+        // button.object3D.position.setZ(button.object3D.position.z+0.05)
         // button.setAttribute("onclick", "this.components.mapentry.trigger(event)")
         this.childCount = this.data.childcount
         button.onclick = function(){       
@@ -71,7 +79,7 @@ AFRAME.registerComponent('mapentry', {
         //set label to menu button
         // let label = appendLabel(button, this.data.field, this.data.wrapcount)
         let label = appendLabel(button, "+", this.data.wrapcount)
-        label.setAttribute('position', "0 0 .049")
+        // label.setAttribute('position', "0 0 .049")
         label.setAttribute('scale', '4 4 4')
 
         //event listener for menu option
@@ -243,7 +251,8 @@ AFRAME.registerComponent('mapentry', {
                     v1.add(v2)
 
                     // v1.x += textarea.components.textarea.background.components.geometry.data.width / 2 -.2//textarea.components.textarea.background.object3D.scale
-                    v1.x += 1.25
+                    v1.x += 1.15
+                    v1.y += 0
                     v1.z += .01
 
 
@@ -254,6 +263,8 @@ AFRAME.registerComponent('mapentry', {
                     textarea.components.textarea.focus()
 
                     textarea.object3D.position.copy(v1)
+
+                    setCameraFocus(this)
                 });
 
 
@@ -286,7 +297,7 @@ AFRAME.registerComponent('mapentry', {
                 
                 this.labelvalue = document.createElement('a-text')
                 // this.labelvalue.setAttribute("value",this.getPath(sourceEntry))
-                this.labelvalue.setAttribute("position","2 0 0")
+                this.labelvalue.setAttribute("position","2.4 0 0")
                 // this.labelvalue.setAttribute("width","5")
                 this.el.appendChild(this.labelvalue)
 
@@ -296,7 +307,7 @@ AFRAME.registerComponent('mapentry', {
                 back.setAttribute("height",".3")
                 back.setAttribute("opacity",".5")
                 back.setAttribute("visible",false)
-                back.object3D.position.x = 2 + (5/2) // position + width/2 
+                back.object3D.position.x = 2.4 + (5/2) // position + width/2 
                 // back.object3D.position.z = -.01
                 this.el.appendChild(back)
 
@@ -374,20 +385,27 @@ AFRAME.registerComponent('mapentry', {
     
                     v1.add(v2)
     
-                    // v1.x += textarea.components.textarea.background.components.geometry.data.width / 2 -.2//textarea.components.textarea.background.object3D.scale
-                    v1.x += 1.25 +2
+
+                    // v1.x += 6.2
+                    // v1.y += -.4
+                    // v1.z += .01
+                    v1.x += 5.7
+                    v1.y += -.35
                     v1.z += .01
         
                     textarea.object3D.position.copy(v1)
         
-                    textarea.components.textarea.setInputMode(this.labelvalue.getAttribute("value"), null, function(text){
-                        console.log("got the text: "+text)
+                    // textarea.components.textarea.setInputMode(this.labelvalue.getAttribute("value"), null, function(text){
+                    textarea.components.textarea.setTextareaMode(this.labelvalue.getAttribute("value"), function(text){
+  
+                        this.setMappingExpression(null, text)
                         this.labelvalue.setAttribute("value", text)
                         // this.labelvalue.setAttribute('text', 'value', text)
 
-                        // this.labelvalue.setAttribute("value", "super duper super duper super duper super duper super duper super duper super duper super duper super duper super duper super duper super duper super duper super duper super duper super duper ")
                     }.bind(this))
                     textarea.components.textarea.focus()
+
+                    setCameraFocus(textarea)
     
                 }.bind(this));
 
@@ -476,15 +494,11 @@ AFRAME.registerComponent('mapentry', {
         // return path;
     },
 
-    setMappingExpression: function(mapping){
+    setMappingExpression: function(mapping, expression){
 
-        let element = mapping 
 
         // let code = ""
 
-            let source = document.getElementById(element.getAttribute('start'))
-            
-            let sourceEntry = source.closest('a-map-entry')
             let targetEntry = this.el
 
             // let sourceField = sourceEntry.attributes.value.value
@@ -493,20 +507,36 @@ AFRAME.registerComponent('mapentry', {
             // let varType    = sourceEntry.attributes.vartype.value
             // let setterType = targetEntry.attributes.vartype.value
 
+            //if no expression existed
             if(!this.expression){
                 this.expression = {
                     language: "simple",
                     sources:[],
                     target:{
-                        type: targetEntry.attributes.vartype.value,
+                        type:  targetEntry.attributes.vartype.value,
                         field: targetEntry.attributes.field.value,
                         value: targetEntry.attributes.value.value
                     }
                 }
             }
 
+        if(expression){
             this.expression.sources.push({
-                type: sourceEntry.attributes.vartype.value,
+                type:  "literal",
+                field: expression
+                // field: sourceEntry.attributes.value.value
+            }) 
+
+            this.el.setAttribute("ismapped", true)
+        }
+        else if(mapping){
+
+            let element = mapping 
+            let source = document.getElementById(element.getAttribute('start'))
+            let sourceEntry = source.closest('a-map-entry')
+
+            this.expression.sources.push({
+                type:  sourceEntry.attributes.vartype.value,
                 field: sourceEntry.attributes.field.value
                 // field: sourceEntry.attributes.value.value
             })
@@ -541,20 +571,19 @@ AFRAME.registerComponent('mapentry', {
             //         break;
             
         
-        // this.expression = expression
+            // this.expression = expression
 
-        this.el.setAttribute("ismapped", true)
+            this.el.setAttribute("ismapped", true)
 
-
-
-        let valueMapping = this.labelvalue.getAttribute("value")
-        if(!valueMapping){
-            this.labelvalue.setAttribute("value",this.getPath(sourceEntry))
-            // this.labelvalue.setAttribute('text', 'value', this.getPath(sourceEntry))
-        }
-        else{
-            this.labelvalue.setAttribute("value",valueMapping+",\n"+this.getPath(sourceEntry))
-            // this.labelvalue.setAttribute('text', 'value', valueMapping+",\n"+this.getPath(sourceEntry))
+            let valueMapping = this.labelvalue.getAttribute("value")
+            if(!valueMapping){
+                this.labelvalue.setAttribute("value",this.getPath(sourceEntry))
+                // this.labelvalue.setAttribute('text', 'value', this.getPath(sourceEntry))
+            }
+            else{
+                this.labelvalue.setAttribute("value",valueMapping+",\n"+this.getPath(sourceEntry))
+                // this.labelvalue.setAttribute('text', 'value', valueMapping+",\n"+this.getPath(sourceEntry))
+            }
         }
     },
 

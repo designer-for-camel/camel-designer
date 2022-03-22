@@ -97,7 +97,35 @@ this.el.addEventListener('origin-changed', this._updateCursorGeometry.bind(this)
       if (this.data.rows !== oldData.rows) {
         this.textarea.rows = this.data.rows;
         this.textAnchor.setAttribute('position', {x: 0, y: this.charHeight * this.data.rows / 2, z: 0});
-        this.background.setAttribute('scale', {x: 1.05, y: this.charHeight * this.data.rows * 1.05, z: 1});      }
+        this.background.setAttribute('scale', {x: 1.05, y: this.charHeight * this.data.rows * 1.05, z: 1});  
+
+        // this.background.setAttribute('scale', {
+        //   x: this.charWidth  * this.data.cols * 1.05,
+        //   y: this.charHeight * this.data.rows * 1.05,
+        //   z: 1});
+      }
+
+
+      if(this.data.cols !== oldData.cols) {
+        this.textAnchor.setAttribute('text', 'wrapCount', this.data.cols)
+        // this._updateTextarea();
+        this.textarea.cols = this.data.cols;
+        if(this.textAnchor.components.text.geometry){
+          this._updateCharMetrics();
+        }
+        
+        this._updateCursorStyle()
+
+
+        this.background.setAttribute('scale', {x: 1.05, y: this.charHeight * this.data.rows * 1.05, z: 1});  
+        // this.textAnchor.setAttribute('text', 'width', this.charWidth  * this.data.cols * 1.05,)
+        // this.background.setAttribute('scale', {
+        //     x: this.charWidth  * this.data.cols * 1.05,
+        //     y: this.charHeight * this.data.rows * 1.05,
+        //     z: 1});
+
+        // this._updateCharMetrics();
+      }
 
     },
 
@@ -116,6 +144,12 @@ this.el.addEventListener('origin-changed', this._updateCursorGeometry.bind(this)
         this.cursorMesh.visible = false
         this.hasFocus = false
         this.blinkEnabled = false
+
+      // if(this.currentbinding){
+      //   let simulatedEvent = {keyCode: 13}
+      //   this.
+      // }
+
     },
     _initTextarea: function () {
       this.textarea = document.createElement('textarea');
@@ -160,12 +194,20 @@ this.el.addEventListener('origin-changed', this._updateCursorGeometry.bind(this)
     },
 
     _updateCharMetrics: function (event) {
+      // geometry.layout._opt.font.widthFactor
       const layout = this.textAnchor.components.text.geometry.layout;
-      const fontWidthFactor = event.detail.fontObj.widthFactor;
+      // const fontWidthFactor = event.detail.fontObj.widthFactor;
+      const fontWidthFactor = layout._opt.font.widthFactor;
       this.charWidth = fontWidthFactor * this.textAnchor.object3DMap.text.scale.x;
       this.charHeight = this.charWidth * layout.lineHeight / fontWidthFactor;
       this.textAnchor.setAttribute('position', {x: 0, y: this.charHeight * this.data.rows / 2, z: 0});
       this.background.setAttribute('scale', {x: 1.05, y: this.charHeight * this.data.rows * 1.05, z: 1});
+      // this.background.setAttribute('scale', {
+      //   x: this.charWidth  * this.data.cols * 1.05,
+      //   y: this.charHeight * this.data.rows * 1.05,
+      //   z: 1});
+      
+
       this.background.setAttribute('position', {x: 0, y: 0, z: 0});
       this._emit('char-metrics-changed');
     },
@@ -308,7 +350,8 @@ this.el.addEventListener('origin-changed', this._updateCursorGeometry.bind(this)
         // this.cursorMesh.visible = true;
     } else {
         this.blinkEnabled = false;
-        this.cursorMat.color.setStyle('white');
+        // this.cursorMat.color.setStyle('white');
+        this.cursorMat.color.setStyle('blue');
         // this.cursorMesh.visible = true;
         // this.cursorMat.transparent = true;
       }
@@ -424,10 +467,23 @@ this.el.addEventListener('origin-changed', this._updateCursorGeometry.bind(this)
 
     //invokes callback with current text
     callbackOnInput: function(callback, e){
-      //when the user hits enter
+      //when the user presses enter
       if (e.keyCode === 13){
         callback(this.textarea.value)
         e.preventDefault();
+
+        this.textarea.removeEventListener('keydown',  this.currentbinding)
+        this.textarea.removeEventListener('focusout', this.currentbinding)
+        this.currentbinding = null
+
+        this.hide()
+      }
+      //when the user clicks somewhere else
+      else if(e.type == "focusout"){
+        callback(this.textarea.value)
+        this.textarea.removeEventListener('keydown',  this.currentbinding)
+        this.textarea.removeEventListener('focusout', this.currentbinding)
+        this.currentbinding = null
         this.hide()
       }
     },
@@ -436,15 +492,16 @@ this.el.addEventListener('origin-changed', this._updateCursorGeometry.bind(this)
     hide: function(){
       this.background.classList.remove('interactive')
       this.el.setAttribute("visible", false)
-      this.textarea.removeEventListener('keydown', this.currentbinding)
     },
 
     //makes the textarea behave as an input box: one line text input element.
-    setInputMode: function(defaultvalue, maxlength, callback){
-      this.textarea.value = defaultvalue
+    setInputMode: function(content, maxlength, callback){
+      this.textarea.value = content
       // this.text = 
+      this.el.setAttribute("scale", "2.2 2.2 2.2")
+      this.el.setAttribute("cols", "18")
       this.el.setAttribute("rows", "1")
-      this.textarea.setAttribute("wrap", "soft")
+      // this.textarea.setAttribute("wrap", "soft")
 
       if(maxlength){
         this.textarea.setAttribute("maxlength", maxlength)
@@ -458,15 +515,30 @@ this.el.addEventListener('origin-changed', this._updateCursorGeometry.bind(this)
 
       this._emit('text-changed');
 
-      this.textarea.removeEventListener('keydown', this.currentbinding)
+      // this.textarea.removeEventListener('keydown', this.currentbinding)
       this.currentbinding = this.callbackOnInput.bind(this, callback)
-      this.textarea.addEventListener('keydown', this.currentbinding);
+      this.textarea.addEventListener('keydown',  this.currentbinding);
+      this.textarea.addEventListener('focusout', this.currentbinding);
     },
-    setNormalMode: function(){
-      this.textarea.removeAttribute("wrap")
+
+    //makes the textarea behave as a textarea element.
+    setTextareaMode: function(content, callback, cols, rows){
+      this.textarea.value = content
+      this.el.setAttribute("cols", "60")
+      this.el.setAttribute("rows", "4")
+      // this.el.setAttribute("scale", "7.5 7.5 7.5")
+      this.el.setAttribute("scale", "6.5 6.5 6.5")
+
       this.textarea.removeAttribute("maxlength")
 
-      this.textarea.removeEventListener('keydown', this.disableReturnKey);
+      this.currentbinding = this.callbackOnInput.bind(this, callback)
+      this.textarea.addEventListener('focusout', this.currentbinding);
+
+
+      this.background.classList.add('interactive')
+      this.el.setAttribute("visible", true)
+
+      this._emit('text-changed');
     }
 
 

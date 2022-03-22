@@ -457,6 +457,8 @@
       </a-timeline>
 
 
+        <canvas id="cam2"></canvas>
+
       </a-assets>
 
       <!-- BEGIN INPUTS/KEYBOARD -->
@@ -533,9 +535,9 @@
 
       <!-- <a-rope start="cube1" end="cube3"></a-rope> -->
 
-
-      <!-- <a-entity handgrip id="test-ta" position="0 0 0" scale="2 2 2">
-        <a-textarea rotation="0 0 0" scale="1 1 1" position=".6 .25 0" cols="20" rows="4" textvalue="this is a multiline textarea" colortext="white" colorbackground="blue" colorbackgrounddisabled="grey" disabled="false"></a-textarea>
+      <!-- <a-box position="2.7 0 0"></a-box>
+      <a-entity handgrip id="test-ta" position="0 0 0" scale="2 2 2">
+             <a-textarea rotation="0 0 0" scale="1 1 1" position=".6 .25 0" cols="20" rows="2" textvalue="this is a multiline textarea" colortext="white" colorbackground="blue" colorbackgrounddisabled="grey" disabled="false"></a-textarea>
       </a-entity> -->
 
       <!-- EXPERIMENTA END -->
@@ -590,6 +592,15 @@
     </a-entity> -->
 
 
+
+    <!-- Secondary camera, set above the objects, looking down, with camrender -->
+    <!-- <a-entity camera="active: false" camrender="cid: cam2" position="0 1.6 5" rotation="0 0 0">
+    </a-entity> -->
+
+    <!-- Screen for showing the secondary camera, with canvas-updater -->
+    <!-- <a-plane position="0 -4 -2.01" rotation="0 0 0" width="4.2" height="3.2"></a-plane>
+    <a-plane position="0 -4 -2" rotation="0 0 0" width="4" height="3"
+      material="src:#cam2; opacity: .95" canvas-updater></a-plane> -->
 
   </a-scene>
 

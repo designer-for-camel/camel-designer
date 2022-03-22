@@ -392,6 +392,16 @@ function getGroupEndActivity(activity)
 //an activity may be contained in a parent (e.g. a-box)
 function getPositionInScene(activity)
 {
+  let wp = new THREE.Vector3()
+  activity.object3D.getWorldPosition(wp)
+  return {
+    x: wp.x,
+    y: wp.y,
+    z: wp.z,
+  }
+
+
+/*
   if(isBoxed(activity))
   {
     // //position of parent
@@ -430,8 +440,9 @@ function getPositionInScene(activity)
                   z: position.z+entity.object3D.position.z};
     }
 
-
     return position;
+
+
   }
   else if(isRestElement(activity))
   {
@@ -454,6 +465,9 @@ function getPositionInScene(activity)
     y: activity.object3D.position.y,
     z: activity.object3D.position.z
   }
+
+*/
+
 }
 
 //updates an Activity ID with a new one
