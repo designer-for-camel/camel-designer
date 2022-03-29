@@ -49,3 +49,34 @@ Utils.preloadAssets = ()=>{
         }
     }
 }
+
+//calculates the object's position using the reference coordinate system
+//reference: reference in coordinates system A
+//object: object in coordinates system B
+//example:
+// if   ref. position is 5 5 5 (world position)
+// and  obj. position is 3 3 3 (child of obj in 7 7 7)
+// then obj. relative position to ref. is 5 5 5 
+// Utils.getRelativePosition = (reference, object)=>{
+Utils.getRelativePosition = (reference, worldposition)=>{
+
+    
+
+    //variables
+    let posRef = new THREE.Vector3()
+    let posObj = new THREE.Vector3()
+
+    //obtain respective world positions
+    reference.object3D.getWorldPosition(posRef)      
+        // object.object3D.getWorldPosition(posObj)      
+
+    //vectors
+    let v1 = posRef.negate()
+    // let v2 = posObj
+    let v2 = worldposition
+        
+    //add them
+    v1.add(v2)
+    
+    return v1
+}

@@ -23,10 +23,12 @@ AFRAME.registerComponent('mapping', {
         mapperPosition += 100
 
         let mapButton = document.createElement('a-button')
+        // mapButton.setAttribute("opacity", "1")
         mapButton.setAttribute("value", "Mapper")
         mapButton.setAttribute("position", "0 1 0")
         mapButton.setAttribute("onclick", "this.parentEl.components.mapping.enableMapperView(event)")
         this.el.appendChild(mapButton)
+        this.buttonMapper = mapButton
            
         // let mapTree = {
         //     "Content-Type": "",
@@ -54,7 +56,8 @@ AFRAME.registerComponent('mapping', {
             mapButton = document.createElement('a-button')
             mapButton.setAttribute("value", "Close")
             mapButton.setAttribute("position", "0 3 0")
-            mapButton.setAttribute("onclick", "this.parentEl.parentEl.components.mapping.enableRouteView(event)")
+            // mapButton.setAttribute("onclick", "this.parentEl.parentEl.components.mapping.enableRouteView(event)")
+            mapButton.setAttribute("onclick", "this.parentEl.parentEl.components.mapping.closeMappingView(event)")
             this.mapping.appendChild(mapButton)
 
         // map = document.createElement('a-map-tree')
@@ -75,6 +78,95 @@ AFRAME.registerComponent('mapping', {
         // this.textarea.setAttribute("disabled", true)
         this.mapping.appendChild(this.textarea)
 
+
+        // <!-- <a-entity camera="active: false" camrender="cid: cam2" position="0 1.6 5" rotation="0 0 0">
+        // </a-entity> -->
+
+
+        let assets = document.querySelector('a-assets')
+    
+        let camCanvas = document.createElement('canvas')
+        camCanvas.id = "cam-preview-"+this.el.id
+        assets.appendChild(camCanvas)
+
+        this.previewCamera = document.createElement('a-entity')
+        this.previewCamera.setAttribute("camera", {active: false})
+        // this.previewCamera.setAttribute("camrender", {cid: "cam2"})
+        this.previewCamera.setAttribute("camrender", {cid: camCanvas.id})
+        this.previewCamera.setAttribute("position", "6 3 7")
+        this.mapping.appendChild(this.previewCamera)
+
+
+        this.preview = document.createElement('a-plane')
+        this.preview.setAttribute("position", "0 1.08 0")
+        this.preview.setAttribute("width", "16.1")
+        this.preview.setAttribute("height", "9.1")
+        this.preview.setAttribute("scale", ".2 .2 .2")
+        // this.el.appendChild(this.preview)
+        this.preview.setAttribute("visible", "false")
+        this.buttonMapper.appendChild(this.preview)
+
+        this.previewRender = document.createElement('a-plane')
+        this.previewRender.setAttribute("position", "0 0 0.01")
+        this.previewRender.setAttribute("width", "16")
+        this.previewRender.setAttribute("height", "9")
+        // this.previewRender.setAttribute("material", "src:#cam2; opacity: .95")
+        // this.previewRender.setAttribute("material", "src:#cam2;")
+        this.previewRender.setAttribute("material", "src:#"+camCanvas.id)
+        this.previewRender.setAttribute("canvas-updater", "")
+        this.preview.appendChild(this.previewRender)
+
+        // <a-plane position="0 -4 -2" rotation="0 0 0" width="4" height="3"
+        // material="src:#cam2; opacity: .95" canvas-updater></a-plane> -->
+  
+
+
+// back.setAttribute('animation', {  startEvents:'mouseenter',
+//                                 pauseEvents:'mouseleave',
+//                     
+
+        this.el.addEventListener('mouseenter', function(){this.preview.setAttribute("visible", "true")}.bind(this))
+        this.el.addEventListener('mouseleave', function(){this.preview.setAttribute("visible", "false")}.bind(this))
+
+    },
+
+    //Actions when closing the Mapping View
+    closeMappingView: function(event)
+    {
+        this.enableRouteView(event)
+
+        let fs = new THREE.Vector3()
+        let ft = new THREE.Vector3()
+        let ls = new THREE.Vector3()
+        let lt = new THREE.Vector3()
+        
+        this.datasource.object3D.getWorldPosition(fs)
+        this.targetTree.object3D.getWorldPosition(ft)
+
+        let lastsource = this.datasource.querySelectorAll('a-map-entry')
+        // lastsource = lastsource[lastsource.length-1]    
+        let lasttarget = this.targetTree.querySelectorAll('a-map-entry')   
+        // lasttarget = lasttarget[lasttarget.length-1]
+
+        lastsource[lastsource.length-1].object3D.getWorldPosition(ls)
+        lasttarget[lasttarget.length-1].object3D.getWorldPosition(lt)
+
+        let centerx = (ft.x + ls.x)/2
+        let centery = (ft.y + ls.y)/2
+
+        let center = new THREE.Vector3(
+            centerx,
+            centery,
+            0
+        )
+
+        let refPos = Utils.getRelativePosition(this.mapping, center)
+
+        this.previewCamera.object3D.position.set(
+           refPos.x + 6,
+           refPos.y + 1.5,
+           7
+        )
     },
 
     //Adds a new DataModel source to the Mapping element
@@ -119,7 +211,8 @@ AFRAME.registerComponent('mapping', {
         }
 
         //obtain mappings to initialise
-        let mappings = this.initMappings
+        // let mappings = this.initMappings
+        mappings = this.initMappings
 
         //loop over the mappings
         for (let i = 0; i < mappings.length; i++) {
@@ -137,7 +230,7 @@ AFRAME.registerComponent('mapping', {
             if(expression.includes('${body}')){
                 source = this.datasource.querySelector('a-map-entry[value="body"] > a-plane.interactive')            
                 target = this.targetTree.querySelector('a-map-entry[value="'+field+'"] > a-plane.interactive')
-                
+
                 this.createMapping(source, target, element)
             }
 
@@ -146,8 +239,16 @@ AFRAME.registerComponent('mapping', {
                 let header = expression.split('.')[1].split('}')[0]
 
                 source = this.datasource.querySelector('a-map-entry[field="'+header+'"] > a-plane.interactive')            
-                target = this.targetTree.querySelector('a-map-entry[value="'+field+'"] > a-plane.interactive')            
-     
+                target = this.targetTree.querySelector('a-map-entry[value="'+field +'"] > a-plane.interactive')
+                this.createMapping(source, target, element)
+            }
+
+            if(expression.includes('${exchangeProperty.')){
+
+                let property = expression.split('.')[1].split('}')[0]
+
+                source = this.datasource.querySelector('a-map-entry[field="'+property+'"] > a-plane.interactive')            
+                target = this.targetTree.querySelector('a-map-entry[value="'+field +'"] > a-plane.interactive')
                 this.createMapping(source, target, element)
             }
         }
@@ -156,25 +257,72 @@ AFRAME.registerComponent('mapping', {
         this.initMappings = null
     },
 
+    // createMapping: function(source, target, code)
     createMapping: function(source, target, code)
     {
+        //if the target is not provided and we have the source code, we might want to guess the mapping
+        if(source && !target && code){
+
+            //create dynamically the target mapentry.
+            //because initialisation is asynchronous, the mapping needs to be postponed
+            //the call automatically schedules the mapping to be created when ready
+            this.targetTree.components.maptree.createLeafFromCode(source, code)
+
+            //do not continue, the mapping needs to be postponed
+            return
+        }
+
         if(source && target){
 
-            let mapEntry = target.parentElement
+            //if not the mapentry element, we assume it's a child, and ensure we pick the root (parent)
+            if(source.localName != 'a-map-entry'){
+                source = source.parentElement
+            }
+
+            //if not the mapentry element, we assume it's a child, and ensure we pick the root (parent)
+            if(target.localName != 'a-map-entry'){
+                target = target.parentElement
+            }
 
             //create the mapping
             let rope = document.createElement('a-rope')
-            rope.setAttribute("start", source.previousElementSibling.id)
-            rope.setAttribute("end", target.previousElementSibling.id)
+            rope.setAttribute("start", source.querySelector('a-box').id) //the ID of the connecting box (in the mapentry)
+            rope.setAttribute("end",   target.querySelector('a-box').id) //the ID of the connecting box (in the mapentry)
             rope.setAttribute("attached", true)
-            mapEntry.appendChild(rope)
+            target.appendChild(rope)
 
-            mapEntry.components.mapentry.setMappingExpression(rope)
-
+            //set the expression
+            target.components.mapentry.setMappingExpression(rope, code)
         }
         else{
             console.warn('failed to initialise mapping for: ' + code.outerHTML)
         }
+    },
+    
+    getSourceMapEntry: function(language, expression)
+    {
+        let source = null
+        
+        if(language == "simple"){
+
+            if(expression.startsWith("${body")){
+                source = this.datasource.querySelector('a-map-entry[value="body"] > a-plane.interactive')
+            }
+            else if(expression.includes('${header.')){
+                let header = expression.split('.')[1].split('}')[0]
+                source = this.datasource.querySelector('a-map-entry[field="'+header+'"] > a-plane.interactive')
+            }
+            else if(expression.includes('${exchangeProperty.')){
+                let property = expression.split('.')[1].split('}')[0]
+                source = this.datasource.querySelector('a-map-entry[field="'+property+'"] > a-plane.interactive')
+            }
+        }
+
+        if(source){
+            source = source.parentElement
+        }
+
+        return source
     },
     
     processCamelRendering: function(tabulation)
@@ -188,6 +336,7 @@ AFRAME.registerComponent('mapping', {
 
             let expr = element.components.mapentry.getMappingExpression()
             
+            let attributes = ""
             let expression = ""
 
             for (let i = 0; i < expr.sources.length; i++) {
@@ -214,25 +363,41 @@ AFRAME.registerComponent('mapping', {
             //we eliminate trailing space added in for-loop
             expression = expression.slice(0, -1)
 
+// if(expr.parameters.length > 0){
+
+    for (const [key, value] of Object.entries(expr.parameters)) {
+        console.log(`${key}: ${value}`);
+        attributes += ' '+key+'="'+value+'"'
+      }
+
+    //populate object's parameters
+    // for(let i = expr.parameters.length - 1; i >= 0; i--) {
+    //     attributes += ' '+expr.parameters[i].name+'="'+expr.parameters[i].value+'"'
+    // }
+// }
+
+expression = expr.expression
+
             switch(expr.target.type) {
                 case 'properties':
                     code += tabulation+'  <setProperty '+getCamelAttributePropertyName()+'="'+expr.target.value+'" id="'+element.id+'">\n'+
-                            tabulation+'    '+'<simple>'+expression+'</simple>'+'\n'+
+                            // tabulation+'    '+'<simple>'+expression+'</simple>'+'\n'+
+                            tabulation+'    '+'<'+expr.language+attributes+'>'+expression+'</'+expr.language+'>'+'\n'+
                             tabulation+'  </setProperty>\n'
                     break;
                 case 'parameters':
                     code += tabulation+'  <setHeader '+getCamelAttributeHeaderName()+'="'+expr.target.value+'" id="'+element.id+'">\n'+
-                            tabulation+'    '+'<simple>'+expression+'</simple>'+'\n'+
+                            tabulation+'    '+'<'+expr.language+attributes+'>'+expression+'</'+expr.language+'>'+'\n'+
                             tabulation+'  </setHeader>\n'
                     break;
                 case 'headers':
                     code += tabulation+'  <setHeader '+getCamelAttributeHeaderName()+'="'+expr.target.value+'" id="'+element.id+'">\n'+
-                            tabulation+'    '+'<simple>'+expression+'</simple>'+'\n'+
+                            tabulation+'    '+'<'+expr.language+attributes+'>'+expression+'</'+expr.language+'>'+'\n'+
                             tabulation+'  </setHeader>\n'
                     break;
                 case 'body':
                     code += tabulation+'  <setBody id="'+element.id+'">\n'+
-                            tabulation+'    '+'<simple>'+expression+'</simple>'+'\n'+
+                            tabulation+'    '+'<'+expr.language+attributes+'>'+expression+'</'+expr.language+'>'+'\n'+
                             tabulation+'  </setBody>\n'
                     break;
             }
@@ -349,6 +514,9 @@ AFRAME.registerComponent('mapping', {
 
 
 
+
+// Credit to:
+// https://jgbarah.github.io/aframe-playground/components/#camrender
 AFRAME.registerComponent('camrender',{
     'schema': {
        // desired FPS

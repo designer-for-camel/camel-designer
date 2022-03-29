@@ -396,11 +396,13 @@ AFRAME.registerComponent('mapentry', {
                     textarea.object3D.position.copy(v1)
         
                     // textarea.components.textarea.setInputMode(this.labelvalue.getAttribute("value"), null, function(text){
-                    textarea.components.textarea.setTextareaMode(this.labelvalue.getAttribute("value"), function(text){
+                    textarea.components.textarea.setTextareaMode(this.labelvalue.getAttribute("value"), function(expression){
   
-                        this.setMappingExpression(null, text)
-                        this.labelvalue.setAttribute("value", text)
+                        this.setMappingExpression(null, null, expression)
+                        this.labelvalue.setAttribute("value", expression)
                         // this.labelvalue.setAttribute('text', 'value', text)
+
+                        this.updateMappings(expression)
 
                     }.bind(this))
                     textarea.components.textarea.focus()
@@ -466,6 +468,106 @@ AFRAME.registerComponent('mapentry', {
         return this.expression
     },
 
+    updateMappings: function(expression){
+
+        let vars = {}
+
+        //first phase: identify variables in expression
+        if(this.expression.language == "simple"){
+
+            if(expression.includes('${body')){
+                // vars.push("${body}")
+                vars["${body}"] = "body"
+            }
+
+            if(expression.includes('${header.')){
+
+                let instances = expression.split('${header.')
+               
+                for(let i = 1; i<instances.length; i++){
+                    let header = instances[i].split('}')[0]
+                    // vars.push("${header."+header+"}")
+                    vars["${header."+header+"}"] = "header"
+                } 
+            }
+
+            if(expression.includes('${exchangeProperty.')){
+
+                let instances = expression.split('${exchangeProperty.')
+               
+                for(let i = 1; i<instances.length; i+=2){
+                    let property = instances[i].split('}')[0]
+                    // vars.push("${header."+header+"}")
+                    vars["${exchangeProperty."+property+"}"] = "property"
+                } 
+            }
+        }
+
+        let current = this.expression.sources
+        let filtered = []
+
+        //second phase: clean up mappings with no matching variable
+        for(let i = 0; i < current.length; i++){
+
+            if(this.expression.language == "simple"){
+                let sourceVar = ""
+                if(current[i].type == "headers"){
+                    sourceVar = "${header." + current[i].field + "}"
+                }
+                else if(current[i].type == "properties"){
+                    sourceVar = "${exchangeProperty." + current[i].field + "}"
+                }
+                else if(current[i].type == "body"){
+                    sourceVar = "${body}"
+                }
+
+                //if current source field not found in expression, we delete the mapping
+                if(!vars[sourceVar]){
+                    var mapping = this.el.querySelector('a-rope[start='+current[i].id+']')
+                    this.el.removeChild(mapping)
+                }
+                else{
+                    //we retain the mapping in the new sources list
+                    filtered.push(current[i])
+
+                    //we remove from the expression var list, the variable processed
+                    delete vars[sourceVar]
+                }
+            }
+        }
+
+        //keep only those mappings that still exist
+        this.expression.sources = filtered
+
+
+        //third phase: we look at the variables left in our list
+        for(variable in vars){
+
+            let source = this.el.closest('[mapping]').components.mapping.getSourceMapEntry(this.expression.language, variable)
+            let target = this.el
+
+            //create visual mapping if source entry found
+            if(source){
+                //create the mapping
+                let rope = document.createElement('a-rope')
+                rope.setAttribute("start", source.querySelector('a-box').id) //the ID of the connecting box (in the mapentry)
+                rope.setAttribute("end",   target.querySelector('a-box').id) //the ID of the connecting box (in the mapentry)
+                rope.setAttribute("attached", true)
+                target.appendChild(rope)
+                
+                //register the source
+                this.expression.sources.push({
+                    type:  source.attributes.vartype.value,
+                    field: target.attributes.field.value,
+                    id:    rope.getAttribute("start")
+                    // field: sourceEntry.attributes.value.value
+                })
+            }
+        }
+
+        console.log("dummy")
+    },
+
     getPath: function(entry){
 
         const path = []; // To save the path of the node element that need to get to the root element
@@ -494,12 +596,88 @@ AFRAME.registerComponent('mapentry', {
         // return path;
     },
 
-    setMappingExpression: function(mapping, expression){
+    // setMappingExpression: function(mapping, expression){
+    setMappingExpression: function(mapping, camelsource, literal){
+
+        
+        if(!this.expression){
+            this.expression = {
+                sources:[],
+                language: "simple", //default is Camel's simple language
+                parameters: {},
+                // expression: camelsource.firstElementChild.textContent,
+                expression: null,
+                target:{
+                    type:  this.el.attributes.vartype.value,
+                    field: this.el.attributes.field.value,
+                    value: this.el.attributes.value.value
+                }
+            }
+        }
+
+        if(mapping){
+
+            let element = mapping 
+            let source = document.getElementById(element.getAttribute('start'))
+            let sourceEntry = source.closest('a-map-entry')
+
+            this.expression.sources.push({
+                type:  sourceEntry.attributes.vartype.value,
+                field: sourceEntry.attributes.field.value,
+                id:    mapping.getAttribute("start")
+                // field: sourceEntry.attributes.value.value
+            })
+
+            let varType     = sourceEntry.attributes.vartype.value
+            // let sourceField = sourceEntry.attributes.value.value
+            let sourceField = sourceEntry.attributes.field.value
+
+            switch(varType) {
+                case 'properties':
+                    this.expression.expression = '${exchangeProperty.'+sourceField+'}'
+                    break
+                case 'headers':
+                    this.expression.expression = '${header.'+sourceField+'}'
+                    break;
+                case 'body':
+                    this.expression.expression = '${body}'
+                    break;
+            }
+
+
+            // this.expression.expression = this.getPath(sourceEntry)
+        }
+
+
+        if(camelsource){
+ 
+            //set expression's language
+            this.expression.language = camelsource.firstElementChild.nodeName
+
+            //obtain language parameters from source
+            let attrs = camelsource.firstElementChild.attributes
+
+            //populate object's parameters
+            for(var i = attrs.length - 1; i >= 0; i--) {
+                this.expression.parameters[attrs[i].name] = attrs[i].value
+            }
+
+            //set the expression as is from the source code
+            this.expression.expression = camelsource.firstElementChild.textContent
+        }
+        else if(literal != null){
+            this.expression.expression = literal
+        }
+        // else{
+
+        // }
+
+
 
 
         // let code = ""
 
-            let targetEntry = this.el
+            // let targetEntry = this.el
 
             // let sourceField = sourceEntry.attributes.value.value
             // let targetField = targetEntry.attributes.value.value
@@ -508,18 +686,24 @@ AFRAME.registerComponent('mapentry', {
             // let setterType = targetEntry.attributes.vartype.value
 
             //if no expression existed
-            if(!this.expression){
-                this.expression = {
-                    language: "simple",
-                    sources:[],
-                    target:{
-                        type:  targetEntry.attributes.vartype.value,
-                        field: targetEntry.attributes.field.value,
-                        value: targetEntry.attributes.value.value
-                    }
-                }
-            }
+            // if(!this.expression){
+            //     this.expression = {
+            //         sources:[],
+            //         language: camelsource.firstElementChild.nodeName,
+            //         parameters: params,
+            //         expression: camelsource.firstElementChild.textContent,
+            //         target:{
+            //             type:  this.el.attributes.vartype.value,
+            //             field: targetEntry.attributes.field.value,
+            //             value: targetEntry.attributes.value.value
+            //         }
+            //     }
+            // }
 
+        
+
+
+/*
         if(expression){
             this.expression.sources.push({
                 type:  "literal",
@@ -529,7 +713,10 @@ AFRAME.registerComponent('mapentry', {
 
             this.el.setAttribute("ismapped", true)
         }
-        else if(mapping){
+        else 
+        */
+/*        
+        if(mapping){
 
             let element = mapping 
             let source = document.getElementById(element.getAttribute('start'))
@@ -540,6 +727,10 @@ AFRAME.registerComponent('mapentry', {
                 field: sourceEntry.attributes.field.value
                 // field: sourceEntry.attributes.value.value
             })
+
+            this.expression.expression = this.getPath(sourceEntry)
+*/
+
 
             // switch(varType) {
             //     case 'properties':
@@ -573,32 +764,48 @@ AFRAME.registerComponent('mapentry', {
         
             // this.expression = expression
 
+            //flag the field as mapped
             this.el.setAttribute("ismapped", true)
 
+            //obtain current mapping value
             let valueMapping = this.labelvalue.getAttribute("value")
+
+            // this.labelvalue.setAttribute("value",this.expression.expression)
+
+
+            //if a mapping does not exist
             if(!valueMapping){
-                this.labelvalue.setAttribute("value",this.getPath(sourceEntry))
+                // this.labelvalue.setAttribute("value",this.getPath(sourceEntry))
                 // this.labelvalue.setAttribute('text', 'value', this.getPath(sourceEntry))
+                
+                this.labelvalue.setAttribute("value",this.expression.expression)
             }
+            //if one exists, we append the new mapping
             else{
-                this.labelvalue.setAttribute("value",valueMapping+",\n"+this.getPath(sourceEntry))
+                // this.labelvalue.setAttribute("value",valueMapping+",\n"+this.getPath(sourceEntry))
                 // this.labelvalue.setAttribute('text', 'value', valueMapping+",\n"+this.getPath(sourceEntry))
+                
+                this.labelvalue.setAttribute("value",valueMapping+" "+this.expression.expression)
             }
-        }
+
+
+        // }
     },
 
     //creates a child map-entry node  
-    createChild: function(){
+    createChild: function(childname){
 
-        let newheader = this.data.childprefix
+        let newheader = childname || this.data.childprefix
 
-        this.el.closest('a-map-tree').components.maptree.createLeaf(
-            this.el, 
-            newheader, 
-            newheader, 
-            true, 
-            this.data.childrecursive,
-            this.data.childprefix)
+        let child = this.el.closest('a-map-tree').components.maptree.createLeaf(
+                        this.el, 
+                        newheader, 
+                        newheader, 
+                        true, 
+                        this.data.childrecursive,
+                        childname ? null : this.data.childprefix) //if childname is not given, we prefix the header name
+
+        return child
     },
 
     trigger: function(event){

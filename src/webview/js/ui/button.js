@@ -4,7 +4,8 @@ AFRAME.registerComponent('button', {
         value: { type: "string", default: "" },
         width: { type: "number", default: 1 },
         wrapcount: { type: "number" },
-        enabled: { type: "boolean", default: true }
+        enabled: { type: "boolean", default: true },
+        opacity: { type: "number", default: .3 },
     },
     init: function () {
 
@@ -14,7 +15,8 @@ AFRAME.registerComponent('button', {
 
         //create button entity
         let button = document.createElement('a-box')    
-        button.setAttribute('opacity', '.3')
+        // button.setAttribute('opacity', '.3')
+        button.setAttribute('opacity', this.data.opacity)
         button.setAttribute('depth', '.1')
         // button.setAttribute('width', '1')
         button.setAttribute('width', this.data.width)
@@ -72,6 +74,13 @@ AFRAME.registerComponent('button', {
             //switch ON/OFF button's visibility
             this.el.firstChild.setAttribute('visible', this.data.enabled)
         }
+
+        //if 'enabled' did change        
+        if(this.data.opacity != oldData.opacity){
+
+                this.el.firstChild.setAttribute('opacity', this.data.opacity)
+        }
+
     },
     tick: function () {},
     remove: function () {},
@@ -88,6 +97,7 @@ AFRAME.registerComponent('button', {
         value: "button.value",
         width: "button.width",
         wrapcount: "button.wrapcount",
-        enabled: "button.enabled"
+        enabled: "button.enabled",
+        opacity: "button.opacity"
     }
   });

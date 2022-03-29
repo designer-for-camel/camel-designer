@@ -3267,12 +3267,12 @@ function createMapHttp(definition)
     // definition = definition || new DOMParser().parseFromString('<pipeline><to uri="http://demoserver:80/resource"/></pipeline>', "text/xml").documentElement
     // definition = definition || new DOMParser().parseFromString('<pipeline><log message="split message"/></pipeline>', 'application/xml').documentElement;
 
-    let code = `<pipeline id="to-8-pipeline">
-                    <setHeader name="Content-Type" id="to-8-mapping-target-Content-Type">
-                        <simple>`+'${body}'+`</simple>
-                    </setHeader>
-                    <to uri="http://demoserver:80/resource" id="to-8"/>
-                </pipeline>`
+    // let code = `<pipeline id="to-8-pipeline">
+    //                 <setHeader name="Content-Type" id="to-8-mapping-target-Content-Type">
+    //                     <simple>`+'${body}'+`</simple>
+    //                 </setHeader>
+    //                 <to uri="http://demoserver:80/resource" id="to-8"/>
+    //             </pipeline>`
 
 //     let code = `<pipeline id="to-8-pipeline">
 
@@ -3280,10 +3280,27 @@ function createMapHttp(definition)
 //     <simple>`+'${body}'+`</simple>
 //   </setHeader>
 //                 <setHeader name="Content-Type" id="to-8-mapping-target-Content-Type">
-//                     <simple>`+'${header.clientid} ${body}'+`</simple>
+//                     <simple>client: `+'${header.clientid}, payload: ${body}'+`</simple>
 //                 </setHeader>
 //                 <to uri="http://demoserver:80/resource" id="to-8"/>
 //             </pipeline>`
+
+
+let code = `<pipeline id="to-8-pipeline">
+            <setHeader name="Content-Type" id="to-8-mapping-target-Content-Type">
+                <simple resultType="String">payload1: `+'${body}, payload2: ${body}'+`</simple>
+            </setHeader>
+
+            <setHeader name="header-1" id="to-8-mapping-target-header-1">
+            <simple>my payload is: `+'${body}'+`</simple>
+          </setHeader>
+
+          <setHeader name="myclient">
+          <simple>my payload is: `+'${header.client}'+`</simple>
+        </setHeader>
+
+            <to uri="http://demoserver:80/resource" id="to-8"/>
+        </pipeline>`
 
     definition = definition || new DOMParser().parseFromString(code, "text/xml").documentElement
 

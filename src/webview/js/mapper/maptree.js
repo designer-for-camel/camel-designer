@@ -10,16 +10,38 @@ AFRAME.registerComponent('maptree', {
     init: function () {
         console.log('maptree init')
 
+        //when initialising mappings, some target map-entries are dynamically created
+        //they need to be initialised asynchronously
+        //this variable holds childs with pending mappings to complete
+        this.pendingChildMapping = {}        
+        
         this.childcount = 0
 
         //maptree creates a tree of child elements (data entries)
         //because they initialise asynchronously we listen for completion events until all are done
         //then we can initialise mappings (if any)
         this.initCounter = 0
-        this.el.addEventListener('mapentry-init-complete', function(){
+        this.el.addEventListener('mapentry-init-complete', function(e){
             this.initCounter--
             if(this.initCounter == 0 && !this.data.istarget){
                 this.el.closest('[mapping]').components.mapping.initialiseMappings()
+            }
+
+            //obtain (if any) pending mapping
+            let pending = this.pendingChildMapping[e.srcElement.id]
+
+            //if found a pending one
+            if(pending){
+                //prepare arguments
+                let target      = e.srcElement
+                let source      = pending.mapsource
+                let camelsource = pending.camelsource
+
+                //create the pending mapping
+                this.el.closest('[mapping]').components.mapping.createMapping(source, target, camelsource)
+
+                //remove from list
+                delete this.pendingChildMapping[target.id]
             }
         }.bind(this));
 
@@ -180,6 +202,29 @@ AFRAME.registerComponent('maptree', {
 
         return mapentry  
     },
+
+
+    // createLeaf: function(parent, field, icon){
+    createLeafFromCode: function(mapsource, camelsource){
+
+        if(this.data.istarget){
+
+            if(this.targetmodel.custom.headers && camelsource.nodeName == 'setHeader'){
+                let mapentry = this.el.querySelector('a-map-entry[value=headers]')
+
+                let newchild = mapentry.components.mapentry.createChild(camelsource.attributes.name.nodeValue)
+
+                //we register the child with a pending mapping to complete
+                this.pendingChildMapping[newchild.id] = {
+                        mapsource: mapsource,
+                        camelsource: camelsource
+                    }
+
+                return newchild
+            }
+        }
+    },
+    
 
 
     removeLeaf: function(mapentry){
