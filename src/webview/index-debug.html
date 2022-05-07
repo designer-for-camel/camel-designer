@@ -397,7 +397,15 @@
 
     <!-- Spacial scene (A-Frame elements) -->
     <a-scene  inputlistener
-              id="thescene" myoutline cursor="rayOrigin:mouse" raycaster="objects: .interactive, .testcollidable" vr-mode-ui="enabled: true" screenshot="width: 512; height: 256;" keyboard-shortcuts="enterVR: false">
+              id="thescene" 
+              myoutline 
+
+              cursor="rayOrigin:mouse;" 
+              raycaster="objects: .interactive, .testcollidable; showLine: true"
+              
+              vr-mode-ui="enabled: true" 
+              screenshot="width: 512; height: 256;" 
+              keyboard-shortcuts="enterVR: false">
 
       <a-assets>
 
@@ -481,7 +489,12 @@
 
 
       <!-- <a-entity id="rig" > -->
-      <a-entity id="rig" wasd-controls>
+      <a-entity id="rig" 
+                wasd-controls="wsAxis:y; wsInverted:true">
+
+        <!-- <a-entity  >
+        </a-entity> -->
+
         <!-- <a-camera id="main-camera" look-controls-enabled="false" position="0 0 0" wasd-controls-enabled="true"></a-camera>
         <a-camera id="map-camera"  look-controls-enabled="false" position="0 100 0" wasd-controls-enabled="true" active="false"></a-camera> -->
         <a-camera id="main-camera" look-controls-enabled="false" position="0 0 0"   wasd-controls-enabled="false"></a-camera>
@@ -669,6 +682,7 @@
       function run () {
         createMenu3D()
         createMenu3Dcontrol()
+        createNavigationControl()
       }
 
       scene.addEventListener('enter-vr', function () {

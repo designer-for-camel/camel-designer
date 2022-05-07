@@ -18,30 +18,9 @@ AFRAME.registerComponent('mapentry', {
     init: function () {
 
         let textWidth = this.data.field.length / 10 + .5
-        // let textWidth = this.data.field.length / 15 + .5
+ 
 
-        // let fpos    = 0
-        // let fwid    = 2
-        // let fdel    = fpos + fwid - .3
-        // let 
-
-        //components.text.currentFont.widthFactor
-        //object3D.children[0].scale
-        //object3D.children[0].geometry.layout.glyphs.length
-
-
-        // let sharedId = +(new Date()).getTime()
-        // let sharedId = mapEntryId++
-
-        // let menu = this.data.menu
-
-        // this.el.setAttribute("mappable","")
-
-
-        // let menuCount = Object.entries(menu.menu).length
-
-        //this box allows the user to create new child map entries
-        // let button = document.createElement('a-box')
+        //this button allows the user to create new child map entries
         let button = document.createElement('a-plane')
         // button.id = "mapentry-button-" + sharedId
         // button.id = this.el.parentElement.id + "-" + this.data.value
@@ -51,35 +30,26 @@ AFRAME.registerComponent('mapentry', {
         // button.setAttribute('width', this.data.width)
         button.setAttribute('width', .3)
         button.setAttribute('height', '.3')
-        // button.setAttribute('animation__scale',         {property: 'opacity', dur: 0, to: '.6', startEvents: 'mouseenter'});
-        // button.setAttribute('animation__scale_reverse', {property: 'opacity', dur: '0', to: '.4',   startEvents: 'mouseleave'});
         button.setAttribute('animation__scale',         {property: 'opacity', dur: 0, to: '.6', startEvents: 'mousedown'});
         button.setAttribute('animation__scale_reverse', {property: 'opacity', dur: 0, to: '.3', startEvents: 'mouseup'});
         
-        // if(this.data.enabled){
+        // if children are allowed
         if(this.data.childbutton){
             button.classList.add('interactive')
-            // this.el.classList.add('interactive')
         }
         else{
             button.setAttribute('visible', false)
-            // this.el.setAttribute('visible', false)
         }
         
         // button.object3D.position.setX(textWidth)
         button.object3D.position.setX(2.2)
-        // button.object3D.position.setZ(button.object3D.position.z+0.05)
-        // button.setAttribute("onclick", "this.components.mapentry.trigger(event)")
         this.childCount = this.data.childcount
         button.onclick = function(){       
             this.createChild()            
         }.bind(this);
 
-
-        //set label to menu button
-        // let label = appendLabel(button, this.data.field, this.data.wrapcount)
+        //set label to add child button
         let label = appendLabel(button, "+", this.data.wrapcount)
-        // label.setAttribute('position', "0 0 .049")
         label.setAttribute('scale', '4 4 4')
 
         //event listener for menu option
@@ -153,7 +123,7 @@ AFRAME.registerComponent('mapentry', {
         mapPoint.id = this.el.id + "-" + "link-point"
         this.el.appendChild(mapPoint)
 
-
+                        //Create background interactive plane to edit map entry
                         let back = document.createElement("a-plane")
                         back.id = this.el.id + "-" + "plane"    
                         back.setAttribute("width", 2)     
@@ -312,6 +282,82 @@ AFRAME.registerComponent('mapentry', {
                 this.el.appendChild(back)
 
 
+                //set default list if none passed (when there is no interaction with the VS extension)
+                let langentries = [
+                    {"label":"simple"},
+                    {"label":"constant"},
+                    {"label":"xpath"},
+                    {"label":"jsonpath"}
+                ]
+
+                let langmenu = {
+                    "name":"map-"+this.el.id,
+                    "label":"atlasmapmenu",
+                    "class":"ui",
+                    "enabled":true,
+                    "menu": langentries}
+
+                //helper variable to create the dropdown
+                const placeholder = document.createElement("div");
+
+                //dynamic creation of dropdown
+                placeholder.innerHTML = 
+                    `<a-dropdown position="3 0 0" width="1"
+                     menu='`+JSON.stringify(langmenu)+`' value="simple"></a-dropdown>`;
+
+                //extract dropdown element
+                this.language = placeholder.firstElementChild
+
+                back.appendChild(this.language)
+
+                //set UI actions on dropdown selection
+                this.language.onclick = function(e){
+                    e.stopPropagation()
+
+                    if(!this.expression){
+                        this.initExpression()
+                    }
+
+                    // if no expression is set or user switches to a different language
+                    if( !this.expression.expression ||
+                        this.expression.language != e.currentTarget.attributes.value.value){
+
+                        //set expression from selected dropdown option
+                        this.expression.language = e.currentTarget.attributes.value.value
+
+                        //set the expression according to language selected
+                        switch(this.expression.language){
+                            case 'simple':
+                                this.expression.expression = '${body}'
+                                break;
+            
+                            case 'xpath':
+                                this.expression.expression = "/your_xpath_expression"
+                                this.createAttribute("saxon", "true")
+
+                                //if source mapping is a header, create attribute
+                                if(this.expression.sources.length == 1 && this.expression.sources[0].type == "headers"){
+                                    this.createAttribute("headerName", this.expression.sources[0].field)
+                                }
+                                break;
+                            
+                            case 'jsonpath':
+                                this.expression.expression = "$.your_jsonpath_expression"
+                                break;
+            
+                            case 'constant':
+                                this.expression.expression = "your constant expression"
+                                break;
+                        }
+
+                        this.setVisualMappingExpression(this.expression.expression)
+                    }
+                    // activity.components.uri.setTarget(adm)
+
+                    // syncEditor()
+                }.bind(this)
+
+
                 // back = document.createElement('a-entity')
                 // back.setAttribute("geometry", "primitive: plane; height: auto; width: auto")
                 // back.setAttribute("material", "color: black")
@@ -393,28 +439,99 @@ AFRAME.registerComponent('mapentry', {
                     v1.y += -.35
                     v1.z += .01
         
+                    //position textarea
                     textarea.object3D.position.copy(v1)
         
-                    // textarea.components.textarea.setInputMode(this.labelvalue.getAttribute("value"), null, function(text){
-                    textarea.components.textarea.setTextareaMode(this.labelvalue.getAttribute("value"), function(expression){
-  
-                        this.setMappingExpression(null, null, expression)
-                        this.labelvalue.setAttribute("value", expression)
-                        // this.labelvalue.setAttribute('text', 'value', text)
+                    //prompt the user to edit
+                    textarea.components.textarea.setTextareaMode(this.labelvalue.getAttribute("value"), this.setVisualMappingExpression.bind(this))
 
-                        this.updateMappings(expression)
-
-                    }.bind(this))
+                    //focus on textarea
                     textarea.components.textarea.focus()
-
                     setCameraFocus(textarea)
     
                 }.bind(this));
 
 
+
+
+                // BUTTON to add new attributes
+
+                //this box allows the user to create new attribute entries
+                button = document.createElement('a-plane')
+                // button.id = "mapentry-button-" + sharedId
+                // button.id = this.el.parentElement.id + "-" + this.data.value
+                button.setAttribute('opacity', '.3')
+                button.setAttribute('width', .3)
+                button.setAttribute('height', '.3')
+                button.setAttribute('attcreator', '')
+                button.setAttribute('animation__scale',         {property: 'opacity', dur: 0, to: '.6', startEvents: 'mousedown'});
+                button.setAttribute('animation__scale_reverse', {property: 'opacity', dur: 0, to: '.3', startEvents: 'mouseup'});
+                button.classList.add('interactive')
+                button.object3D.position.setX(3.7)
+
+                //define action when clicked
+                // - adds new attribute and prompts the user to enter a name/value pair
+                button.onclick = function(e){   
+                    console.log("Adding new attribute")
+                    e.stopPropagation()
+
+                    //obtain textarea to workwith
+                    let textarea = this.closest('[mapping]').querySelector('a-textarea')
+
+                    let txtWP = new THREE.Vector3()
+                    textarea.parentElement.object3D.getWorldPosition(txtWP)
+
+                    let entryWP = new THREE.Vector3()
+                    button.object3D.getWorldPosition(entryWP)
+
+                    let v1 = txtWP.clone().negate()
+                    let v2 = entryWP
+
+                    v1.add(v2)
+
+                    v1.x += 1.15
+                    v1.y += 0
+                    v1.z += .01
+
+                    textarea.components.textarea.setInputMode("enter_name", 14, function(text){
+                        console.log("got the new attribute name: "+text)
+
+                        let attName = text
+
+                        textarea.components.textarea.setInputMode("enter_value", 14, function(text){
+                            console.log("got the new attribute value: "+text)    
+                            let attValue = text       
+                            // this.components.mapentry.createAttribute(button, attName, attValue)    
+                            this.components.mapentry.createAttribute(attName, attValue)    
+                        }.bind(this), true)
+                    }.bind(this), true)
+
+                    textarea.components.textarea.focus()
+                    textarea.object3D.position.copy(v1)
+                    setCameraFocus(textarea)
+
+                }.bind(this.el);
+
+
+                //set label to menu button
+                // let label = appendLabel(button, this.data.field, this.data.wrapcount)
+                let label = appendLabel(button, "+", this.data.wrapcount)
+                // label.setAttribute('position', "0 0 .049")
+                label.setAttribute('scale', '4 4 4')
+
+                //event listener for menu option
+                button.addEventListener('mousedown', function(){
+                    button.object3D.position.setZ(button.object3D.position.z-0.05)
+                });
+            
+                //event listener for menu option
+                button.addEventListener('mouseup', function(){       
+                    button.object3D.position.setZ(button.object3D.position.z+0.05)
+                });
+
+                // this.el.appendChild(button)
+                back.appendChild(button)
             }
-
-
         }
 
         // let del = document.createElement("a-plane")
@@ -468,8 +585,21 @@ AFRAME.registerComponent('mapentry', {
         return this.expression
     },
 
+    setVisualMappingExpression: function(expression){
+
+        //set internal variables
+        this.setMappingExpression(null, null, expression)
+
+        //set visual value
+        this.labelvalue.setAttribute("value", expression)
+
+        //update mappings
+        this.updateMappings(expression)
+    },
+
     updateMappings: function(expression){
 
+        //helper variable
         let vars = {}
 
         //first phase: identify variables in expression
@@ -502,6 +632,24 @@ AFRAME.registerComponent('mapentry', {
                 } 
             }
         }
+        else if(this.expression.language == "constant"){
+            //do nothing
+        }
+        else if(this.expression.language == "xpath"){
+            if(this.expression.expression.length > 0){
+                if(this.expression.parameters.headerName){
+                    vars[this.expression.parameters.headerName] = "header"
+
+                    // this.createAttribute("headerName", this.expression.parameters.headerName)
+                }
+                else{
+                    vars.body = "body"
+                }
+            }
+        }
+        else{ //we assume all other languages evaluate against the body
+            vars.body = "body"
+        }
 
         let current = this.expression.sources
         let filtered = []
@@ -509,8 +657,9 @@ AFRAME.registerComponent('mapentry', {
         //second phase: clean up mappings with no matching variable
         for(let i = 0; i < current.length; i++){
 
+            let sourceVar = ""
+
             if(this.expression.language == "simple"){
-                let sourceVar = ""
                 if(current[i].type == "headers"){
                     sourceVar = "${header." + current[i].field + "}"
                 }
@@ -520,20 +669,28 @@ AFRAME.registerComponent('mapentry', {
                 else if(current[i].type == "body"){
                     sourceVar = "${body}"
                 }
+            }
+            else if(this.expression.language == "xpath"){
+                sourceVar = "body"
 
-                //if current source field not found in expression, we delete the mapping
-                if(!vars[sourceVar]){
-                    var mapping = this.el.querySelector('a-rope[start='+current[i].id+']')
-                    this.el.removeChild(mapping)
-                }
-                else{
-                    //we retain the mapping in the new sources list
-                    filtered.push(current[i])
-
-                    //we remove from the expression var list, the variable processed
-                    delete vars[sourceVar]
+                if(this.expression.parameters.headerName){
+                    sourceVar = this.expression.parameters.headerName
                 }
             }
+
+            //if current source field not found in expression, we delete the mapping
+            if(!vars[sourceVar]){
+                var mapping = this.el.querySelector('a-rope[start='+current[i].id+']')
+                this.el.removeChild(mapping)
+            }
+            else{
+                //we retain the mapping in the new sources list
+                filtered.push(current[i])
+
+                //we remove from the expression var list, the variable processed
+                delete vars[sourceVar]
+            }
+            
         }
 
         //keep only those mappings that still exist
@@ -597,22 +754,25 @@ AFRAME.registerComponent('mapentry', {
     },
 
     // setMappingExpression: function(mapping, expression){
+    initExpression: function(){
+        this.expression = {
+            sources:[],
+            language: this.el.querySelector('a-dropdown').getAttribute("value"), //default is Camel's simple language
+            parameters: {},
+            expression: null,
+            target:{
+                type:  this.el.attributes.vartype.value,
+                field: this.el.attributes.field.value,
+                value: this.el.attributes.value.value
+            }
+        }
+    },
+
+    // setMappingExpression: function(mapping, expression){
     setMappingExpression: function(mapping, camelsource, literal){
 
-        
         if(!this.expression){
-            this.expression = {
-                sources:[],
-                language: "simple", //default is Camel's simple language
-                parameters: {},
-                // expression: camelsource.firstElementChild.textContent,
-                expression: null,
-                target:{
-                    type:  this.el.attributes.vartype.value,
-                    field: this.el.attributes.field.value,
-                    value: this.el.attributes.value.value
-                }
-            }
+            this.initExpression()
         }
 
         if(mapping){
@@ -632,17 +792,49 @@ AFRAME.registerComponent('mapentry', {
             // let sourceField = sourceEntry.attributes.value.value
             let sourceField = sourceEntry.attributes.field.value
 
-            switch(varType) {
-                case 'properties':
-                    this.expression.expression = '${exchangeProperty.'+sourceField+'}'
-                    break
-                case 'headers':
-                    this.expression.expression = '${header.'+sourceField+'}'
+            if(this.expression.language == "simple"){
+                switch(varType) {
+                    case 'properties':
+                        this.expression.expression = '${exchangeProperty.'+sourceField+'}'
+                        break
+                    case 'headers':
+                        this.expression.expression = '${header.'+sourceField+'}'
+                        break;
+                    case 'body':
+                        this.expression.expression = '${body}'
+                        break;
+                }
+            }
+
+/*            
+            switch(this.expression.language){
+                case 'simple':
+                    switch(varType) {
+                        case 'properties':
+                            this.expression.expression = '${exchangeProperty.'+sourceField+'}'
+                            break
+                        case 'headers':
+                            this.expression.expression = '${header.'+sourceField+'}'
+                            break;
+                        case 'body':
+                            this.expression.expression = '${body}'
+                            break;
+                    }
                     break;
-                case 'body':
-                    this.expression.expression = '${body}'
+
+                case 'xpath':
+                    this.expression.expression = "/your_xpath_expression"
+                    break;
+                
+                case 'jsonpath':
+                    this.expression.expression = "$.your_jsonpath_expression"
+                    break;
+
+                case 'constant':
+                    this.expression.expression = "your constant expression"
                     break;
             }
+*/
 
 
             // this.expression.expression = this.getPath(sourceEntry)
@@ -654,12 +846,19 @@ AFRAME.registerComponent('mapentry', {
             //set expression's language
             this.expression.language = camelsource.firstElementChild.nodeName
 
+            //set dropdown option to obtained language
+            this.el.querySelector('a-dropdown').setAttribute("value", this.expression.language)
+            // this.el.querySelector('a-dropdown').components.dropdown.setValue(this.expression.language)
+
             //obtain language parameters from source
             let attrs = camelsource.firstElementChild.attributes
 
             //populate object's parameters
             for(var i = attrs.length - 1; i >= 0; i--) {
                 this.expression.parameters[attrs[i].name] = attrs[i].value
+
+                //create visual attribute
+                this.createAttribute(attrs[i].name, attrs[i].value)
             }
 
             //set the expression as is from the source code
@@ -775,16 +974,10 @@ AFRAME.registerComponent('mapentry', {
 
             //if a mapping does not exist
             if(!valueMapping){
-                // this.labelvalue.setAttribute("value",this.getPath(sourceEntry))
-                // this.labelvalue.setAttribute('text', 'value', this.getPath(sourceEntry))
-                
                 this.labelvalue.setAttribute("value",this.expression.expression)
             }
             //if one exists, we append the new mapping
             else{
-                // this.labelvalue.setAttribute("value",valueMapping+",\n"+this.getPath(sourceEntry))
-                // this.labelvalue.setAttribute('text', 'value', valueMapping+",\n"+this.getPath(sourceEntry))
-                
                 this.labelvalue.setAttribute("value",valueMapping+" "+this.expression.expression)
             }
 
@@ -806,6 +999,163 @@ AFRAME.registerComponent('mapentry', {
                         childname ? null : this.data.childprefix) //if childname is not given, we prefix the header name
 
         return child
+    },
+
+    //creates a child map-entry node  
+    //createAttribute: function(addbutton, attName, attValue){
+    createAttribute: function(attName, attValue){
+
+        if(!this.expression){
+            this.initExpression()
+        }
+
+        //ignore if attribute already exists
+        if(this.expression.parameters[attName]){
+            return
+        }
+
+        //obtain attribute creator button
+        let addbutton = this.el.querySelector('[attcreator]')
+
+        //width of attribute's editing box
+        let width = 2
+        let positionX = addbutton.object3D.position.x
+
+        //attribute's parent
+        let parent = addbutton.parentElement
+
+        //This is the new attribute's background
+        let back = document.createElement("a-plane")
+        //back.id = this.el.id + "-" + "plane"    
+        back.setAttribute("width", width)     
+        back.setAttribute("height",".3")
+        back.setAttribute("opacity",".5")
+        back.setAttribute("visible",true)
+        back.object3D.position.x =      positionX + width/2 - .15
+        back.object3D.position.z = -.01
+        // parent.appendChild(back)
+        parent.insertBefore(back, addbutton)
+
+
+        //This is the DELETE button (------X)
+        let del = document.createElement('a-plane')
+        let lbl = appendLabel(del, "X")
+        lbl.object3D.position.z+=.01
+        del.setAttribute("width", .3)
+        del.setAttribute("height",".3")
+        del.setAttribute("color","#515A5A")
+        del.setAttribute("position",".85 0 .01")
+        del.classList.add('interactive')
+        back.appendChild(del)
+
+        //add delete action
+        del.addEventListener('click', function(event){
+            event.stopPropagation()
+            console.log("removing attribute...")
+
+            //obtain attribute to delete
+            let toDelete = event.target.parentElement
+
+            //variable helpers
+            let nextAttribute = toDelete.nextSibling
+            let nextPos = toDelete.object3D.position.x
+            let temp
+            
+            //we iterate over the attributes that follow to shift them left to fill the empty space left
+            while(nextAttribute){
+                //we keep next position
+                temp = nextAttribute.object3D.position.x
+
+                //we shift back the next attribute
+                nextAttribute.object3D.position.x = nextPos
+
+                //we keep the attribute's position for the next shift
+                nextPos = temp
+
+                //we look for the next sibling
+                nextAttribute = nextAttribute.nextSibling
+            }
+
+            //we also shift left the + button 
+            // addbutton.object3D.position.x = nextPos - width/2 + .15
+            addbutton.object3D.position.x = nextPos - width -.05
+
+            //obtain attribute name. the label includes a colon that needs to be ignored
+            let delAttribute = toDelete.children[1].attributes.value.value.slice(0, -1)
+
+            //remote attribute from list
+            delete this.expression.parameters[delAttribute]
+
+            //remove entire construct (background, plus-button, labels). It all roots from the background
+            toDelete.parentElement.removeChild(toDelete)
+        }.bind(this));
+
+
+        back.classList.add('interactive')
+
+        //Editing actions when attribute is clicked
+        back.addEventListener('click', function(event){
+            event.stopPropagation()
+            console.log("Editing attribute...")
+
+            //obtain the label to edit
+            let lbl2edit = this.lastChild
+
+            //obtain the textarea to use for edit
+            let textarea = this.closest('[mapping]').querySelector('a-textarea')
+
+            //calculate textarea's position for editing (over the label under edition)
+                let txtWP = new THREE.Vector3()
+                textarea.parentElement.object3D.getWorldPosition(txtWP)
+                let entryWP = new THREE.Vector3()
+                lbl2edit.object3D.getWorldPosition(entryWP)
+
+                let v1 = txtWP.clone().negate()
+                let v2 = entryWP
+
+                v1.add(v2)
+
+                v1.x += 1.15
+                v1.y += 0
+                v1.z += .01
+
+            //set textarea position
+            textarea.object3D.position.copy(v1)
+
+            //set focus
+            textarea.components.textarea.focus()
+            setCameraFocus(this)
+              
+            //trigger textarea with callback
+            textarea.components.textarea.setInputMode(lbl2edit.getAttribute("value"), 14, function(text){
+                console.log("got the text: "+text)
+                lbl2edit.setAttribute("value", text)
+
+                //obtain attribute name. the label includes a colon that needs to be ignored
+                let attributeName = lbl2edit.previousSibling.attributes.value.value.slice(0, -1)
+
+                //update attribute's value
+                this.closest('a-map-entry').components.mapentry.expression.parameters[attributeName] = text
+
+            }.bind(this))            
+        });
+
+        //Attribute Name label
+        let label = document.createElement('a-text')
+        label.setAttribute("value",attName+":")
+        label.setAttribute("position", -(width/2)+" .3 0")
+        back.appendChild(label)
+
+        //Attribute Value label
+        label = document.createElement('a-text')
+        label.setAttribute("value",attValue)
+        label.setAttribute("position", -(width/2)+" 0 0")
+        back.appendChild(label)
+
+        //relocate the ADD button to the far right
+        addbutton.object3D.position.setX(addbutton.object3D.position.x + width +.05)
+
+        this.expression.parameters[attName] = attValue
     },
 
     trigger: function(event){

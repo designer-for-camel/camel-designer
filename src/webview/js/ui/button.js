@@ -3,6 +3,7 @@ AFRAME.registerComponent('button', {
         //menu: {}
         value: { type: "string", default: "" },
         width: { type: "number", default: 1 },
+        depth: { type: "number", default: .1 },
         wrapcount: { type: "number" },
         enabled: { type: "boolean", default: true },
         opacity: { type: "number", default: .3 },
@@ -17,7 +18,8 @@ AFRAME.registerComponent('button', {
         let button = document.createElement('a-box')    
         // button.setAttribute('opacity', '.3')
         button.setAttribute('opacity', this.data.opacity)
-        button.setAttribute('depth', '.1')
+        // button.setAttribute('depth', '.1')
+        button.setAttribute('depth', this.data.depth)
         // button.setAttribute('width', '1')
         button.setAttribute('width', this.data.width)
         button.setAttribute('height', '.3')
@@ -43,12 +45,14 @@ AFRAME.registerComponent('button', {
 
         //event listener for menu option
         button.addEventListener('mousedown', function(){
-            button.object3D.position.setZ(button.object3D.position.z-0.05)
+            // button.object3D.position.setZ(button.object3D.position.z-0.05)
+            button.object3D.position.setZ(-0.05)
         });
     
         //event listener for menu option
         button.addEventListener('mouseup', function(){       
-            button.object3D.position.setZ(button.object3D.position.z+0.05)
+            // button.object3D.position.setZ(button.object3D.position.z+0.05)
+            button.object3D.position.setZ(0.05)
         });
 
         this.el.appendChild(button)
@@ -96,6 +100,7 @@ AFRAME.registerComponent('button', {
         // menu: "dropdown.menu"
         value: "button.value",
         width: "button.width",
+        depth: "button.depth",
         wrapcount: "button.wrapcount",
         enabled: "button.enabled",
         opacity: "button.opacity"

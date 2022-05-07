@@ -762,6 +762,10 @@ function createMenu3D(configuration)
     camera.appendChild(handle)
 }
 
+// Places the UI item in the screen
+// The screen is divided in 4 regions, separated by the X and Y axis.
+// - heighFactor: (1 to -1) indicates where in the Y-axis the item is placed
+// - widthFactor: (1 to -1) indicates where in the X-axis the item is placed
 function setUiItemLocation(item, heightFactor, widthFactor){
 
     //MENU POSITIONING:
@@ -793,8 +797,8 @@ function setUiItemLocation(item, heightFactor, widthFactor){
     //set item's position as per calculated coordinates
     // item.setAttribute('position', -width/2+' '+height/2+' -4')
     item.object3D.position.set(
-        -width/2,
-        height/2,
+        -width /2,
+        height /2,
         -4
     )
 }
@@ -1157,3 +1161,217 @@ function createMenu3Dcontrol()
     }
   });
   */
+
+
+//===========================================================
+//===========================================================
+
+//This function creates a 3D navigation control
+function createNavigationControl()
+{
+    let controlId = 'navigation-control'
+  
+    //keep reference to camera
+    var camera = document.getElementById("main-camera");
+
+    let button = document.createElement('a-cone')
+    button.setAttribute("opacity", .4)
+    button.setAttribute("height", .3)
+    button.setAttribute("radius-bottom", .1)
+    button.setAttribute("rotation", "0 0 90")
+    button.classList.add('interactive')
+    button.setAttribute("position", "-.5 0 0")
+    button.id = "nav-left"
+
+   
+    button.onmousedown = function(){
+        window.dispatchEvent(new KeyboardEvent('keydown', {
+            // key: "a",
+            // keyCode: 69,
+            code: "KeyA",
+            // which: 69,
+            shiftKey: false,
+            ctrlKey: false,
+            metaKey: false
+          }));
+    }
+    
+    button.onmouseup = function(){
+        window.dispatchEvent(new KeyboardEvent('keyup', {
+            // key: "a",
+            // keyCode: 69,
+            code: "KeyA",
+            // which: 69,
+            shiftKey: false,
+            ctrlKey: false,
+            metaKey: false
+          }));
+      }
+
+
+    //create menu container
+    let navControlTop = document.createElement("a-entity")
+    let navControl = document.createElement("a-entity")
+    navControlTop.appendChild(navControl)
+    navControlTop.setAttribute("handgrip", "")
+    navControlTop.id = controlId
+    // navControl.setAttribute("handgrip", "")
+    navControl.appendChild(button)
+    navControl.setAttribute("position", ".7 -.3 0")
+
+    setUiItemLocation(navControlTop, -.7, .9)
+    // setUiItemLocation(navControlTop, -.5, .5)
+    // setUiItemLocation(navControl, -.5, .5)
+
+
+            button = document.createElement('a-cone')
+            button.setAttribute("opacity", .4)
+            button.setAttribute("height", .3)
+            button.setAttribute("radius-bottom", .1)
+            button.setAttribute("rotation", "0 0 -90")
+            button.classList.add('interactive')
+            button.setAttribute("position", ".5 0 0")
+            button.id = "nav-right"
+            navControl.appendChild(button)
+        
+
+            button.onmousedown = function(){
+                window.dispatchEvent(new KeyboardEvent('keydown', {
+                    // key: "a",
+                    // keyCode: 69,
+                    code: "KeyD",
+                    // which: 69,
+                    shiftKey: false,
+                    ctrlKey: false,
+                    metaKey: false
+                }));
+            }
+            
+            button.onmouseup = function(){
+
+                window.dispatchEvent(new KeyboardEvent('keyup', {
+                    // key: "a",
+                    // keyCode: 69,
+                    code: "KeyD",
+                    // which: 69,
+                    shiftKey: false,
+                    ctrlKey: false,
+                    metaKey: false
+                }));
+            }
+
+ 
+                    button = document.createElement('a-cone')
+                    button.setAttribute("opacity", .4)
+                    button.setAttribute("height", .3)
+                    button.setAttribute("radius-bottom", .1)
+                    button.setAttribute("rotation", "0 0 0")
+                    button.classList.add('interactive')
+                    button.setAttribute("position", "0 .3 0")
+                    button.id = "nav-up"
+                          
+
+                    button.onmousedown = function(){
+                        window.dispatchEvent(new KeyboardEvent('keydown', {
+                            // key: "a",
+                            // keyCode: 69,
+                            code: "KeyW",
+                            // which: 69,
+                            shiftKey: false,
+                            ctrlKey: false,
+                            metaKey: false
+                        }));
+                    }
+                    
+                    button.onmouseup = function(){
+                
+                        window.dispatchEvent(new KeyboardEvent('keyup', {
+                            // key: "a",
+                            // keyCode: 69,
+                            code: "KeyW",
+                            // which: 69,
+                            shiftKey: false,
+                            ctrlKey: false,
+                            metaKey: false
+                        }));
+                    }
+
+                    let updownControl = document.createElement("a-entity")
+                    updownControl.appendChild(button)
+                    navControl.appendChild(updownControl)
+                    //   navControl.appendChild(button)
+
+
+                            button = document.createElement('a-cone')
+                            button.setAttribute("opacity", .4)
+                            button.setAttribute("height", .3)
+                            button.setAttribute("radius-bottom", .1)
+                            button.setAttribute("rotation", "0 0 180")
+                            button.classList.add('interactive')
+                            button.setAttribute("position", "0 -.3 0")
+                            button.id = "nav-down"
+
+                            button.onmousedown = function(){
+                                window.dispatchEvent(new KeyboardEvent('keydown', {
+                                    // key: "a",
+                                    // keyCode: 69,
+                                    code: "KeyS",
+                                    // which: 69,
+                                    shiftKey: false,
+                                    ctrlKey: false,
+                                    metaKey: false
+                                }));
+                            }
+                            
+                            button.onmouseup = function(){                
+                                window.dispatchEvent(new KeyboardEvent('keyup', {
+                                    // key: "a",
+                                    // keyCode: 69,
+                                    code: "KeyS",
+                                    // which: 69,
+                                    shiftKey: false,
+                                    ctrlKey: false,
+                                    metaKey: false
+                                }));
+                            }
+
+                        // let updownControl = document.createElement("a-entity")
+                        updownControl.appendChild(button)
+                        // navControl.appendChild(button)
+                        
+                        // updownControl.setAttribute("rotation", "-60 20 0")
+                        // updownControl.setAttribute("rotation", "-45 0 0")
+                        // updownControl.setAttribute("position", "0 -.05 0")
+                        // navControl.appendChild(updownControl)
+
+                        let rig = document.getElementById("rig")
+                        
+                        document.addEventListener('keydown', function(e){
+                            if(e.key == "Shift")
+                            {
+                                rig.setAttribute("wasd-controls", "wsAxis:z; wsInverted:false")
+                                // console.log("shift: "+evt.type+"/"+evt.key)
+                                // updownControl.setAttribute("rotation", "-50 0 0")
+                                // navControl.setAttribute("rotation", "-70 0 0")
+                                // navControl.setAttribute("rotation", "0 90 90")
+                                updownControl.setAttribute("rotation", "0 90 -90")
+                            }
+                        });
+                        // }.bind(updownControl));
+
+                        document.addEventListener('keyup', function(e){
+                            if(e.key == "Shift")
+                            {
+                                rig.setAttribute("wasd-controls", "wsAxis:y; wsInverted:true")
+
+                                // console.log("shift: "+evt.type+"/"+evt.key)
+                                updownControl.setAttribute("rotation", "0 0 0")
+                                // navControl.setAttribute("rotation", "0 0 0")
+                            }
+                        });
+                        //}.bind(updownControl));
+
+    //attach menu to camera
+    // camera.appendChild(navControl)
+    camera.appendChild(navControlTop)
+}

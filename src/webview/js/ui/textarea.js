@@ -6,6 +6,8 @@ if (typeof AFRAME === 'undefined') {
   
   /**
    * Textarea component for A-Frame.
+   * Credit to:
+   *    https://github.com/brianpeiris/aframe-textarea-component
    */
   AFRAME.registerComponent('textarea', {
     schema: {
@@ -367,7 +369,19 @@ this.el.addEventListener('origin-changed', this._updateCursorGeometry.bind(this)
         // this.cursorMesh.geometry = new THREE.BufferGeometry()
 
         const startLine = Math.max(this.origin.y, this.startIndexInfo.line.index);
-        const endLine = Math.min(this.origin.y + this.data.rows - 1, this.endIndexInfo.line.index);
+        // const endLine = Math.min(this.origin.y + this.data.rows - 1, this.endIndexInfo.line.index);
+
+        //hack (don't know really here the best thing to do as can't understand original code for 'endIndexInfo')
+        // endIndexInfo might be null when parallel updates enter in conflict, that's bad
+        // if null, we default to startline
+        let endLine
+        if(!this.endIndexInfo){
+          endLine = startLine
+        }
+        else{
+          endLine = Math.min(this.origin.y + this.data.rows - 1, this.endIndexInfo.line.index);
+        }
+
         const maxIndex = this.origin.x + this.data.cols;
 
         let geometry = null
@@ -469,22 +483,31 @@ this.el.addEventListener('origin-changed', this._updateCursorGeometry.bind(this)
     callbackOnInput: function(callback, e){
       //when the user presses enter
       if (e.keyCode === 13){
-        callback(this.textarea.value)
-        e.preventDefault();
+        // callback(this.textarea.value)
+        // e.preventDefault();
 
         this.textarea.removeEventListener('keydown',  this.currentbinding)
         this.textarea.removeEventListener('focusout', this.currentbinding)
         this.currentbinding = null
 
         this.hide()
+
+        // some callbacks might want to reactivate the textarea
+        // better tp invoke callback after hiding textarea.
+        callback(this.textarea.value)
+        e.preventDefault();
       }
       //when the user clicks somewhere else
       else if(e.type == "focusout"){
-        callback(this.textarea.value)
+        // callback(this.textarea.value)
         this.textarea.removeEventListener('keydown',  this.currentbinding)
         this.textarea.removeEventListener('focusout', this.currentbinding)
         this.currentbinding = null
         this.hide()
+
+        // some callbacks might want to reactivate the textarea
+        // better tp invoke callback after hiding textarea.
+        callback(this.textarea.value)
       }
     },
 
@@ -495,7 +518,12 @@ this.el.addEventListener('origin-changed', this._updateCursorGeometry.bind(this)
     },
 
     //makes the textarea behave as an input box: one line text input element.
-    setInputMode: function(content, maxlength, callback){
+    // content: the default text value
+    // maxlength: maximum length allowed
+    // callback:  callback function
+    // selectall: if true, full content is selected (1st time text edit use cases)
+    setInputMode: function(content, maxlength, callback, selectall){
+      selectall = selectall || false
       this.textarea.value = content
       // this.text = 
       this.el.setAttribute("scale", "2.2 2.2 2.2")
@@ -519,6 +547,10 @@ this.el.addEventListener('origin-changed', this._updateCursorGeometry.bind(this)
       this.currentbinding = this.callbackOnInput.bind(this, callback)
       this.textarea.addEventListener('keydown',  this.currentbinding);
       this.textarea.addEventListener('focusout', this.currentbinding);
+
+      if(selectall){
+        this.textarea.select()
+      }
     },
 
     //makes the textarea behave as a textarea element.

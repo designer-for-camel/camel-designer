@@ -65,6 +65,8 @@ AFRAME.registerComponent('maptree', {
         //     this.type = "json"
         // }
 
+        let root
+
         if(this.type == 'json'){
             this.targetmodel = JSON.parse(this.data.tree)
             this.tree = this.targetmodel.datamodel
@@ -72,7 +74,7 @@ AFRAME.registerComponent('maptree', {
             let rootLabel = this.targetmodel.name
             // this.createBranch(this.tree, this.el, rootLabel)
             // this.createBranch(this.tree[rootLabel], this.el, rootLabel)
-            this.createBranch(this.tree, this.el, rootLabel)
+            root = this.createBranch(this.tree, this.el, rootLabel)
             
             // this.createLeaf(this.el, "}", "}")
 
@@ -82,33 +84,31 @@ AFRAME.registerComponent('maptree', {
             //parse source code
             this.tree = new DOMParser().parseFromString(this.data.tree, 'application/xml');
     
-            this.createBranch(this.tree.firstChild, this.el, this.tree.firstChild.localName)
+            root = this.createBranch(this.tree.firstChild, this.el, this.tree.firstChild.localName)
         }
         else{
             return
         }
 
-
-
-
-        // for (const key in this.data.tree) {
-        //     if (Object.hasOwnProperty.call(this.data.tree, key)) {
-        //         // const element = object[key];
-
-        //         if(objectypeof)
-
-        //         this.createNode(root, key)
-        //     }
-        // }
+        //when this maptree is the target data
+        if(this.data.istarget){
+            //create a close view buttong
+            closeButton = document.createElement('a-button')
+            closeButton.setAttribute("value", "Close mapping view")
+            closeButton.setAttribute("width", "2")
+            closeButton.setAttribute("position", "1 .5 0")
+            closeButton.onclick = function(event){       
+                this.el.closest('[mapping]').components.mapping.closeMappingView(event)  
+            }.bind(this);
+            root.appendChild(closeButton)
+        }
 
     },
 
     createBranch: function(branch, parent, field){
 
-
         // let root = this.createLeaf(parent, field)
         let root
-
 
         if(this.type == 'xml'){
             branch = branch.children
@@ -150,7 +150,7 @@ AFRAME.registerComponent('maptree', {
                 }
             }   
         }
-
+       
         return root
     },
 

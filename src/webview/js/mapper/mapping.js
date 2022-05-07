@@ -53,13 +53,6 @@ AFRAME.registerComponent('mapping', {
     
         this.targetTree = map
 
-            mapButton = document.createElement('a-button')
-            mapButton.setAttribute("value", "Close")
-            mapButton.setAttribute("position", "0 3 0")
-            // mapButton.setAttribute("onclick", "this.parentEl.parentEl.components.mapping.enableRouteView(event)")
-            mapButton.setAttribute("onclick", "this.parentEl.parentEl.components.mapping.closeMappingView(event)")
-            this.mapping.appendChild(mapButton)
-
         // map = document.createElement('a-map-tree')
         // map.setAttribute("tree", JSON.stringify(mapTree))
         // map.setAttribute("istarget", false)
@@ -227,29 +220,50 @@ AFRAME.registerComponent('mapping', {
 
             //obtain source and target entries
             let source,target
-            if(expression.includes('${body}')){
-                source = this.datasource.querySelector('a-map-entry[value="body"] > a-plane.interactive')            
-                target = this.targetTree.querySelector('a-map-entry[value="'+field+'"] > a-plane.interactive')
 
-                this.createMapping(source, target, element)
+            if(language == "simple"){
+                if(expression.includes('${body}')){
+                    source = this.datasource.querySelector('a-map-entry[value="body"] > a-plane.interactive')            
+                    target = this.targetTree.querySelector('a-map-entry[value="'+field+'"] > a-plane.interactive')
+
+                    this.createMapping(source, target, element)
+                }
+
+                if(expression.includes('${header.')){
+
+                    let header = expression.split('.')[1].split('}')[0]
+
+                    source = this.datasource.querySelector('a-map-entry[field="'+header+'"] > a-plane.interactive')            
+                    target = this.targetTree.querySelector('a-map-entry[value="'+field +'"] > a-plane.interactive')
+                    this.createMapping(source, target, element)
+                }
+
+                if(expression.includes('${exchangeProperty.')){
+
+                    let property = expression.split('.')[1].split('}')[0]
+
+                    source = this.datasource.querySelector('a-map-entry[field="'+property+'"] > a-plane.interactive')            
+                    target = this.targetTree.querySelector('a-map-entry[value="'+field +'"] > a-plane.interactive')
+                    this.createMapping(source, target, element)
+                }
             }
+            else if(language == "xpath"){
 
-            if(expression.includes('${header.')){
+                let headerName = element.firstElementChild.attributes.headerName
 
-                let header = expression.split('.')[1].split('}')[0]
+                if(!headerName){
+                    source = this.datasource.querySelector('a-map-entry[value="body"] > a-plane.interactive')            
+                    target = this.targetTree.querySelector('a-map-entry[value="'+field+'"] > a-plane.interactive')
 
-                source = this.datasource.querySelector('a-map-entry[field="'+header+'"] > a-plane.interactive')            
-                target = this.targetTree.querySelector('a-map-entry[value="'+field +'"] > a-plane.interactive')
-                this.createMapping(source, target, element)
-            }
+                    this.createMapping(source, target, element)
+                }
+                else{
+                    let header = headerName.value
 
-            if(expression.includes('${exchangeProperty.')){
-
-                let property = expression.split('.')[1].split('}')[0]
-
-                source = this.datasource.querySelector('a-map-entry[field="'+property+'"] > a-plane.interactive')            
-                target = this.targetTree.querySelector('a-map-entry[value="'+field +'"] > a-plane.interactive')
-                this.createMapping(source, target, element)
+                    source = this.datasource.querySelector('a-map-entry[field="'+header+'"] > a-plane.interactive')            
+                    target = this.targetTree.querySelector('a-map-entry[value="'+field +'"] > a-plane.interactive')
+                    this.createMapping(source, target, element)
+                }
             }
         }
 
@@ -317,6 +331,14 @@ AFRAME.registerComponent('mapping', {
                 source = this.datasource.querySelector('a-map-entry[field="'+property+'"] > a-plane.interactive')
             }
         }
+        else if(language == "constant"){
+            //do nothing
+        }
+        //we assume here other languages evaluate against the body
+        else{
+            source = this.datasource.querySelector('a-map-entry[value="body"] > a-plane.interactive')
+        }
+
 
         if(source){
             source = source.parentElement

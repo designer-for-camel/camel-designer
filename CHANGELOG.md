@@ -4,6 +4,7 @@
 
 - Fix: smoother 3D input box when blinking. \
 - Fix: WASD controls now always in-sync with camera position
+- New navigation controls to move camera in scene with zoom in/out
 
 
 ## 0.10.0

@@ -2935,6 +2935,12 @@ function manageUI(){
         refPos.y,
         refPos.z
     )
+
+    //obtain Navigation control
+    let navControl = document.getElementById("navigation-control");
+
+    //place item as per proportions on screen
+    setUiItemLocation(navControl, -.7, .9)
 }
 
 
@@ -3091,25 +3097,25 @@ function createAtlasMapConfigurator(){
         return
     }
     
-    let configurator = {configure: function(form) {
+    let configurator = {
+        configure: function(form) {
+            //here 'this' is the 1st argument from the dynamic call 'configure.call(activity, form)'
+            let activity = this
 
-        //here 'this' is the 1st argument from the dynamic call 'configure.call(activity, form)'
-        let activity = this
+            //get UI elements
+            let list   = form.querySelector('a-dropdown')
 
-        //get UI elements
-        let list   = form.querySelector('a-dropdown')
+            //set UI language
+            list.setAttribute('value', activity.components.uri.getTarget())
 
-        //set UI language
-        list.setAttribute('value', activity.components.uri.getTarget())
+            //set UI actions on dropdown selection
+            list.onclick = function(){
+                let adm = list.getAttribute('value')
+                
+                activity.components.uri.setTarget(adm)
 
-        //set UI actions on dropdown selection
-        list.onclick = function(){
-            let adm = list.getAttribute('value')
-            
-            activity.components.uri.setTarget(adm)
-
-            syncEditor()
-        }
+                syncEditor()
+            }
         } 
     }       
 
@@ -3286,21 +3292,40 @@ function createMapHttp(definition)
 //             </pipeline>`
 
 
-let code = `<pipeline id="to-8-pipeline">
-            <setHeader name="Content-Type" id="to-8-mapping-target-Content-Type">
-                <simple resultType="String">payload1: `+'${body}, payload2: ${body}'+`</simple>
-            </setHeader>
+//TEST language parameters (e.g. resultType)
+//TEST dynamic target field creation when field does not exist
+//      let code = `<pipeline id="to-8-pipeline">
+//             <setHeader name="Content-Type" id="to-8-mapping-target-Content-Type">
+//                 <simple resultType="String">payload1: `+'${body}, payload2: ${body}'+`</simple>
+//             </setHeader>
 
-            <setHeader name="header-1" id="to-8-mapping-target-header-1">
-            <simple>my payload is: `+'${body}'+`</simple>
-          </setHeader>
+//             <setHeader name="header-1" id="to-8-mapping-target-header-1">
+//             <simple>my payload is: `+'${body}'+`</simple>
+//           </setHeader>
 
-          <setHeader name="myclient">
-          <simple>my payload is: `+'${header.client}'+`</simple>
+//           <setHeader name="myclient">
+//           <simple>my payload is: `+'${header.client}'+`</simple>
+//         </setHeader>
+
+//             <to uri="http://demoserver:80/resource" id="to-8"/>
+//         </pipeline>`
+
+    //TEST xpath from header name
+    //TEST xpath without header name
+    //TEST xpath with parameters (e.g. saxon=true)
+    let code = `<pipeline id="to-8-pipeline">
+
+        <setHeader name="header-1">
+            <xpath headerName="data" saxon="true">/person[@name='James']</xpath>
         </setHeader>
 
-            <to uri="http://demoserver:80/resource" id="to-8"/>
-        </pipeline>`
+        <to uri="http://demoserver:80/resource" id="to-8"/>
+    </pipeline>`
+
+//     <setHeader name="header-2" >
+//     <xpath saxon="true">/data/node/field</xpath>
+// </setHeader>
+
 
     definition = definition || new DOMParser().parseFromString(code, "text/xml").documentElement
 

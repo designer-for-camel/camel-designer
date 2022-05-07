@@ -109,8 +109,10 @@ AFRAME.registerComponent('dropdown', {
             label.setAttribute('position', '0 0 .03')
             
             //event listener for menu option
-            menuItem.addEventListener('click', function(){       
+            menuItem.addEventListener('click', function(e){       
                 
+                // e.stopPropagation()
+
                 let dropdown = this.parentEl.parentEl.parentEl
 
                 //we set the value to the dropdown element
@@ -244,12 +246,24 @@ AFRAME.registerComponent('dropdown', {
     update: function (oldData) {
         //at creation time there is no data, so we ignore the invocation
         if(Object.keys(oldData).length === 0){
-          return
+
+            //exception for value
+            //value might have been set before component has been fully set
+            this.setValue(this.data.value)
+
+            return
         }
     
         if(this.data.value != oldData.value){
           this.setValue(this.data.value)
+        //   return
         }
+
+        // if(this.data.menu != oldData.menu){
+        //     this.setMenu(this.data.menu)
+        //     return
+        // }
+
     },
 
     setValue: function(value){
