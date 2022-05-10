@@ -70,14 +70,8 @@ AFRAME.registerComponent('maptree', {
         if(this.type == 'json'){
             this.targetmodel = JSON.parse(this.data.tree)
             this.tree = this.targetmodel.datamodel
-            // let rootLabel = Object.keys(this.tree)[0]
             let rootLabel = this.targetmodel.name
-            // this.createBranch(this.tree, this.el, rootLabel)
-            // this.createBranch(this.tree[rootLabel], this.el, rootLabel)
             root = this.createBranch(this.tree, this.el, rootLabel)
-            
-            // this.createLeaf(this.el, "}", "}")
-
         }
         else if(this.type == 'xml'){
 
@@ -94,7 +88,7 @@ AFRAME.registerComponent('maptree', {
         if(this.data.istarget){
             //create a close view buttong
             closeButton = document.createElement('a-button')
-            closeButton.setAttribute("value", "Close mapping view")
+            closeButton.setAttribute("value", "Close inputs view")
             closeButton.setAttribute("width", "2")
             closeButton.setAttribute("position", "1 .5 0")
             closeButton.onclick = function(event){       
@@ -105,9 +99,10 @@ AFRAME.registerComponent('maptree', {
 
     },
 
+    //creates a node with children
     createBranch: function(branch, parent, field){
 
-        // let root = this.createLeaf(parent, field)
+        //root node
         let root
 
         if(this.type == 'xml'){
@@ -115,23 +110,20 @@ AFRAME.registerComponent('maptree', {
         }
 
         if(this.type == 'json'){
+            //creates the root node (not really a leaf) from where children hang
             root = this.createLeaf(parent, field, field, false)
           
             for (const key in branch) {
 
                 if(typeof(branch[key]) == 'object'){
                     this.createBranch(branch[key],root,key)
-                    // this.createBranch(branch[key],parent,key)
-                    
                 }
                 else{
-                    // this.createLeaf(root, key, key)
-                    this.createLeaf(root, key, branch[key])
-                    // this.createLeaf(parent, key, key)
+                    // this.createLeaf(root, key, branch[key])
+                    // this.createLeaf(root, key, branch[key], null, (field == "headers"))
+                    this.createLeaf(root, key, branch[key], null, this.targetmodel.custom.hasOwnProperty(field))
                 }
             }
-            // this.createLeaf(parent, "}","}")
-
         }
         else{
 
@@ -146,7 +138,8 @@ AFRAME.registerComponent('maptree', {
                     
                 }
                 else{
-                    this.createLeaf(root, branch[key].localName, branch[key].textContent)
+                    // this.createLeaf(root, branch[key].localName, branch[key].textContent, false)
+                    this.createLeaf(root, branch[key].localName, branch[key].textContent, false, (field == "headers"))
                 }
             }   
         }
@@ -154,9 +147,24 @@ AFRAME.registerComponent('maptree', {
         return root
     },
 
-    // createLeaf: function(parent, field, icon){
-    createLeaf: function(parent, field, value, ismappable, childbuttonrecursive, childprefix){
+    //creates a map entry hanging from a parent
+    // createLeaf: function(parent, field, value, ismappable, childbuttonrecursive, childprefix){
+    createLeaf: function(parent, field, value, ismappable, iseditable, childbuttonrecursive, childprefix){
 
+        // mappable by default
+        if(ismappable == null){
+            ismappable = true
+        }
+
+        if(iseditable == null){
+            //not editable by default
+            iseditable = false
+
+            //unless configured customisable in the data model
+            if(this.targetmodel.custom[field]){
+                iseditable = true
+            }
+        }
 
         //for every child we create we increment the counter
         this.initCounter++
@@ -176,8 +184,20 @@ AFRAME.registerComponent('maptree', {
         mapentry.setAttribute("value", value)
         mapentry.setAttribute("width", .4)
         mapentry.setAttribute("ismappable", ismappable)
+        mapentry.setAttribute("iseditable", iseditable)
         mapentry.setAttribute("istarget", this.data.istarget)
         mapentry.id = this.el.id + "-" + field
+
+        if(iseditable){
+
+            let parentField = parent.attributes.value.value
+
+            let config = this.targetmodel.custom[parentField]
+
+            if(config){
+                mapentry.setAttribute("notify", config.notify)
+            }
+        }
 
         if(childbuttonrecursive){
             mapentry.setAttribute("childbutton",    true)
@@ -188,6 +208,12 @@ AFRAME.registerComponent('maptree', {
             mapentry.setAttribute("childbutton",    true)
             mapentry.setAttribute("childprefix",    this.targetmodel.custom[field].prefix)
             mapentry.setAttribute("childrecursive", this.targetmodel.custom[field].recursive)
+
+            // if(this.targetmodel.custom[field].notify){
+            //     mapentry.setAttribute("notify", this.targetmodel.custom[field].notify)
+            // }
+
+            // mapentry.setAttribute("iseditable",    true)
         }
 
         if(this.data.processvars && parent.attributes.field){
@@ -204,7 +230,6 @@ AFRAME.registerComponent('maptree', {
     },
 
 
-    // createLeaf: function(parent, field, icon){
     createLeafFromCode: function(mapsource, camelsource){
 
         if(this.data.istarget){

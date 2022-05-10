@@ -3319,8 +3319,13 @@ function createMapHttp(definition)
             <xpath headerName="data" saxon="true">/person[@name='James']</xpath>
         </setHeader>
 
-        <to uri="http://demoserver:80/resource" id="to-8"/>
+        <to uri="http://testconfig/apath/somewhere?opt1=val1" id="to-8"/>
+
     </pipeline>`
+
+
+    // <to uri="http://demoserver:80/resource" id="to-8"/>
+
 
 //     <setHeader name="header-2" >
 //     <xpath saxon="true">/data/node/field</xpath>
@@ -3337,32 +3342,92 @@ function createMapHttp(definition)
     // let activity = createGenericEndpointTo({definition: definition})
     let activity = createGenericEndpointTo({definition: endpoint})
 
+    // let target = activity.components.uri.getValue()
+
+    //we obtain parts separated by '/', and filter out empty values
+    let parts   = activity.components.uri.getTarget().split('/').filter(element => element)
+
+    //we obtain URI options
+    let options = activity.components.uri.getOptions()
+
+    let target = parts[0].split(":")
+    let host = target[0]
+    let port = "80"
+
+    //set port if given
+    if(target.length>1){
+        port = target[1]
+    }
+
+    //delete host:port token
+    parts.shift()
+
+    let path = "/"+parts.join("/")
+
     // let datamodel = {http: {
     let datamodel = {
-        parameters: {
-            method: "Exchange.HTTP_METHOD",
-            path:   "Exchange.HTTP_PATH",
-            query:  "Exchange.HTTP_QUERY"
+        "parameters (required)": {
+            // host: "demoserver",
+            // port: "80",
+            host: host,
+            port: port,
+            path: path
         },
+        options: options,
+        // options: {
+        //     // method: "Exchange.HTTP_METHOD",
+        //     // path:   "Exchange.HTTP_PATH",
+        //     // query:  "Exchange.HTTP_QUERY"
+
+        //     method: "",
+        //     path:   "",
+        //     query:  ""
+        // },
         headers: {
             // "content-type": "Exchange.CONTENT_TYPE",
-            "content-type": "Content-Type",
-            accept:         "Accept",
-            authorization:  "Authorization",
+
+            // "content-type": "Content-Type",
+            // accept:         "Accept",
+            // authorization:  "Authorization",
+
+            "content-type": "application/json",
+            accept:         "",
+            authorization:  "",
+
         }
     // }}
     }
 
     let targetModel = {
+
+        //name of the model
         name: "http",
+
+        //the data model
         datamodel: datamodel,
+
+        //define which fields from the datamodel can be customised.
+        //items in the custom list indicate the user can:
+        // - add a new child hanging from the item group
+        // - nest childs if recursive is set to true
+        // - edit the child name and value
         custom:{
+            "options": {
+                prefix: "option",
+                recursive: false,
+                notify: "target-option"
+            },
             "headers": {
                 prefix: "header",
                 recursive: false
             }
         },
     } 
+
+    activity.addEventListener('target-option', function(evt){ 
+        console.log("entry got edited !!: "+evt.detail)
+    }.bind(this))
+
 
     activity.setAttribute("mapping", {
         // datatarget: JSON.stringify(datamodel),

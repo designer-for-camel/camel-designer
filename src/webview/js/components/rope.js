@@ -86,6 +86,15 @@ AFRAME.registerComponent('rope', {
       //   return
       // }
 
+    //////// NO NEED FOR NOW TO UPDATE COLORS, UNCOMMENT IF NEEDED
+    // if(this.data.color != oldData.color){
+    //   this.material.color.set(this.data.color)
+    // }
+
+    // if(this.data.opacity != oldData.opacity){
+    //   this.material.opacity = this.data.opacity
+    // }
+
     if(oldData && oldData.end){
 
             //this condition is TRUE when the user drags'n'drop and releases the mouse button.        
@@ -102,7 +111,6 @@ AFRAME.registerComponent('rope', {
 
               // this.tick()
             }
-
     }
   },
 

@@ -24,7 +24,7 @@ AFRAME.registerComponent('mapping', {
 
         let mapButton = document.createElement('a-button')
         // mapButton.setAttribute("opacity", "1")
-        mapButton.setAttribute("value", "Mapper")
+        mapButton.setAttribute("value", "Inputs")
         mapButton.setAttribute("position", "0 1 0")
         mapButton.setAttribute("onclick", "this.parentEl.components.mapping.enableMapperView(event)")
         this.el.appendChild(mapButton)
@@ -413,7 +413,8 @@ expression = expr.expression
                             tabulation+'  </setHeader>\n'
                     break;
                 case 'headers':
-                    code += tabulation+'  <setHeader '+getCamelAttributeHeaderName()+'="'+expr.target.value+'" id="'+element.id+'">\n'+
+                    // code += tabulation+'  <setHeader '+getCamelAttributeHeaderName()+'="'+expr.target.value+'" id="'+element.id+'">\n'+
+                    code += tabulation+'  <setHeader '+getCamelAttributeHeaderName()+'="'+expr.target.field+'" id="'+element.id+'">\n'+
                             tabulation+'    '+'<'+expr.language+attributes+'>'+expression+'</'+expr.language+'>'+'\n'+
                             tabulation+'  </setHeader>\n'
                     break;

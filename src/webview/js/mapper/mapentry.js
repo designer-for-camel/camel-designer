@@ -9,11 +9,13 @@ AFRAME.registerComponent('mapentry', {
         wrapcount: { type: "number" },
         enabled: { type: "boolean", default: true },
         ismappable: { type: "boolean", default: true },
+        iseditable: { type: "boolean", default: false },
         istarget: { type: "boolean", default: false},
         childbutton: { type: "boolean", default: false },
         childprefix: { type: "string", default: "field" },
         childrecursive: { type: "boolean", default: false },
         childcount: { type: "number", default: 0 },
+        notify: { type: "string", default: "" },
     },
     init: function () {
 
@@ -45,7 +47,7 @@ AFRAME.registerComponent('mapentry', {
         button.object3D.position.setX(2.2)
         this.childCount = this.data.childcount
         button.onclick = function(){       
-            this.createChild()            
+            this.createChild(null, true)            
         }.bind(this);
 
         //set label to add child button
@@ -137,7 +139,9 @@ AFRAME.registerComponent('mapentry', {
                         back.object3D.position.z = -.01
                         this.el.appendChild(back)
 
+
                         if(this.el.parentElement.getAttribute('childbutton') == "true"){
+                            //Create interactive button to delete map entry
                             let del = document.createElement('a-plane')
                             let lbl = appendLabel(del, "X")
                             lbl.object3D.position.z+=.01
@@ -173,21 +177,6 @@ AFRAME.registerComponent('mapentry', {
 
         if(this.data.ismappable){
 
-            // back.setAttribute('animation', {  startEvents:'mouseenter',
-            //                                 pauseEvents:'mouseleave',
-            //                                 property: 'opacity',
-            //                                 dur: '0',
-            //                                 from: 0,
-            //                                 to: .5,
-            //                                 })
-
-            // back.setAttribute('animation__2',{
-            //                                 startEvents:'mouseleave',
-            //                                 property: 'opacity',
-            //                                 dur: '0',
-            //                                 to: 0})
-            
-
             back.setAttribute('animation', {  startEvents:'mouseenter',
                                             pauseEvents:'mouseleave',
                                             property: 'visible',
@@ -204,74 +193,113 @@ AFRAME.registerComponent('mapentry', {
                                             })
 
             if(this.data.istarget){
-                back.addEventListener('click', function(event){
-                    event.stopPropagation()
+                //visual helper to isolate mappings for this map entry
+                //when mouse over it, we disable other mappings and leave only the ones for this map entry
+                back.addEventListener('mouseenter', function(){
+                    //obtain mappings for this map entry
+                    let list = this.el.querySelectorAll('a-rope')
 
-                    let textarea = this.closest('[mapping]').querySelector('a-textarea')
+                    //if none, we ignore
+                    if(list.length == 0){
+                        return
+                    }
 
-                    let txtWP = new THREE.Vector3()
-                    textarea.parentElement.object3D.getWorldPosition(txtWP)
+                    //we obtain all mappings for this map tree
+                    let all = this.el.closest('[maptree]').querySelectorAll('a-rope')
 
-                    let entryWP = new THREE.Vector3()
-                    this.parentElement.object3D.getWorldPosition(entryWP)
+                    //for simplicity, we make all mappings invisible...
+                    for (let mapping of all) {
+                        mapping.setAttribute('visible', false)
+                    }
 
-                    let v1 = txtWP.clone().negate()
-                    let v2 = entryWP
+                    //... and we render visible only the local ones
+                    for (let mapping of list) {
+                        mapping.setAttribute('visible', true)
+                    }
+                }.bind(this));
 
-                    v1.add(v2)
+                //visual helper to isolate mappings for this map entry
+                //when mouse leaves, we restore the visibility of all the mappings
+                back.addEventListener('mouseleave', function(){
+                    //obtain mappings for this map entry
+                    let list = this.el.querySelectorAll('a-rope')
 
-                    // v1.x += textarea.components.textarea.background.components.geometry.data.width / 2 -.2//textarea.components.textarea.background.object3D.scale
-                    v1.x += 1.15
-                    v1.y += 0
-                    v1.z += .01
+                    //if none, we ignore
+                    if(list.length == 0){
+                        return
+                    }
+                  
+                    //obtain all mappings for this map tree
+                    let all = this.el.closest('[maptree]').querySelectorAll('a-rope')
+
+                    //we restore visibility for all
+                    for (let mapping of all) {
+                        mapping.setAttribute('visible', true)
+                    }
+                }.bind(this));
+            }
 
 
-                    textarea.components.textarea.setInputMode(this.parentElement.getAttribute("field"), 14, function(text){
-                        console.log("got the text: "+text)
-                        this.parentElement.setAttribute("field", text)
-                    }.bind(this))
-                    textarea.components.textarea.focus()
+            if(this.data.istarget){
 
-                    textarea.object3D.position.copy(v1)
+                if(this.data.iseditable)
+                {
+                    back.addEventListener('click', function(event){
+                        event.stopPropagation()
 
-                    setCameraFocus(this)
-                });
+                        let textarea = this.closest('[mapping]').querySelector('a-textarea')
 
+                        let txtWP = new THREE.Vector3()
+                        textarea.parentElement.object3D.getWorldPosition(txtWP)
 
-            
+                        let entryWP = new THREE.Vector3()
+                        this.parentElement.object3D.getWorldPosition(entryWP)
 
-                // let del = document.createElement("a-plane")
-                // del.id = this.el.id + "-" + "plane"
-                // del.setAttribute("width", .2)        
-                // del.setAttribute("height",".3")
-                // del.setAttribute("opacity",".5")
-                // del.object3D.position.x = textWidth - .4
-                // del.object3D.position.z = -.01
-                // back.appendChild(del)
-/*
+                        let v1 = txtWP.clone().negate()
+                        let v2 = entryWP
+
+                        v1.add(v2)
+
+                        // v1.x += textarea.components.textarea.background.components.geometry.data.width / 2 -.2//textarea.components.textarea.background.object3D.scale
+                        v1.x += 1.15
+                        v1.y += 0
+                        v1.z += .01
+
+                        textarea.components.textarea.setInputMode(this.parentElement.getAttribute("field"), 14, function(text){
+                            console.log("got the text: "+text)
+
+                            //obtain map entry
+                            let mapentry = this.closest('[mapentry]').components.mapentry
+                            let notify = mapentry.data.notify
+
+                            //if configured to notify
+                            if(notify){
+                                //emit notification with update
+                                this.emit(notify, {old: mapentry.data.field, new: text});                                
+                            }
+
+                            //update field name
+                            this.parentElement.setAttribute("field", text)
+                        }.bind(this))
+
+                        //set focus
+                        textarea.components.textarea.focus()
+
+                        textarea.object3D.position.copy(v1)
+
+                        setCameraFocus(this)
+                    });
+                }
+
+                //this is the visual label containing the current map entry value
+                //we don't set its default value just yet... as we need to initialise other map entry elements first
+                //its defaut value is set at the very end
                 this.labelvalue = document.createElement('a-text')
-                // this.labelvalue.setAttribute("value",this.getPath(sourceEntry))
-                this.labelvalue.setAttribute("position","3 0 0")
-                // this.labelvalue.setAttribute("width","5")
-                this.el.appendChild(this.labelvalue)
-                // document.getElementById('thescene').appendChild(this.labelvalue)
-
-                back = document.createElement("a-plane") 
-                back.setAttribute("width", 5) //last add is more space for the delete button       
-                back.setAttribute("height",".3")
-                back.setAttribute("opacity","0")
-                back.object3D.position.x = 3+2.5
-                back.object3D.position.z = -.01
-                this.el.appendChild(back)
-*/
-                
-                this.labelvalue = document.createElement('a-text')
-                // this.labelvalue.setAttribute("value",this.getPath(sourceEntry))
                 this.labelvalue.setAttribute("position","2.4 0 0")
-                // this.labelvalue.setAttribute("width","5")
                 this.el.appendChild(this.labelvalue)
 
 
+                //this is the visual background
                 back = document.createElement("a-plane") 
                 back.setAttribute("width", 5)     
                 back.setAttribute("height",".3")
@@ -280,7 +308,6 @@ AFRAME.registerComponent('mapentry', {
                 back.object3D.position.x = 2.4 + (5/2) // position + width/2 
                 // back.object3D.position.z = -.01
                 this.el.appendChild(back)
-
 
                 //set default list if none passed (when there is no interaction with the VS extension)
                 let langentries = [
@@ -455,7 +482,6 @@ AFRAME.registerComponent('mapentry', {
 
 
                 // BUTTON to add new attributes
-
                 //this box allows the user to create new attribute entries
                 button = document.createElement('a-plane')
                 // button.id = "mapentry-button-" + sharedId
@@ -512,7 +538,6 @@ AFRAME.registerComponent('mapentry', {
 
                 }.bind(this.el);
 
-
                 //set label to menu button
                 // let label = appendLabel(button, this.data.field, this.data.wrapcount)
                 let label = appendLabel(button, "+", this.data.wrapcount)
@@ -534,45 +559,14 @@ AFRAME.registerComponent('mapentry', {
             }
         }
 
-        // let del = document.createElement("a-plane")
-        // del.id = this.el.id + "-" + "delete"
-        // del.setAttribute("width", .3)        
-        // del.setAttribute("height",".3")
-        // del.setAttribute("opacity",".5")
-
-        // del.setAttribute("text","{value: '-'}")
-
-        // del.object3D.position.x =  - back.object3D.position.x - .2
-        // del.object3D.position.z = -.01
-        // back.appendChild(del)
-        // del.classList.add('interactive')
-
-
+        //adding new map entries disrupts existing layout. We need to redraw the tree
         this.el.closest('a-map-tree').components.maptree.redraw()
-            // if(this.el.parentElement.localName == "a-map-entry"){
-            //     let topMapperButton = this.el.parentElement
 
-            //     while(topMapperButton.parentElement.localName == "a-map-entry"){
-            //         topMapperButton = topMapperButton.parentElement
-            //     }
-
-            //     let all = Array.from(topMapperButton.querySelectorAll('a-map-entry'))
-            //     all.forEach(button => {
-            //         button.components.mapentry.redraw(all)
-            //     });            
-            // }
-            
-
-        //needs to execute this code asynchronously as
-        //we're invoking the component before it's ready (ongoing initialisation)
-        // const promise1 = new Promise((resolve, reject) => {
-        //     let all = Array.from(document.querySelectorAll('a-map-entry'))
-        //     all.forEach(button => {
-        //         button.components.mapentry.redraw(all)
-        //     });
-        // });
-
-        // this.el.setAttribute("scale", "2 2 2")
+        // set default mapping value if is target and mappable
+        // if default value is not empty string, we create a mapping expression
+        if(this.data.istarget && this.data.ismappable && this.data.value.length > 0){
+            this.setVisualMappingExpression(this.data.value)
+        }
 
         this.el.emit('mapentry-init-complete');
     },
@@ -986,17 +980,34 @@ AFRAME.registerComponent('mapentry', {
     },
 
     //creates a child map-entry node  
-    createChild: function(childname){
+    createChild: function(childname, editable){
 
         let newheader = childname || this.data.childprefix
 
-        let child = this.el.closest('a-map-tree').components.maptree.createLeaf(
+        //obtain map tree
+        let maptree = this.el.closest('a-map-tree').components.maptree
+
+        // let child = this.el.closest('a-map-tree').components.maptree.createLeaf(
+        let child = maptree.createLeaf(
                         this.el, 
                         newheader, 
                         newheader, 
-                        true, 
+                        true,
+                        editable,//this.data.iseditable || this.data.field == "headers",
                         this.data.childrecursive,
                         childname ? null : this.data.childprefix) //if childname is not given, we prefix the header name
+
+        //obtain data model custom configuration
+        let customConfig = maptree.targetmodel.custom[this.data.field]
+            
+        //if configured to notify
+        if(customConfig.notify){
+            //emit notification with update
+            this.el.emit(customConfig.notify, {
+                option: child.attributes.field.value,
+                value:  child.attributes.value.value,
+            });                                
+        }
 
         return child
     },
@@ -1275,6 +1286,7 @@ AFRAME.registerComponent('mapentry', {
             if(this.expression){
                 this.expression.target.field = this.data.field
                 this.expression.target.value = this.data.field
+                // this.expression.target.value = this.data.value
             }
         }
 
@@ -1311,10 +1323,12 @@ AFRAME.registerComponent('mapentry', {
         wrapcount: "mapentry.wrapcount",
         enabled: "mapentry.enabled",
         ismappable: "mapentry.ismappable",
+        iseditable: "mapentry.iseditable",
         istarget: "mapentry.istarget",
         childbutton: "mapentry.childbutton",
         childprefix: "mapentry.childprefix",
         childrecursive: "mapentry.childrecursive",
         childcount: "mapentry.childcount",
+        notify: "mapentry.notify",
     }
   });
