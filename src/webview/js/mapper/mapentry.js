@@ -154,7 +154,19 @@ AFRAME.registerComponent('mapentry', {
 
                             del.addEventListener('click', function(event){
                                 event.stopPropagation()
+
+                                //if configured to notify
+                                if(this.data.notify){
+                                    //emit notification for removal
+                                    this.el.emit(this.data.notify, {
+                                        action: "delete",
+                                        field: this.data.field
+                                    });                                
+                                }
+
+                                //remove this map entry from the map tree
                                 this.el.closest('a-map-tree').components.maptree.removeLeaf(this.el)
+
                             }.bind(this));
                         }
 
@@ -275,7 +287,11 @@ AFRAME.registerComponent('mapentry', {
                             //if configured to notify
                             if(notify){
                                 //emit notification with update
-                                this.emit(notify, {old: mapentry.data.field, new: text});                                
+                                this.emit(notify, {
+                                    action: "rename",
+                                    old: mapentry.data.field,
+                                    new: text
+                                });                                
                             }
 
                             //update field name
@@ -565,7 +581,7 @@ AFRAME.registerComponent('mapentry', {
         // set default mapping value if is target and mappable
         // if default value is not empty string, we create a mapping expression
         if(this.data.istarget && this.data.ismappable && this.data.value.length > 0){
-            this.setVisualMappingExpression(this.data.value)
+            this.setVisualMappingExpression(this.data.value, true)
         }
 
         this.el.emit('mapentry-init-complete');
@@ -579,7 +595,19 @@ AFRAME.registerComponent('mapentry', {
         return this.expression
     },
 
-    setVisualMappingExpression: function(expression){
+    setVisualMappingExpression: function(expression, notificationsDisabled){
+
+        notificationsDisabled = (notificationsDisabled == true)
+
+        //if configured to notify
+        if(!notificationsDisabled && this.data.notify){
+            //emit notification with update
+            this.el.emit(this.data.notify, {
+                action: "set",
+                field: this.data.field,
+                value: expression
+            });                                
+        }
 
         //set internal variables
         this.setMappingExpression(null, null, expression)
@@ -967,7 +995,7 @@ AFRAME.registerComponent('mapentry', {
 
 
             //if a mapping does not exist
-            if(!valueMapping){
+            if(!valueMapping || valueMapping == ""){
                 this.labelvalue.setAttribute("value",this.expression.expression)
             }
             //if one exists, we append the new mapping
@@ -980,9 +1008,14 @@ AFRAME.registerComponent('mapentry', {
     },
 
     //creates a child map-entry node  
-    createChild: function(childname, editable){
+    createChild: function(childname, editable, value){
 
         let newheader = childname || this.data.childprefix
+
+        //default value to header name
+        if(value == null){
+            value = newheader
+        }
 
         //obtain map tree
         let maptree = this.el.closest('a-map-tree').components.maptree
@@ -991,9 +1024,9 @@ AFRAME.registerComponent('mapentry', {
         let child = maptree.createLeaf(
                         this.el, 
                         newheader, 
-                        newheader, 
+                        value,//newheader, 
                         true,
-                        editable,//this.data.iseditable || this.data.field == "headers",
+                        editable,
                         this.data.childrecursive,
                         childname ? null : this.data.childprefix) //if childname is not given, we prefix the header name
 
@@ -1001,7 +1034,7 @@ AFRAME.registerComponent('mapentry', {
         let customConfig = maptree.targetmodel.custom[this.data.field]
             
         //if configured to notify
-        if(customConfig.notify){
+        if(customConfig && customConfig.notify){
             //emit notification with update
             this.el.emit(customConfig.notify, {
                 option: child.attributes.field.value,

@@ -121,7 +121,11 @@ AFRAME.registerComponent('maptree', {
                 else{
                     // this.createLeaf(root, key, branch[key])
                     // this.createLeaf(root, key, branch[key], null, (field == "headers"))
-                    this.createLeaf(root, key, branch[key], null, this.targetmodel.custom.hasOwnProperty(field))
+                    // this.createLeaf(root, key, branch[key], null, this.targetmodel.custom.hasOwnProperty(field))
+
+                    let editable = this.targetmodel.custom.hasOwnProperty(field) && this.targetmodel.custom[field].editable
+
+                    this.createLeaf(root, key, branch[key], null, editable)
                 }
             }
         }
@@ -162,7 +166,7 @@ AFRAME.registerComponent('maptree', {
 
             //unless configured customisable in the data model
             if(this.targetmodel.custom[field]){
-                iseditable = true
+                iseditable = (this.targetmodel.custom[field].editable == true)
             }
         }
 
@@ -188,7 +192,8 @@ AFRAME.registerComponent('maptree', {
         mapentry.setAttribute("istarget", this.data.istarget)
         mapentry.id = this.el.id + "-" + field
 
-        if(iseditable){
+        // if(iseditable && parent.attributes.value){
+        if( parent.attributes.value){
 
             let parentField = parent.attributes.value.value
 
@@ -204,16 +209,10 @@ AFRAME.registerComponent('maptree', {
             mapentry.setAttribute("childprefix",    childprefix)
             mapentry.setAttribute("childrecursive", childbuttonrecursive)
         }
-        else if(this.targetmodel.custom[field]){
+        else if(this.targetmodel.custom[field] && this.targetmodel.custom[field].button){
             mapentry.setAttribute("childbutton",    true)
             mapentry.setAttribute("childprefix",    this.targetmodel.custom[field].prefix)
             mapentry.setAttribute("childrecursive", this.targetmodel.custom[field].recursive)
-
-            // if(this.targetmodel.custom[field].notify){
-            //     mapentry.setAttribute("notify", this.targetmodel.custom[field].notify)
-            // }
-
-            // mapentry.setAttribute("iseditable",    true)
         }
 
         if(this.data.processvars && parent.attributes.field){
@@ -237,7 +236,7 @@ AFRAME.registerComponent('maptree', {
             if(this.targetmodel.custom.headers && camelsource.nodeName == 'setHeader'){
                 let mapentry = this.el.querySelector('a-map-entry[value=headers]')
 
-                let newchild = mapentry.components.mapentry.createChild(camelsource.attributes.name.nodeValue)
+                let newchild = mapentry.components.mapentry.createChild(camelsource.attributes.name.nodeValue,null,"")
 
                 //we register the child with a pending mapping to complete
                 this.pendingChildMapping[newchild.id] = {

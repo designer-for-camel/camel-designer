@@ -3310,13 +3310,32 @@ function createMapHttp(definition)
 //             <to uri="http://demoserver:80/resource" id="to-8"/>
 //         </pipeline>`
 
+
+
+
+
+{/* <setHeader name="header-1">
+<xpath headerName="data" saxon="true">/person[@name='James']</xpath>
+</setHeader> */}
+
+
     //TEST xpath from header name
     //TEST xpath without header name
     //TEST xpath with parameters (e.g. saxon=true)
-    let code = `<pipeline id="to-8-pipeline">
+    let code = `<pipeline >
 
-        <setHeader name="header-1">
-            <xpath headerName="data" saxon="true">/person[@name='James']</xpath>
+
+        <setHeader name="user">
+            <simple>`+'${body[0].user}'+`</simple>
+        </setHeader>
+
+
+        <setHeader name="user2">
+            <simple>`+'${body.user}'+`</simple>
+        </setHeader>
+
+        <setHeader name="user3">
+            <simple>`+'${body}'+`</simple>
         </setHeader>
 
         <to uri="http://testconfig/apath/somewhere?opt1=val1" id="to-8"/>
@@ -3350,6 +3369,7 @@ function createMapHttp(definition)
     //we obtain URI options
     let options = activity.components.uri.getOptions()
 
+    //prepare mapping fields
     let target = parts[0].split(":")
     let host = target[0]
     let port = "80"
@@ -3359,16 +3379,15 @@ function createMapHttp(definition)
         port = target[1]
     }
 
-    //delete host:port token
+    //discard host:port token from array
     parts.shift()
 
+    //rebuild path with remaining parts
     let path = "/"+parts.join("/")
 
-    // let datamodel = {http: {
+    //define data model for activity inputs
     let datamodel = {
-        "parameters (required)": {
-            // host: "demoserver",
-            // port: "80",
+        parameters: {
             host: host,
             port: port,
             path: path
@@ -3411,29 +3430,32 @@ function createMapHttp(definition)
         // - add a new child hanging from the item group
         // - nest childs if recursive is set to true
         // - edit the child name and value
+        // - notify user ui updates on fields
         custom:{
-            "options": {
+            parameters: {
+                notify: "target-parameter"
+            },
+            options: {
                 prefix: "option",
+                button: true,
+                editable: true,
                 recursive: false,
                 notify: "target-option"
             },
-            "headers": {
+            headers: {
                 prefix: "header",
+                button: true,
+                editable: true,
                 recursive: false
             }
         },
     } 
 
-    activity.addEventListener('target-option', function(evt){ 
-        console.log("entry got edited !!: "+evt.detail)
-    }.bind(this))
-
-
+    //set mapping to activity
     activity.setAttribute("mapping", {
-        // datatarget: JSON.stringify(datamodel),
         datatarget: JSON.stringify(targetModel),
-        // rootname: "http"
     })
+
     activity.setAttribute('processor-type', "map-http");
 
     definition.removeChild(endpoint)
@@ -3450,6 +3472,64 @@ function createMapHttp(definition)
     // activity.components.mapping.processCamelParsing(mappings)
     activity.components.mapping.setInitMappings(mappings)
 
+
+    //listener for changes on options
+    activity.addEventListener('target-option', function(evt){ 
+        console.log("entry got edited !!: "+ JSON.stringify(evt.detail))
+        
+        switch(evt.detail.action){
+            case 'set':
+                //remove option from URI
+                activity.components.uri.setOption(evt.detail.field, evt.detail.value)
+                break;
+            case 'rename':
+                //keep option value
+                let value = activity.components.uri.getOptions()[evt.detail.old]
+                //remove old option
+                activity.components.uri.setOption(evt.detail.old, null)
+                //add new option with same value
+                activity.components.uri.setOption(evt.detail.new, value)
+                break;
+            case 'delete':
+                //remove option from URI
+                activity.components.uri.setOption(evt.detail.field, null)
+                break;
+        }
+    }.bind(this))
+
+    //listener for changes on parameters
+    activity.addEventListener('target-parameter', function(evt){ 
+        console.log("entry got edited !!: "+ JSON.stringify(evt.detail))
+        
+        switch(evt.detail.action){
+            case 'set':
+
+                //obtain all parameter map entries
+                let parameters = activity.querySelectorAll('a-map-entry[value="parameters"] a-map-entry')
+
+                //obtain all field expressions (mappings or values)
+                let fields = {
+                    host: parameters[0].components.mapentry.expression.expression,
+                    port: parameters[1].components.mapentry.expression.expression,
+                    path: parameters[2].components.mapentry.expression.expression,
+                }
+
+                //the event contains the updated value (the expression is not reliable on user update)
+                fields[evt.detail.field] = evt.detail.value
+
+                //ensure path starts with slash
+                if(!fields.path.startsWith("/")){
+                    fields.path = "/"+fields.path
+                }
+
+                //compose target
+                let target = "//"+fields.host+":"+fields.port + fields.path
+
+                //update component URI
+                activity.components.uri.setTarget(target)
+                break;
+        }
+    }.bind(this))
 
     return activity
 }
@@ -3485,6 +3565,7 @@ function createMapData(definition)
         custom:{
             "json data": {
                 prefix: "new",
+                button: true,
                 recursive: true
             }
         },

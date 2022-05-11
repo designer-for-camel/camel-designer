@@ -109,6 +109,13 @@ AFRAME.registerComponent('mapping', {
         this.previewRender.setAttribute("canvas-updater", "")
         this.preview.appendChild(this.previewRender)
 
+        // let lblpreview = document.createElement('a-text')
+        // lblpreview.setAttribute("value","preview")
+        // lblpreview.setAttribute("scale", "3 3 3")
+        // lblpreview.setAttribute("align", "center")
+        // lblpreview.setAttribute("position", ".55 2.8 0")
+        // this.mapping.appendChild(lblpreview)
+
         // <a-plane position="0 -4 -2" rotation="0 0 0" width="4" height="3"
         // material="src:#cam2; opacity: .95" canvas-updater></a-plane> -->
   
@@ -222,7 +229,7 @@ AFRAME.registerComponent('mapping', {
             let source,target
 
             if(language == "simple"){
-                if(expression.includes('${body}')){
+                if(expression.includes('${body')){
                     source = this.datasource.querySelector('a-map-entry[value="body"] > a-plane.interactive')            
                     target = this.targetTree.querySelector('a-map-entry[value="'+field+'"] > a-plane.interactive')
 
@@ -401,6 +408,7 @@ AFRAME.registerComponent('mapping', {
 expression = expr.expression
 
             switch(expr.target.type) {
+/*                
                 case 'properties':
                     code += tabulation+'  <setProperty '+getCamelAttributePropertyName()+'="'+expr.target.value+'" id="'+element.id+'">\n'+
                             // tabulation+'    '+'<simple>'+expression+'</simple>'+'\n'+
@@ -412,8 +420,9 @@ expression = expr.expression
                             tabulation+'    '+'<'+expr.language+attributes+'>'+expression+'</'+expr.language+'>'+'\n'+
                             tabulation+'  </setHeader>\n'
                     break;
+*/
+
                 case 'headers':
-                    // code += tabulation+'  <setHeader '+getCamelAttributeHeaderName()+'="'+expr.target.value+'" id="'+element.id+'">\n'+
                     code += tabulation+'  <setHeader '+getCamelAttributeHeaderName()+'="'+expr.target.field+'" id="'+element.id+'">\n'+
                             tabulation+'    '+'<'+expr.language+attributes+'>'+expression+'</'+expr.language+'>'+'\n'+
                             tabulation+'  </setHeader>\n'
