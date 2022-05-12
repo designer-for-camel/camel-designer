@@ -45,25 +45,13 @@ AFRAME.registerComponent('maptree', {
             }
         }.bind(this));
 
+        //set ID
+        this.el.id = this.data.istarget ? this.el.parentEl.id + "-tgt" : this.el.parentEl.id + "-src"
 
-        this.el.id = this.data.istarget ? this.el.parentEl.id + "-target" : this.el.parentEl.id + "-source"
-
+        //make it draggable
         this.el.setAttribute("handgrip", "")
 
         this.type = this.data.type
-
-        // let rootLabel = "{json}"
-
-        // let rootLabel = this.data.rootname
-
-        // if(!this.data.istarget && this.data.processvars){
-        //     rootLabel = "exchange"
-        // }
-
-        // if(this.data.istarget && this.type == 'headers'){
-        //     rootLabel = "headers"
-        //     this.type = "json"
-        // }
 
         let root
 
@@ -190,7 +178,18 @@ AFRAME.registerComponent('maptree', {
         mapentry.setAttribute("ismappable", ismappable)
         mapentry.setAttribute("iseditable", iseditable)
         mapentry.setAttribute("istarget", this.data.istarget)
-        mapentry.id = this.el.id + "-" + field
+
+        //PENDING
+        //not ideal at the moment. Find better strategy to find a unique ID that does not change over time (refresh)
+        //the difficulty is that map entries may be destroyed and regenerated on refresh when the mapping view is displayed
+        //the ID requires to be regenerated with the same value
+        //otherwise, mappings (ropes) are lost, as they use the given ID in the first place
+        if(parent.attributes.field){
+            mapentry.id = this.el.id + "-" +parent.attributes.field.value+ "-" +field
+        }
+        else{
+            mapentry.id = this.el.id + "-" +field
+        }
 
         // if(iseditable && parent.attributes.value){
         if( parent.attributes.value){

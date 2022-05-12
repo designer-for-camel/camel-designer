@@ -3355,7 +3355,7 @@ function createMapHttp(definition)
 
     // var iterator = definition.evaluate('/pipeline/to', definition, null, XPathResult.ANY_TYPE, null);
     
-    let endpoint = definition.querySelector('to')
+    let endpoint = definition.querySelector('to,toD')
     // let endpoint = definition.removeChild(definition.lastChild)
 
     // let activity = createGenericEndpointTo({definition: definition})
@@ -3479,7 +3479,7 @@ function createMapHttp(definition)
         
         switch(evt.detail.action){
             case 'set':
-                //remove option from URI
+                //set option in URI
                 activity.components.uri.setOption(evt.detail.field, evt.detail.value)
                 break;
             case 'rename':
@@ -3583,6 +3583,211 @@ function createMapData(definition)
 
     let mappings = []
     activity.components.mapping.setInitMappings(mappings)
+
+    return activity
+}
+
+
+
+function createMapMailSMTP(definition)
+{
+    let code = `<pipeline >
+
+        <setHeader name="from">
+            <simple>`+'${body[0]}'+`</simple>
+        </setHeader>
+        <setHeader name="to">
+          <simple>development@demo.camelk</simple>
+        </setHeader>
+        <setHeader name="subject">
+            <simple>hello</simple>
+        </setHeader>
+        <setHeader name="test">
+            <simple>hello</simple>
+        </setHeader>
+        <to uri="smtp://standalone.demo-mail.svc:3025?username=demo&amp;password=demo&amp;to=bmesegue@redhat.com&amp;from=dummy" id="to-8"/>
+
+    </pipeline>`
+
+
+    definition = definition || new DOMParser().parseFromString(code, "text/xml").documentElement
+
+    let endpoint = definition.querySelector('to,toD')
+
+    let activity = createGenericEndpointTo({definition: endpoint})
+
+
+    //we obtain parts separated by '/', and filter out empty values
+    let parts   = activity.components.uri.getTarget().split('/').filter(element => element)
+
+    //we obtain URI options
+    let options = activity.components.uri.getOptions()
+
+    let email = {
+        from:    options.from    || "",
+        to:      options.to      || "",
+        cc:      options.cc      || "",
+        bcc:     options.bcc     || "",
+        subject: options.subject || "",
+    }
+
+    //make a shallow copy (to preserve URI object intact)
+    options = Object.assign({}, options);
+
+    delete options.from
+    delete options.to
+    delete options.cc
+    delete options.bcc
+    delete options.subject
+
+    //prepare mapping fields
+    let target = parts[0].split(":")
+    let host = target[0]
+    let port = "80"
+
+    //set port if given
+    if(target.length>1){
+        port = target[1]
+    }
+
+    //discard host:port token from array
+    parts.shift()
+
+    //rebuild path with remaining parts
+    // let path = "/"+parts.join("/")
+
+    //define data model for activity inputs
+    let datamodel = {
+        server: {
+            host: host,
+            port: port,
+            // path: path
+        },
+        email: email,
+        options: options,
+        headers: {}
+    }
+
+    let targetModel = {
+
+        //name of the model
+        name: "Mail (SMTP)",
+
+        //the data model
+        datamodel: datamodel,
+
+        //define which fields from the datamodel can be customised.
+        //items in the custom list indicate the user can:
+        // - add a new child hanging from the item group
+        // - nest childs if recursive is set to true
+        // - edit the child name and value
+        // - notify user ui updates on fields
+        custom:{
+            server: {
+                notify: "server"
+            },
+            email: {
+                notify: "email"
+            },
+            options: {
+                prefix: "option",
+                button: true,
+                editable: true,
+                recursive: false,
+                notify: "option"
+            },
+            headers: {
+                prefix: "header",
+                button: true,
+                editable: true,
+                recursive: false
+            }
+        },
+    } 
+
+    //set mapping to activity
+    activity.setAttribute("mapping", {
+        datatarget: JSON.stringify(targetModel),
+    })
+
+    activity.setAttribute('processor-type', "map-mail");
+
+    definition.removeChild(endpoint)
+
+    let mappings = Array.from(definition.children)
+
+    activity.components.mapping.setInitMappings(mappings)
+
+
+    //listener for changes on options
+    activity.addEventListener('email', function(evt){ 
+        console.log("entry got edited !!: "+ JSON.stringify(evt.detail))
+        
+        switch(evt.detail.action){
+            case 'set':
+                //set option in URI
+                activity.components.uri.setOption(evt.detail.field, evt.detail.value)
+                break;
+        }
+    }.bind(this))
+
+    //listener for changes on options
+    activity.addEventListener('option', function(evt){ 
+        console.log("entry got edited !!: "+ JSON.stringify(evt.detail))
+        
+        switch(evt.detail.action){
+            case 'set':
+                //set option in URI
+                activity.components.uri.setOption(evt.detail.field, evt.detail.value)
+                break;
+            case 'rename':
+                //keep option value
+                let value = activity.components.uri.getOptions()[evt.detail.old]
+                //remove old option
+                activity.components.uri.setOption(evt.detail.old, null)
+                //add new option with same value
+                activity.components.uri.setOption(evt.detail.new, value)
+                break;
+            case 'delete':
+                //remove option from URI
+                activity.components.uri.setOption(evt.detail.field, null)
+                break;
+        }
+    }.bind(this))
+
+    //listener for changes on parameters
+    activity.addEventListener('server', function(evt){ 
+        console.log("entry got edited !!: "+ JSON.stringify(evt.detail))
+        
+        switch(evt.detail.action){
+            case 'set':
+
+                //obtain all parameter map entries
+                let parameters = activity.querySelectorAll('a-map-entry[value="server"] a-map-entry')
+
+                //obtain all field expressions (mappings or values)
+                let fields = {
+                    host: parameters[0].components.mapentry.expression.expression,
+                    port: parameters[1].components.mapentry.expression.expression,
+                    // path: parameters[2].components.mapentry.expression.expression,
+                }
+
+                //the event contains the updated value (the expression is not reliable on user update)
+                fields[evt.detail.field] = evt.detail.value
+
+                //ensure path starts with slash
+                // if(!fields.path.startsWith("/")){
+                //     fields.path = "/"+fields.path
+                // }
+
+                //compose target
+                let target = "//"+fields.host+":"+fields.port //+ fields.path
+
+                //update component URI
+                activity.components.uri.setTarget(target)
+                break;
+        }
+    }.bind(this))
 
     return activity
 }

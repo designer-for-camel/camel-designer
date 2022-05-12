@@ -335,6 +335,30 @@ function createActivityFromSource(type, delay, definition, lastAction) {
         case 'unmarshal':
             return createActivityDelayed(createDataformat, delay, definition, lastAction);
 
+
+        case 'pipeline':
+
+            console.log("Validating pipeline...")
+
+            let targets    = definition.definition.querySelectorAll('to,toD')
+            let numHeaders = definition.definition.querySelectorAll('setHeader').length
+
+
+            //valid pipeline if...
+            if(   targets.length == 1                                       //only one 'to' element and positioned last
+               && targets[0] == definition.definition.lastElementChild      //'to' element positioned last
+               && numHeaders == definition.definition.childElementCount - 1 //only headers included
+               ){
+
+                    console.log("valid pipeline.")
+                    return createActivityDelayed(createMapHttp, delay, definition.definition, lastAction);
+            }
+
+            console.log("INVALID pipeline.")
+
+
+
+
         default:
 
             //we might have a custom configured producer
@@ -809,6 +833,7 @@ function renderActivity(activity, mycode, iterator) {
 
 
 
+        case 'map-mail':
         case 'map-http':
 
             mycode.text += mycode.tab+'<pipeline id="'+activity.id+'-pipeline">\n'

@@ -546,6 +546,10 @@ function createMenu3D(configuration)
                 function: "createMapHttp"                
             },
             {
+                label:    "mapMail",
+                function: "createMapMailSMTP"                
+            },
+            {
                 label:    "map data",
                 function: "createMapData"                
             }

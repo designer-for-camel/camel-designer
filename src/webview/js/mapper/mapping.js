@@ -39,7 +39,7 @@ AFRAME.registerComponent('mapping', {
 
 
         this.mapping = document.createElement('a-entity')
-        this.mapping.id = this.el.id + "-mapping"
+        this.mapping.id = this.el.id + "-map"
         this.mapping.setAttribute("position", "2 "+mapperPosition+" 1") // we place X=2 to create a smooth camera movent event for Route/Mapping transitions
         this.el.appendChild(this.mapping)
 
