@@ -233,6 +233,15 @@ AFRAME.registerComponent('mapentry', {
                 //visual helper to isolate mappings for this map entry
                 //when mouse leaves, we restore the visibility of all the mappings
                 back.addEventListener('mouseleave', function(){
+                    
+                    //when map entry is deleted by the user, this function triggers
+                    //checking the parent element confirms it
+                    //when so, we ignore the event
+                    //the event listener will be destroyed by the garbage collector                     
+                    if(this.el.parentElement == null){
+                        return
+                    }
+
                     //obtain mappings for this map entry
                     let list = this.el.querySelectorAll('a-rope')
 
@@ -1036,10 +1045,18 @@ AFRAME.registerComponent('mapentry', {
         //if configured to notify
         if(customConfig && customConfig.notify){
             //emit notification with update
+            // this.el.emit(customConfig.notify, {
+            //     option: child.attributes.field.value,
+            //     value:  child.attributes.value.value,
+            // });
+
+            //emit notification with update
             this.el.emit(customConfig.notify, {
-                option: child.attributes.field.value,
-                value:  child.attributes.value.value,
-            });                                
+                action: "set",
+                field: child.attributes.field.value,
+                value: child.attributes.value.value
+            });   
+
         }
 
         return child

@@ -358,7 +358,14 @@ AFRAME.registerComponent('mapping', {
     {
         let mappings = this.targetTree.querySelectorAll('a-map-entry[ismapped]')
 
+        // let renderPipeline = (mappings.length > 0)
+        let renderPipeline = false
+
         let code = ""
+
+        // if(renderPipeline){
+        //     code += tabulation+'<pipeline id="'+this.el.id+'-pipeline">\n'
+        // }
 
         for (let i = 0; i < mappings.length; i++) {
             const element = mappings[i];
@@ -392,20 +399,13 @@ AFRAME.registerComponent('mapping', {
             //we eliminate trailing space added in for-loop
             expression = expression.slice(0, -1)
 
-// if(expr.parameters.length > 0){
+            //populate object's parameters
+            for (const [key, value] of Object.entries(expr.parameters)) {
+                console.log(`${key}: ${value}`);
+                attributes += ' '+key+'="'+value+'"'
+            }
 
-    for (const [key, value] of Object.entries(expr.parameters)) {
-        console.log(`${key}: ${value}`);
-        attributes += ' '+key+'="'+value+'"'
-      }
-
-    //populate object's parameters
-    // for(let i = expr.parameters.length - 1; i >= 0; i--) {
-    //     attributes += ' '+expr.parameters[i].name+'="'+expr.parameters[i].value+'"'
-    // }
-// }
-
-expression = expr.expression
+            expression = expr.expression
 
             switch(expr.target.type) {
 /*                
@@ -423,6 +423,7 @@ expression = expr.expression
 */
 
                 case 'headers':
+                    renderPipeline = true
                     code += tabulation+'  <setHeader '+getCamelAttributeHeaderName()+'="'+expr.target.field+'" id="'+element.id+'">\n'+
                             tabulation+'    '+'<'+expr.language+attributes+'>'+expression+'</'+expr.language+'>'+'\n'+
                             tabulation+'  </setHeader>\n'
@@ -433,6 +434,33 @@ expression = expr.expression
                             tabulation+'  </setBody>\n'
                     break;
             }
+        }
+
+        //helper variable
+        let activity = this.el
+
+        //obtain URI
+        let uri = activity.components.uri.getValue()
+
+        //regular expression to find variables
+        const containsVariable = new RegExp('\\${.*}');
+        
+        //if variables found the URI is dynamic
+        let dynamic = containsVariable.test(uri)
+
+        //we assume the activity is an endpoint (<to>) and has URI
+        let too = dynamic ? "<toD" : "<to"
+        // let too = activity.hasAttribute("dynamic") ? "<toD" : "<to"
+
+        //render as pipeline if it contains non trivial mappings
+        if(renderPipeline){
+            code  = tabulation+'<pipeline id="'+this.el.id+'-pipeline">\n' + code
+            code += tabulation+'  '+too+' uri="'+activity.components.uri.getValue()+'" id="'+activity.id+'"/>\n'
+            code += tabulation+'</pipeline>\n'
+        }
+        else{
+            //no extra indentation
+            code += tabulation+too+' uri="'+activity.components.uri.getValue()+'" id="'+activity.id+'"/>\n'
         }
 
         return code

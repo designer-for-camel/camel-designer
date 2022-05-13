@@ -836,15 +836,15 @@ function renderActivity(activity, mycode, iterator) {
         case 'map-mail':
         case 'map-http':
 
-            mycode.text += mycode.tab+'<pipeline id="'+activity.id+'-pipeline">\n'
+            // mycode.text += mycode.tab+'<pipeline id="'+activity.id+'-pipeline">\n'
 
                 mycode.text += activity.components.mapping.processCamelRendering(mycode.tab) 
 
-                let too = activity.hasAttribute("dynamic") ? "<toD" : "<to"
-                //assumes activity is an endpoint (<to>) and has URI
-                mycode.text += mycode.tab+'  '+too+' uri="'+activity.components.uri.getValue()+'" id="'+activity.id+'"/>\n'
+                // let too = activity.hasAttribute("dynamic") ? "<toD" : "<to"
+                // //assumes activity is an endpoint (<to>) and has URI
+                // mycode.text += mycode.tab+'  '+too+' uri="'+activity.components.uri.getValue()+'" id="'+activity.id+'"/>\n'
 
-            mycode.text += mycode.tab+'</pipeline>\n'
+            // mycode.text += mycode.tab+'</pipeline>\n'
 
 
             break;
