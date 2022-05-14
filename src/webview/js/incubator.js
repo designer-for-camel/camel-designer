@@ -3322,25 +3322,25 @@ function createMapHttp(definition)
     //TEST xpath from header name
     //TEST xpath without header name
     //TEST xpath with parameters (e.g. saxon=true)
-    let code = `<pipeline >
+    // let code = `<pipeline >
 
 
-        <setHeader name="user">
-            <simple>`+'${body[0].user}'+`</simple>
-        </setHeader>
+    //     <setHeader name="user">
+    //         <simple>`+'${body[0].user}'+`</simple>
+    //     </setHeader>
 
 
-        <setHeader name="user2">
-            <simple>`+'${body.user}'+`</simple>
-        </setHeader>
+    //     <setHeader name="user2">
+    //         <simple>`+'${body.user}'+`</simple>
+    //     </setHeader>
 
-        <setHeader name="user3">
-            <simple>`+'${body}'+`</simple>
-        </setHeader>
+    //     <setHeader name="user3">
+    //         <simple>`+'${body}'+`</simple>
+    //     </setHeader>
 
-        <to uri="http://testconfig/apath/somewhere?opt1=val1" id="to-8"/>
+    //     <to uri="http://testconfig/apath/somewhere?opt1=val1" id="to-8"/>
 
-    </pipeline>`
+    // </pipeline>`
 
 
     // <to uri="http://demoserver:80/resource" id="to-8"/>
@@ -3350,11 +3350,32 @@ function createMapHttp(definition)
 //     <xpath saxon="true">/data/node/field</xpath>
 // </setHeader>
 
+let code = `<pipeline >
+                <setHeader name="content-type">
+                    <simple>application/json</simple>
+                </setHeader>
+
+                <setHeader name="header-2" >
+                    <simple>something `+'${body}'+`</simple>
+                </setHeader>
+
+                <to uri="http://testconfig/apath/somewhere?opt1=val1" id="to-8"/>
+            </pipeline>`
+
 
     definition = definition || new DOMParser().parseFromString(code, "text/xml").documentElement
 
     // var iterator = definition.evaluate('/pipeline/to', definition, null, XPathResult.ANY_TYPE, null);
     
+    // let endpoint = definition
+
+    if(definition.nodeName == "to" || definition.nodeName == "toD"){
+        // definition = document.createElement("pipeline").appendChild(definition)
+        let newdef = document.createElement("pipeline")
+        newdef.appendChild(definition)
+        definition = newdef
+    }
+
     let endpoint = definition.querySelector('to,toD')
     // let endpoint = definition.removeChild(definition.lastChild)
 
@@ -3409,7 +3430,8 @@ function createMapHttp(definition)
             // accept:         "Accept",
             // authorization:  "Authorization",
 
-            "content-type": "application/json",
+            // "content-type": "application/json",
+            "content-type": "",
             accept:         "",
             authorization:  "",
 
@@ -3456,7 +3478,7 @@ function createMapHttp(definition)
         datatarget: JSON.stringify(targetModel),
     })
 
-    activity.setAttribute('processor-type', "map-http");
+    activity.setAttribute('processor-type', "http");
 
     definition.removeChild(endpoint)
 

@@ -229,6 +229,12 @@ AFRAME.registerComponent('mapping', {
             let source,target
 
             if(language == "simple"){
+
+                target = this.targetTree.querySelector('a-map-entry[value="'+field+'"] > a-plane.interactive')
+
+                // target.components.mapentry.setMappingExpression(null, code)
+
+
                 if(expression.includes('${body')){
                     source = this.datasource.querySelector('a-map-entry[value="body"] > a-plane.interactive')            
                     target = this.targetTree.querySelector('a-map-entry[value="'+field+'"] > a-plane.interactive')
@@ -253,6 +259,7 @@ AFRAME.registerComponent('mapping', {
                     target = this.targetTree.querySelector('a-map-entry[value="'+field +'"] > a-plane.interactive')
                     this.createMapping(source, target, element)
                 }
+
             }
             else if(language == "xpath"){
 
@@ -283,8 +290,9 @@ AFRAME.registerComponent('mapping', {
     {
         //if the target is not provided and we have the source code, we might want to guess the mapping
         if(source && !target && code){
+        // if(!target && code){
 
-            //create dynamically the target mapentry.
+            //create dynamically the target map entry.
             //because initialisation is asynchronous, the mapping needs to be postponed
             //the call automatically schedules the mapping to be created when ready
             this.targetTree.components.maptree.createLeafFromCode(source, code)
@@ -293,6 +301,11 @@ AFRAME.registerComponent('mapping', {
             return
         }
 
+        // if(!source && target){
+        //     target.components.mapentry.setMappingExpression(null, code)
+        // }    
+        // else 
+        
         if(source && target){
 
             //if not the mapentry element, we assume it's a child, and ensure we pick the root (parent)

@@ -402,7 +402,7 @@ AFRAME.registerComponent('mapentry', {
                                 break;
                         }
 
-                        this.setVisualMappingExpression(this.expression.expression)
+                        this.setManualMappingExpression(this.expression.expression)
                     }
                     // activity.components.uri.setTarget(adm)
 
@@ -495,7 +495,7 @@ AFRAME.registerComponent('mapentry', {
                     textarea.object3D.position.copy(v1)
         
                     //prompt the user to edit
-                    textarea.components.textarea.setTextareaMode(this.labelvalue.getAttribute("value"), this.setVisualMappingExpression.bind(this))
+                    textarea.components.textarea.setTextareaMode(this.labelvalue.getAttribute("value"), this.setManualMappingExpression.bind(this))
 
                     //focus on textarea
                     textarea.components.textarea.focus()
@@ -590,7 +590,7 @@ AFRAME.registerComponent('mapentry', {
         // set default mapping value if is target and mappable
         // if default value is not empty string, we create a mapping expression
         if(this.data.istarget && this.data.ismappable && this.data.value.length > 0){
-            this.setVisualMappingExpression(this.data.value, true)
+            this.setManualMappingExpression(this.data.value, true)
         }
 
         this.el.emit('mapentry-init-complete');
@@ -604,8 +604,8 @@ AFRAME.registerComponent('mapentry', {
         return this.expression
     },
 
-    setVisualMappingExpression: function(expression, notificationsDisabled){
-
+    setManualMappingExpression: function(expression, notificationsDisabled){
+/*
         notificationsDisabled = (notificationsDisabled == true)
 
         //if configured to notify
@@ -617,12 +617,12 @@ AFRAME.registerComponent('mapentry', {
                 value: expression
             });                                
         }
-
+*/
         //set internal variables
-        this.setMappingExpression(null, null, expression)
+        this.setMappingExpression(null, null, expression, notificationsDisabled)
 
         //set visual value
-        this.labelvalue.setAttribute("value", expression)
+        //this.labelvalue.setAttribute("value", expression)
 
         //update mappings
         this.updateMappings(expression)
@@ -685,7 +685,7 @@ AFRAME.registerComponent('mapentry', {
         let current = this.expression.sources
         let filtered = []
 
-        //second phase: clean up mappings with no matching variable
+        //second phase: delete existing mappings with no matching variable in expression
         for(let i = 0; i < current.length; i++){
 
             let sourceVar = ""
@@ -799,13 +799,22 @@ AFRAME.registerComponent('mapentry', {
         }
     },
 
-    // setMappingExpression: function(mapping, expression){
-    setMappingExpression: function(mapping, camelsource, literal){
+    //Sets the mapping expression for this map entry
+    // - [optional] mapping (rope): used to track visual source fields used in the mapping
+    // - [optional] camelsource: examines a camel source to define the mappings for this map entry
+    // - [optional] literal: mapping expression to set
+    // - [optional] notificationsDisabled: when true, indicates to suppress the notification signal
+    setMappingExpression: function(mapping, camelsource, literal, notificationsDisabled){
 
+        //initialise expression if necessary
         if(!this.expression){
             this.initExpression()
         }
 
+        //set notification flag
+        notificationsDisabled = (notificationsDisabled == true)
+
+        //when a rope (visual mapping) is provided...
         if(mapping){
 
             let element = mapping 
@@ -871,7 +880,7 @@ AFRAME.registerComponent('mapentry', {
             // this.expression.expression = this.getPath(sourceEntry)
         }
 
-
+        // when source code is provided...
         if(camelsource){
  
             //set expression's language
@@ -898,122 +907,31 @@ AFRAME.registerComponent('mapentry', {
         else if(literal != null){
             this.expression.expression = literal
         }
-        // else{
 
-        // }
+        //flag the field as mapped
+        this.el.setAttribute("ismapped", true)
 
+        //obtain current mapping value
+        let valueMapping = this.labelvalue.getAttribute("value")
 
-
-
-        // let code = ""
-
-            // let targetEntry = this.el
-
-            // let sourceField = sourceEntry.attributes.value.value
-            // let targetField = targetEntry.attributes.value.value
-
-            // let varType    = sourceEntry.attributes.vartype.value
-            // let setterType = targetEntry.attributes.vartype.value
-
-            //if no expression existed
-            // if(!this.expression){
-            //     this.expression = {
-            //         sources:[],
-            //         language: camelsource.firstElementChild.nodeName,
-            //         parameters: params,
-            //         expression: camelsource.firstElementChild.textContent,
-            //         target:{
-            //             type:  this.el.attributes.vartype.value,
-            //             field: targetEntry.attributes.field.value,
-            //             value: targetEntry.attributes.value.value
-            //         }
-            //     }
-            // }
-
-        
-
-
-/*
-        if(expression){
-            this.expression.sources.push({
-                type:  "literal",
-                field: expression
-                // field: sourceEntry.attributes.value.value
-            }) 
-
-            this.el.setAttribute("ismapped", true)
+        //when the user drags & drops to create a mapping (not literal: text editing on target)...
+        //...if a mapping value already exists, we append the new mapping value to the existing one
+        if(literal == null && valueMapping && valueMapping != ""){
+            this.expression.expression = valueMapping+" "+this.expression.expression
         }
-        else 
-        */
-/*        
-        if(mapping){
 
-            let element = mapping 
-            let source = document.getElementById(element.getAttribute('start'))
-            let sourceEntry = source.closest('a-map-entry')
+        //set the expression in the visual label
+        this.labelvalue.setAttribute("value",this.expression.expression)
 
-            this.expression.sources.push({
-                type:  sourceEntry.attributes.vartype.value,
-                field: sourceEntry.attributes.field.value
-                // field: sourceEntry.attributes.value.value
-            })
-
-            this.expression.expression = this.getPath(sourceEntry)
-*/
-
-
-            // switch(varType) {
-            //     case 'properties':
-            //         expression = '${exchangeProperty.'+sourceField+'}'
-            //         break
-            //     case 'headers':
-            //         expression = '${header.'+sourceField+'}'
-            //         break;
-            //     case 'body':
-            //         expression = '${body}'
-            //         break;
-            // }
-
-            // switch(setterType) {
-            //     case 'properties':
-            //         code += tabulation+'  <setProperty '+getCamelAttributePropertyName()+'="'+targetField+'" id="'+targetEntry.id+'">\n'+
-            //                 tabulation+'    '+'<simple>'+expression+'</simple>'+'\n'+
-            //                 tabulation+'  </setProperty>\n'
-            //         break;
-            //     case 'headers':
-            //         code += tabulation+'  <setHeader '+getCamelAttributeHeaderName()+'="'+targetField+'" id="'+targetEntry.id+'">\n'+
-            //                 tabulation+'    '+'<simple>'+expression+'</simple>'+'\n'+
-            //                 tabulation+'  </setHeader>\n'
-            //         break;
-            //     case 'body':
-            //         code += tabulation+'  <setBody id="'+targetEntry.id+'">\n'+
-            //                 tabulation+'    '+'<simple>'+expression+'</simple>'+'\n'+
-            //                 tabulation+'  </setBody>\n'
-            //         break;
-            
-        
-            // this.expression = expression
-
-            //flag the field as mapped
-            this.el.setAttribute("ismapped", true)
-
-            //obtain current mapping value
-            let valueMapping = this.labelvalue.getAttribute("value")
-
-            // this.labelvalue.setAttribute("value",this.expression.expression)
-
-
-            //if a mapping does not exist
-            if(!valueMapping || valueMapping == ""){
-                this.labelvalue.setAttribute("value",this.expression.expression)
-            }
-            //if one exists, we append the new mapping
-            else{
-                this.labelvalue.setAttribute("value",valueMapping+" "+this.expression.expression)
-            }
-
-
-        // }
+        //if configured to notify
+        if(!notificationsDisabled && this.data.notify){
+            //emit notification with update
+            this.el.emit(this.data.notify, {
+                action: "set",
+                field: this.data.field,
+                value: this.expression.expression
+            });                                
+        }
     },
 
     //creates a child map-entry node  

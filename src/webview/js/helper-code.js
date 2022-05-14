@@ -336,6 +336,9 @@ function createActivityFromSource(type, delay, definition, lastAction) {
             return createActivityDelayed(createDataformat, delay, definition, lastAction);
 
 
+        case 'http':
+            return createActivityDelayed(createMapHttp, delay, definition.definition, lastAction);
+            
         case 'pipeline':
 
             console.log("Validating pipeline...")
@@ -834,7 +837,7 @@ function renderActivity(activity, mycode, iterator) {
 
 
         case 'map-mail':
-        case 'map-http':
+        case 'http':
 
             // mycode.text += mycode.tab+'<pipeline id="'+activity.id+'-pipeline">\n'
 
