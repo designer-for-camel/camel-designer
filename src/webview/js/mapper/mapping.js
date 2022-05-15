@@ -43,6 +43,10 @@ AFRAME.registerComponent('mapping', {
         this.mapping.setAttribute("position", "2 "+mapperPosition+" 1") // we place X=2 to create a smooth camera movent event for Route/Mapping transitions
         this.el.appendChild(this.mapping)
 
+        //this action will ensure there is a default source data tree
+        //we create source tree first to allow target tree initialisation to find source elements
+        this.refreshProcessContext()
+
         let map = document.createElement('a-map-tree')
         map.setAttribute("tree", JSON.stringify(mapTree))
         map.setAttribute("istarget", true)
@@ -60,8 +64,8 @@ AFRAME.registerComponent('mapping', {
         // this.mapping.appendChild(map)
 
 
-        //this action will ensure there is a default source data tree
-        this.refreshProcessContext()
+        // //this action will ensure there is a default source data tree
+        // this.refreshProcessContext()
 
 
         this.textarea = document.createElement('a-textarea')
@@ -218,67 +222,22 @@ AFRAME.registerComponent('mapping', {
         for (let i = 0; i < mappings.length; i++) {
             const element = mappings[i];
             
-            //TEMP: element here is 'setHeader'
-            let field = element.attributes.name.value
+            //helper variable
+            let target
 
-            //get language used and expression
-            let language = element.firstElementChild.localName
-            let expression = element.firstElementChild.textContent
-
-            //obtain source and target entries
-            let source,target
-
-            if(language == "simple"){
-
-                target = this.targetTree.querySelector('a-map-entry[value="'+field+'"] > a-plane.interactive')
-
-                // target.components.mapentry.setMappingExpression(null, code)
-
-
-                if(expression.includes('${body')){
-                    source = this.datasource.querySelector('a-map-entry[value="body"] > a-plane.interactive')            
-                    target = this.targetTree.querySelector('a-map-entry[value="'+field+'"] > a-plane.interactive')
-
-                    this.createMapping(source, target, element)
-                }
-
-                if(expression.includes('${header.')){
-
-                    let header = expression.split('.')[1].split('}')[0]
-
-                    source = this.datasource.querySelector('a-map-entry[field="'+header+'"] > a-plane.interactive')            
-                    target = this.targetTree.querySelector('a-map-entry[value="'+field +'"] > a-plane.interactive')
-                    this.createMapping(source, target, element)
-                }
-
-                if(expression.includes('${exchangeProperty.')){
-
-                    let property = expression.split('.')[1].split('}')[0]
-
-                    source = this.datasource.querySelector('a-map-entry[field="'+property+'"] > a-plane.interactive')            
-                    target = this.targetTree.querySelector('a-map-entry[value="'+field +'"] > a-plane.interactive')
-                    this.createMapping(source, target, element)
-                }
-
+            //if element is body setter
+            if(element.nodeName == "setBody"){
+                target = this.targetTree.querySelector('a-map-entry[field="body"] > a-map-entry')
             }
-            else if(language == "xpath"){
+            else{
+                //TEMP: assumed element is 'setHeader'
+                let field = element.attributes.name.value
 
-                let headerName = element.firstElementChild.attributes.headerName
-
-                if(!headerName){
-                    source = this.datasource.querySelector('a-map-entry[value="body"] > a-plane.interactive')            
-                    target = this.targetTree.querySelector('a-map-entry[value="'+field+'"] > a-plane.interactive')
-
-                    this.createMapping(source, target, element)
-                }
-                else{
-                    let header = headerName.value
-
-                    source = this.datasource.querySelector('a-map-entry[field="'+header+'"] > a-plane.interactive')            
-                    target = this.targetTree.querySelector('a-map-entry[value="'+field +'"] > a-plane.interactive')
-                    this.createMapping(source, target, element)
-                }
+                //obtain target map entry
+                target = this.targetTree.querySelector('a-map-entry[field="'+field+'"] > a-plane.interactive')
             }
+
+            this.createMapping(null, target, element)
         }
 
         //this marks the mapping as initialised (should run only once)
@@ -289,8 +248,8 @@ AFRAME.registerComponent('mapping', {
     createMapping: function(source, target, code)
     {
         //if the target is not provided and we have the source code, we might want to guess the mapping
-        if(source && !target && code){
-        // if(!target && code){
+        // if(source && !target && code){
+        if(!target && code){
 
             //create dynamically the target map entry.
             //because initialisation is asynchronous, the mapping needs to be postponed
@@ -301,12 +260,15 @@ AFRAME.registerComponent('mapping', {
             return
         }
 
-        // if(!source && target){
-        //     target.components.mapentry.setMappingExpression(null, code)
-        // }    
-        // else 
-        
-        if(source && target){
+        if(!source && target){
+            //if not the mapentry element, we assume it's a child, and ensure we pick the root (parent)
+            if(target.localName != 'a-map-entry'){
+                target = target.parentElement
+            }
+
+            target.components.mapentry.setMappingExpression(null, code)
+        }    
+        else if(source && target){
 
             //if not the mapentry element, we assume it's a child, and ensure we pick the root (parent)
             if(source.localName != 'a-map-entry'){
@@ -441,7 +403,9 @@ AFRAME.registerComponent('mapping', {
                             tabulation+'    '+'<'+expr.language+attributes+'>'+expression+'</'+expr.language+'>'+'\n'+
                             tabulation+'  </setHeader>\n'
                     break;
-                case 'body':
+                // case 'body':
+                case 'payload':
+                    renderPipeline = true
                     code += tabulation+'  <setBody id="'+element.id+'">\n'+
                             tabulation+'    '+'<'+expr.language+attributes+'>'+expression+'</'+expr.language+'>'+'\n'+
                             tabulation+'  </setBody>\n'
@@ -479,7 +443,6 @@ AFRAME.registerComponent('mapping', {
         return code
     },
 
-
     refreshProcessContext: function()
     {
         let vars = findExpressionVariables()
@@ -512,9 +475,6 @@ AFRAME.registerComponent('mapping', {
         // this.addDataModelSource(datamodel, true)
         this.addDataModelSource(targetModel, true)
     },
-
-
-
 
     enableMapperView: function(event)
     {

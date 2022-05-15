@@ -338,29 +338,46 @@ function createActivityFromSource(type, delay, definition, lastAction) {
 
         case 'http':
             return createActivityDelayed(createMapHttp, delay, definition.definition, lastAction);
-            
+
         case 'pipeline':
 
             console.log("Validating pipeline...")
 
             let targets    = definition.definition.querySelectorAll('to,toD')
             let numHeaders = definition.definition.querySelectorAll('setHeader').length
+            let bodies     = definition.definition.querySelectorAll('setBody')
 
+            //validation rules
+            validation: {
 
-            //valid pipeline if...
-            if(   targets.length == 1                                       //only one 'to' element and positioned last
-               && targets[0] == definition.definition.lastElementChild      //'to' element positioned last
-               && numHeaders == definition.definition.childElementCount - 1 //only headers included
-               ){
+                //target validation
+                if(    targets.length != 1                                       //only one 'to' element allowed
+                    || targets[0] != definition.definition.lastElementChild      //has to be positioned last
+                  ){
+                    console.warn("Pipeline validation: failed to validate target")
+                    break validation
+                }
 
-                    console.log("valid pipeline.")
-                    return createActivityDelayed(createMapHttp, delay, definition.definition, lastAction);
+                //body validation
+                if(    bodies.length > 1                                //can't have more than 1
+                    || (bodies.length == 1 &&                           //if there is one...
+                        bodies[0] != targets[0].previousElementSibling) //...has to be second to last
+                ){
+                    console.warn("Pipeline validation: failed to validate body setter")
+                    break validation
+                }
+
+                //contents validation: only headers/body are permitted
+                if( numHeaders != definition.definition.childElementCount - bodies.length - 1){ 
+                    console.warn("Pipeline validation: failed to validate pipeline contents")
+                    break validation
+                }
+
+                //at this point all the validation rules are successful
+                return createActivityDelayed(createMapHttp, delay, definition.definition, lastAction);
             }
 
             console.log("INVALID pipeline.")
-
-
-
 
         default:
 

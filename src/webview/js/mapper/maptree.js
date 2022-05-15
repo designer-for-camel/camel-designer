@@ -23,7 +23,14 @@ AFRAME.registerComponent('maptree', {
         this.initCounter = 0
         this.el.addEventListener('mapentry-init-complete', function(e){
             this.initCounter--
-            if(this.initCounter == 0 && !this.data.istarget){
+
+            //The order of tree initialisation is:
+            //  1) first the source tree
+            //  2) then the target tree
+            // once the target is ready, we can initialise mappings
+
+            // if(this.initCounter == 0 && !this.data.istarget){            
+            if(this.initCounter == 0 && this.data.istarget){
                 this.el.closest('[mapping]').components.mapping.initialiseMappings()
             }
 
@@ -158,6 +165,10 @@ AFRAME.registerComponent('maptree', {
             }
         }
 
+        let configuration = {
+            editable: iseditable
+        }
+
         //for every child we create we increment the counter
         this.initCounter++
 
@@ -192,14 +203,27 @@ AFRAME.registerComponent('maptree', {
         }
 
         // if(iseditable && parent.attributes.value){
-        if( parent.attributes.value){
+        if(parent.attributes.value){
 
-            let parentField = parent.attributes.value.value
+            //we seek a configuration for this field
+            let config = this.targetmodel.custom[field]
 
-            let config = this.targetmodel.custom[parentField]
+            //if none, we take its parent's one
+            if(!config){
+                let parentField = parent.attributes.value.value
+                config = this.targetmodel.custom[parentField]
+            }
 
+            //if one
             if(config){
-                mapentry.setAttribute("notify", config.notify)
+
+                configuration.notify      = config.notify
+                configuration.langsupport = (config.langsupport == true)
+                configuration.childlimit  = config.childlimit
+
+                mapentry.setAttribute("notify",      config.notify)
+                mapentry.setAttribute("langsupport", (config.langsupport == true))
+                // mapentry.setAttribute("langsupport", false) //for testing
             }
         }
 
@@ -207,11 +231,19 @@ AFRAME.registerComponent('maptree', {
             mapentry.setAttribute("childbutton",    true)
             mapentry.setAttribute("childprefix",    childprefix)
             mapentry.setAttribute("childrecursive", childbuttonrecursive)
+
+            configuration.childbutton      = true
+            configuration.childprefix      = childprefix
+            configuration.childrecursive   = childrecursive
         }
         else if(this.targetmodel.custom[field] && this.targetmodel.custom[field].button){
             mapentry.setAttribute("childbutton",    true)
             mapentry.setAttribute("childprefix",    this.targetmodel.custom[field].prefix)
             mapentry.setAttribute("childrecursive", this.targetmodel.custom[field].recursive)
+
+            configuration.childbutton      = true
+            configuration.childprefix      = this.targetmodel.custom[field].prefix
+            configuration.childrecursive   = this.targetmodel.custom[field].recursive
         }
 
         if(this.data.processvars && parent.attributes.field){
@@ -221,6 +253,8 @@ AFRAME.registerComponent('maptree', {
             else
                 mapentry.setAttribute("vartype", parent.attributes.field.value)
         }
+
+        mapentry.setAttribute("configuration", JSON.stringify(configuration))
 
         parent.appendChild(mapentry)
 
@@ -235,7 +269,25 @@ AFRAME.registerComponent('maptree', {
             if(this.targetmodel.custom.headers && camelsource.nodeName == 'setHeader'){
                 let mapentry = this.el.querySelector('a-map-entry[value=headers]')
 
+                //headers should not be nested
+                //let recursive = false
+
                 let newchild = mapentry.components.mapentry.createChild(camelsource.attributes.name.nodeValue,null,"")
+                // let newchild = mapentry.components.mapentry.createChild(camelsource.attributes.name.nodeValue,null,"", recursive)
+
+                //we register the child with a pending mapping to complete
+                this.pendingChildMapping[newchild.id] = {
+                        mapsource: mapsource,
+                        camelsource: camelsource
+                    }
+
+                return newchild
+            }
+            else if(this.targetmodel.custom.payload && camelsource.nodeName == 'setBody'){
+                let mapentry = this.el.querySelector('a-map-entry[value=payload]')
+
+                let newchild = mapentry.components.mapentry.createChild("body",false,"")
+                // let newchild = mapentry.components.mapentry.createChild(camelsource.attributes.name.nodeValue,null,"", recursive)
 
                 //we register the child with a pending mapping to complete
                 this.pendingChildMapping[newchild.id] = {

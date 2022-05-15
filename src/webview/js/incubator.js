@@ -3350,16 +3350,27 @@ function createMapHttp(definition)
 //     <xpath saxon="true">/data/node/field</xpath>
 // </setHeader>
 
+
+{/* <setBody id="to-8-map-tgt-body-value">
+<xpath saxon="true">/your_xpath_expression</xpath>
+</setBody> */}
+
+
 let code = `<pipeline >
                 <setHeader name="content-type">
-                    <simple>application/json</simple>
+                    <xpath saxon="true" other="sample">/application/json</xpath>
                 </setHeader>
 
                 <setHeader name="header-2" >
-                    <simple>something `+'${body}'+`</simple>
+                    <simple>something `+'${body} ${header.data}'+`</simple>
                 </setHeader>
 
-                <to uri="http://testconfig/apath/somewhere?opt1=val1" id="to-8"/>
+
+                <setBody id="to-8-map-tgt-payload-body">
+                <simple>hello world `+'${body}'+`</simple>
+              </setBody>
+
+                <to uri="http://testconfig/apath/somewhere?httpMethod=POST&amp;opt1=`+'${body}'+`" id="to-8"/>
             </pipeline>`
 
 
@@ -3390,6 +3401,15 @@ let code = `<pipeline >
     //we obtain URI options
     let options = activity.components.uri.getOptions()
 
+    //make a shallow copy (to preserve URI object intact)
+    options = Object.assign({}, options);
+
+    //custom method field
+    let method = options.httpMethod
+
+    //remove camel fields from list of options
+    delete options.httpMethod
+  
     //prepare mapping fields
     let target = parts[0].split(":")
     let host = target[0]
@@ -3411,18 +3431,11 @@ let code = `<pipeline >
         parameters: {
             host: host,
             port: port,
-            path: path
+            path: path,
+            method: method
         },
         options: options,
-        // options: {
-        //     // method: "Exchange.HTTP_METHOD",
-        //     // path:   "Exchange.HTTP_PATH",
-        //     // query:  "Exchange.HTTP_QUERY"
 
-        //     method: "",
-        //     path:   "",
-        //     query:  ""
-        // },
         headers: {
             // "content-type": "Exchange.CONTENT_TYPE",
 
@@ -3434,9 +3447,10 @@ let code = `<pipeline >
             "content-type": "",
             accept:         "",
             authorization:  "",
+        },
 
-        }
-    // }}
+        // body:{value: ""}
+        payload:{}
     }
 
     let targetModel = {
@@ -3468,8 +3482,16 @@ let code = `<pipeline >
                 prefix: "header",
                 button: true,
                 editable: true,
-                recursive: false
-            }
+                recursive: false,
+                langsupport: true
+            },
+            payload: {
+                prefix: "body",
+                button: true,
+                childlimit: 1,
+                recursive: false,
+                langsupport: true
+            },
         },
     } 
 
@@ -3525,6 +3547,11 @@ let code = `<pipeline >
         
         switch(evt.detail.action){
             case 'set':
+
+                if(evt.detail.field == "method"){
+                    activity.components.uri.setOption("httpMethod", evt.detail.value)
+                    break;
+                }
 
                 //obtain all parameter map entries
                 let parameters = activity.querySelectorAll('a-map-entry[value="parameters"] a-map-entry')
@@ -3645,6 +3672,7 @@ function createMapMailSMTP(definition)
     //we obtain URI options
     let options = activity.components.uri.getOptions()
 
+    //prepare group of email fields
     let email = {
         from:    options.from    || "",
         to:      options.to      || "",
@@ -3656,6 +3684,7 @@ function createMapMailSMTP(definition)
     //make a shallow copy (to preserve URI object intact)
     options = Object.assign({}, options);
 
+    //remove email fields from list of options
     delete options.from
     delete options.to
     delete options.cc
@@ -3687,7 +3716,8 @@ function createMapMailSMTP(definition)
         },
         email: email,
         options: options,
-        headers: {}
+        headers: {},
+        payload:{}
     }
 
     let targetModel = {
@@ -3723,8 +3753,15 @@ function createMapMailSMTP(definition)
                 button: true,
                 editable: true,
                 recursive: false
+            },
+            payload: {
+                prefix: "body",
+                button: true,
+                childlimit: 1,
+                recursive: false,
+                langsupport: true
             }
-        },
+        }
     } 
 
     //set mapping to activity
