@@ -3370,7 +3370,7 @@ let code = `<pipeline >
                 <simple>hello world `+'${body}'+`</simple>
               </setBody>
 
-                <to uri="http://testconfig/apath/somewhere?httpMethod=POST&amp;opt1=`+'${body}'+`" id="to-8"/>
+                <to uri="http://demoserver/apath/somewhere?opt1=`+'${body}'+`" id="to-8"/>
             </pipeline>`
 
 
@@ -3471,7 +3471,7 @@ let code = `<pipeline >
             host: host,
             port: port,
             path: path,
-            method: method
+            method: method || ""
         },
         options: options,
 
@@ -3792,7 +3792,8 @@ function createMapMailSMTP(definition)
                 prefix: "header",
                 button: true,
                 editable: true,
-                recursive: false
+                recursive: false,
+                langsupport: true
             },
             payload: {
                 prefix: "body",

@@ -1,23 +1,14 @@
-// var mapEntryId = 0
-
+// A map tree is composed of map entries
+// Map entries are the nodes/leafs in a map tree
 AFRAME.registerComponent('mapentry', {
     schema: {
-        //menu: {}
         field: { type: "string", default: "" },
         value: { type: "string", default: "" },
         width: { type: "number", default: 1 },
         wrapcount: { type: "number" },
         enabled: { type: "boolean", default: true },
         ismappable: { type: "boolean", default: true },
-        // iseditable: { type: "boolean", default: false },
         istarget: { type: "boolean", default: false},
-        //childbutton: { type: "boolean", default: false },
-        //childprefix: { type: "string", default: "field" },
-        childrecursive: { type: "boolean", default: false },
-        // childcount: { type: "number", default: 0 },
-        notify: { type: "string", default: "" },
-        langsupport: { type: "boolean", default: false },
-
         configuration: {
             parse: function (value) {
               return JSON.parse(value);
@@ -48,7 +39,6 @@ AFRAME.registerComponent('mapentry', {
         button.setAttribute('animation__scale_reverse', {property: 'opacity', dur: 0, to: '.3', startEvents: 'mouseup'});
         
         // if children are allowed
-        // if(this.data.childbutton){
         if(this.data.configuration.button){
             button.classList.add('interactive')
         }
@@ -58,8 +48,8 @@ AFRAME.registerComponent('mapentry', {
         
         // button.object3D.position.setX(textWidth)
         button.object3D.position.setX(2.2)
-        // this.childCount = this.data.childcount
-        // this.childcount = 0
+
+        //actions when the user clicks to create a new child
         button.onclick = function(){ 
             
             let childname  = null
@@ -75,7 +65,6 @@ AFRAME.registerComponent('mapentry', {
                 }
 
                 //prepare child settings
-                // childname  = this.data.configuration.childprefix
                 childname  = this.data.configuration.prefix
                 childvalue = "hello world"
             }
@@ -172,10 +161,7 @@ AFRAME.registerComponent('mapentry', {
                         back.object3D.position.z = -.01
                         this.el.appendChild(back)
 
-                        let configuration = this.el.parentElement.getAttribute('configuration')
-
-                        // if(this.el.parentElement.getAttribute('childbutton') == "true"){
-                        // if(configuration && configuration.childbutton == true){
+                        //allow a delete button when editable or has child limit (assumes childs can be added/deleted)
                         if(this.data.configuration.editable == true || this.data.configuration.childlimit){
                             //Create interactive button to delete map entry
                             let del = document.createElement('a-plane')
@@ -192,9 +178,9 @@ AFRAME.registerComponent('mapentry', {
                                 event.stopPropagation()
 
                                 //if configured to notify
-                                if(this.data.notify){
+                                if(this.data.configuration.notify){
                                     //emit notification for removal
-                                    this.el.emit(this.data.notify, {
+                                    this.el.emit(this.data.configuration.notify, {
                                         action: "delete",
                                         field: this.data.field
                                     });                                
@@ -205,20 +191,6 @@ AFRAME.registerComponent('mapentry', {
 
                             }.bind(this));
                         }
-
-                        /*
-                        let del = document.createElement('a-entity')
-                        del.setAttribute("geometry", "primitive: plane; height: auto; width: .3")
-                        del.setAttribute("material", "color: grey")
-                        // back.setAttribute("text", "width: 5; align: center")
-                        del.setAttribute("text", "value: x; wrap-count: 1; align center")
-                        // back.setAttribute("geometry", "primitive: plane; height: auto; width: auto")
-                        // del.setAttribute("position","1.8 0 0")
-                        back.appendChild(del)
-                        //this.labelvalue = back
-
-                        this.el.appendChild(back)
-*/
 
 
         back.classList.add('interactive')
@@ -325,7 +297,7 @@ AFRAME.registerComponent('mapentry', {
 
                             //obtain map entry
                             let mapentry = this.closest('[mapentry]').components.mapentry
-                            let notify = mapentry.data.notify
+                            let notify = mapentry.data.configuration.notify
 
                             //if configured to notify
                             if(notify){
@@ -420,7 +392,7 @@ AFRAME.registerComponent('mapentry', {
                 }.bind(this));
 
                 //This section builds language support elements (language selector and attributes)
-                if(this.data.langsupport){
+                if(this.data.configuration.langsupport){
 
                     //set default list if none passed (when there is no interaction with the VS extension)
                     let langentries = [
@@ -543,8 +515,7 @@ AFRAME.registerComponent('mapentry', {
 
                             textarea.components.textarea.setInputMode("enter_value", 14, function(text){
                                 console.log("got the new attribute value: "+text)    
-                                let attValue = text
-                                // this.components.mapentry.createAttribute(button, attName, attValue)    
+                                let attValue = text 
                                 this.components.mapentry.createAttribute(attName, attValue)    
                             }.bind(this), true)
                         }.bind(this), true)
@@ -556,7 +527,6 @@ AFRAME.registerComponent('mapentry', {
                     }.bind(this.el);
 
                     //set label to menu button
-                    // let label = appendLabel(button, this.data.field, this.data.wrapcount)
                     let label = appendLabel(button, "+", this.data.wrapcount)
                     // label.setAttribute('position', "0 0 .049")
                     label.setAttribute('scale', '4 4 4')
@@ -626,7 +596,6 @@ AFRAME.registerComponent('mapentry', {
         if(this.expression.language == "simple"){
 
             if(expression.includes('${body')){
-                // vars.push("${body}")
                 vars["${body}"] = "body"
             }
 
@@ -636,7 +605,6 @@ AFRAME.registerComponent('mapentry', {
                
                 for(let i = 1; i<instances.length; i++){
                     let header = instances[i].split('}')[0]
-                    // vars.push("${header."+header+"}")
                     vars["${header."+header+"}"] = "header"
                 } 
             }
@@ -647,7 +615,6 @@ AFRAME.registerComponent('mapentry', {
                
                 for(let i = 1; i<instances.length; i+=2){
                     let property = instances[i].split('}')[0]
-                    // vars.push("${header."+header+"}")
                     vars["${exchangeProperty."+property+"}"] = "property"
                 } 
             }
@@ -785,7 +752,6 @@ AFRAME.registerComponent('mapentry', {
 
         this.expression = {
             sources:[],
-            // language: this.el.querySelector('a-dropdown').getAttribute("value"), //default is Camel's simple language
             language: language,
             parameters: {},
             expression: null,
@@ -815,8 +781,6 @@ AFRAME.registerComponent('mapentry', {
         //when a rope (visual mapping) is provided...
         if(mapping){
 
-            // let element = mapping 
-            // let source = document.getElementById(element.getAttribute('start'))
             let source = document.getElementById(mapping.getAttribute('start'))
             let sourceEntry = source.closest('a-map-entry')
 
@@ -824,11 +788,9 @@ AFRAME.registerComponent('mapentry', {
                 type:  sourceEntry.attributes.vartype.value,
                 field: sourceEntry.attributes.field.value,
                 id:    mapping.getAttribute("start")
-                // field: sourceEntry.attributes.value.value
             })
 
             let varType     = sourceEntry.attributes.vartype.value
-            // let sourceField = sourceEntry.attributes.value.value
             let sourceField = sourceEntry.attributes.field.value
 
             if(this.expression.language == "simple"){
@@ -886,7 +848,7 @@ AFRAME.registerComponent('mapentry', {
             this.expression.language = camelsource.firstElementChild.nodeName
 
             //set dropdown option to obtained language
-            if(this.data.langsupport){
+            if(this.data.configuration.langsupport){
                 this.el.querySelector('a-dropdown').setAttribute("value", this.expression.language)              
             }
 
@@ -924,9 +886,9 @@ AFRAME.registerComponent('mapentry', {
         this.labelvalue.setAttribute("value",this.expression.expression)
 
         //if configured to notify
-        if(!notificationsDisabled && this.data.notify){
+        if(!notificationsDisabled && this.data.configuration.notify){
             //emit notification with update
-            this.el.emit(this.data.notify, {
+            this.el.emit(this.data.configuration.notify, {
                 action: "set",
                 field: this.data.field,
                 value: this.expression.expression
@@ -963,30 +925,20 @@ AFRAME.registerComponent('mapentry', {
         }
 
         //obtain map tree
-        // let maptree = this.el.closest('a-map-tree').components.maptree
         let maptree = this.maptree.components.maptree
 
+        //prepare configuration
         let configuration = {
             editable: editable,
-            childrecursive: this.data.childrecursive,
+            recursive: this.data.configuration.recursive,
             prefix: (childname ? null : this.data.configuration.prefix) //if childname is not given, we prefix the header name
         }
 
-        // let child = this.el.closest('a-map-tree').components.maptree.createLeaf(
-        // let child = maptree.createLeaf(
-        //                 this.el, 
-        //                 newheader, 
-        //                 value,//newheader, 
-        //                 true,
-        //                 editable,
-        //                 this.data.childrecursive,
-        //                 // childname ? null : this.data.childprefix) //if childname is not given, we prefix the header name
-        //                 childname ? null : this.data.configuration.childprefix) //if childname is not given, we prefix the header name
-
+        //create child
         let child = maptree.createLeaf(
             this.el, 
             newheader, 
-            value,//newheader, 
+            value,
             true,
             configuration)    
 
@@ -1008,8 +960,7 @@ AFRAME.registerComponent('mapentry', {
         return child
     },
 
-    //creates a child map-entry node  
-    //createAttribute: function(addbutton, attName, attValue){
+    //creates a child map-entry node
     createAttribute: function(attName, attValue){
 
         if(!this.expression){
@@ -1021,7 +972,7 @@ AFRAME.registerComponent('mapentry', {
             return
         }
 
-        if(this.data.langsupport){
+        if(this.data.configuration.langsupport){
 
             //obtain attribute creator button
             let addbutton = this.el.querySelector('[attcreator]')
@@ -1285,7 +1236,6 @@ AFRAME.registerComponent('mapentry', {
             if(this.expression){
                 this.expression.target.field = this.data.field
                 this.expression.target.value = this.data.field
-                // this.expression.target.value = this.data.value
             }
         }
 
@@ -1315,21 +1265,13 @@ AFRAME.registerComponent('mapentry', {
         'mapentry': {}
     },
     mappings: {
-        // menu: "dropdown.menu"
         field:          "mapentry.field",
         value:          "mapentry.value",
         width:          "mapentry.width",
         wrapcount:      "mapentry.wrapcount",
         enabled:        "mapentry.enabled",
         ismappable:     "mapentry.ismappable",
-        // iseditable:     "mapentry.iseditable",
         istarget:       "mapentry.istarget",
-        // childbutton:    "mapentry.childbutton",
-        //childprefix:    "mapentry.childprefix",
-        childrecursive: "mapentry.childrecursive",
-        // childcount:     "mapentry.childcount",
-        notify:         "mapentry.notify",
-        langsupport:    "mapentry.langsupport",
         configuration:  "mapentry.configuration",
     }
   });
