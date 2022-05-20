@@ -3800,7 +3800,8 @@ function createMapMailSMTP(definition)
                 button: true,
                 childlimit: 1,
                 recursive: false,
-                langsupport: true
+                langsupport: true,
+                hint: "To override the payload (body), add a new body mapping."
             }
         }
     } 

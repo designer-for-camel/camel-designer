@@ -20,6 +20,11 @@ AFRAME.registerComponent('mapping', {
 
     init: function () {
 
+        //On activity creation (no mapping defined yet) a default config 2D panel is activated.
+        //Here, when the mapping is defined, we force a config panel reevaluation.
+        //The 2D panel gets then deactivated.
+        switchConfigPaneByActivity(this.el)
+
         mapperPosition += 100
 
         let mapButton = document.createElement('a-button')

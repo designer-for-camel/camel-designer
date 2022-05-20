@@ -429,6 +429,10 @@ function createMenu3D(configuration)
                     //     label:    'mock ADMs 2',
                     //     function: 'updateAtlasMapList2',                
                     // },
+                    {
+                        label:    "map data",
+                        function: "createMapData"                
+                    },
                 ]
             },
 
@@ -543,19 +547,14 @@ function createMenu3D(configuration)
             //     label:    "pipeline",
             //     function: "createPipeline"                
             // }
-            {
-                label:    "mapHTTP",
-                function: "createMapHttp"                
-            },
-            {
-                label:    "mapMail",
-                function: "createMapMailSMTP"                
-            },
-            {
-                label:    "map data",
-                function: "createMapData"                
-            }
-
+                // {
+                //     label:    "mapHTTP",
+                //     function: "createMapHttp"                
+                // },
+            // {
+            //     label:    "mapMail",
+            //     function: "createMapMailSMTP"                
+            // },
             
         ]
     }
@@ -573,6 +572,10 @@ function createMenu3D(configuration)
             {
                 label:    'call (direct)',
                 function: 'createDirect',                
+            },
+            {
+                label:    "HTTP",
+                function: "createMapHttp"                
             },
             {
                 label:    'kafka',
@@ -595,7 +598,8 @@ function createMenu3D(configuration)
                 submenu: [
                     {
                         label:    'smtp',
-                        function: 'createSMTP'         
+                        // function: 'createSMTP' // DEPRECATED
+                        function: 'createMapMailSMTP'         
                     },
                 ]             
             },

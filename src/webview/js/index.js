@@ -1494,7 +1494,8 @@ let configObj = getActiveActivity()
 
         setConfigSelector(activity);
 
-        if(activity == null)
+        //activities with mapping definitions do not have 2D config panels
+        if(activity == null || activity.components.mapping)
         {
           switchConfigPane("introconfig");
           return;

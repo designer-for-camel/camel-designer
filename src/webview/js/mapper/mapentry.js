@@ -41,6 +41,10 @@ AFRAME.registerComponent('mapentry', {
         // if children are allowed
         if(this.data.configuration.button){
             button.classList.add('interactive')
+
+            if(this.data.configuration.hint){
+                button.setAttribute('hint', "message: "+this.data.configuration.hint+"; orientation: up; position: 0 .3 0; selfdestroy: true")
+            }
         }
         else{
             button.setAttribute('visible', false)
@@ -132,20 +136,20 @@ AFRAME.registerComponent('mapentry', {
         }
 
         //This box represents the source/target link point for the visual mapping
-        let mapPoint = document.createElement('a-box')    
-        mapPoint.setAttribute('opacity', '.3')
-        mapPoint.setAttribute('depth', '.01')
+        this.mapPoint = document.createElement('a-box')    
+        this.mapPoint.setAttribute('opacity', '.3')
+        this.mapPoint.setAttribute('depth', '.01')
         // button.setAttribute('width', '1')
-        mapPoint.setAttribute('width', .1)
-        mapPoint.setAttribute('height', .1)
-        // mapPoint.setAttribute("mappable","")
-        // mapPoint.setAttribute("position","1.5 0 0")
-        mapPoint.setAttribute("position", posMapPoint + " 0 0")
-        // mapPoint.setAttribute("mappable","")
-        // mapPoint.classList.add("interactive")
-        // mapPoint.id = "mapentry-link-point-" + sharedId
-        mapPoint.id = this.el.id + "-" + "link-point"
-        this.el.appendChild(mapPoint)
+        this.mapPoint.setAttribute('width', .1)
+        this.mapPoint.setAttribute('height', .1)
+        // this.mapPoint.setAttribute("mappable","")
+        // this.mapPoint.setAttribute("position","1.5 0 0")
+        this.mapPoint.setAttribute("position", posMapPoint + " 0 0")
+        // this.mapPoint.setAttribute("mappable","")
+        // this.mapPoint.classList.add("interactive")
+        // this.mapPoint.id = "mapentry-link-point-" + sharedId
+        this.mapPoint.id = this.el.id + "-" + "link-point"
+        this.el.appendChild(this.mapPoint)
 
                         //Create background interactive plane to edit map entry
                         let back = document.createElement("a-plane")
@@ -899,6 +903,18 @@ AFRAME.registerComponent('mapentry', {
         if(!mapping){
             this.updateMappings(this.expression.expression)
         }
+
+        if(this.expression.expression != ""){
+            this.mapPoint.setAttribute('opacity', '1')
+            this.mapPoint.setAttribute('scale', '1.5 1.5 1.5')
+            this.mapPoint.setAttribute('color', '#74BEC1')
+        }
+        else{
+            this.mapPoint.setAttribute('opacity', '.3')
+            this.mapPoint.setAttribute('scale', '1 1 1')
+            this.mapPoint.removeAttribute('color')
+        }
+
     },
 
     //creates a child map-entry node
