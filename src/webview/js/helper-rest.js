@@ -195,8 +195,6 @@ function selectRestGroup(restGroup)
 
     //redraw Selector
     resizeRestSelector();
-
-    setCameraFocus(restGroup);
   }
   //if it doesn't exist we create it
   else
@@ -221,6 +219,9 @@ function selectRestGroup(restGroup)
 
       resizeRestSelector();
   }
+
+  //set focus
+  setCameraFocus(restGroup);
 
   //set corresponding configuration pane
   let config = switchConfigPane('config-rest-group');

@@ -625,19 +625,39 @@
           enableToButtons(false);
           enableRestButtons(true);
 
+          //obtain camera viewpoint
+          let camera = document.querySelector('#rig')
+
+          //We place the camera at the Y=0 level
+          //it helps having smoother Y transitions if camera set in Mapping definitions
+          camera.object3D.position.setY(0)
+
+          //obtain definitions
+          let restDefinitions = document.getElementById('rest-definitions')
+
+          //flag helper
+          let visited = restDefinitions.getAttribute("visited")
+
+          //if first time, we inject a hint for the user
+          if(!visited){
+            restDefinitions.setAttribute('visited', true)
+            let menuRest = document.getElementById("menu-rest...")
+            menuRest.setAttribute('hint', "message: Start here; orientation: up; position: 0 .3 0; selfdestroy: true")
+          }
+
+          restDefinitions.setAttribute('visible', true)
+
           document.getElementById(routes[0]).setAttribute('visible', false)
           document.getElementById(routes[0]).setAttribute('class', 'not-clickable')
           document.getElementById(routes[0]).setAttribute('position','0 100 0');
 
-
-          document.getElementById('rest-definitions').setAttribute('visible', true)
-          document.getElementById('rest-definitions').setAttribute('class', 'clickable')
-          document.getElementById('rest-definitions').setAttribute('position','0 0 0');
+          restDefinitions.setAttribute('visible', true)
+          restDefinitions.setAttribute('class', 'clickable')
+          restDefinitions.setAttribute('position','0 0 0');
 
           switchConfigPane("introconfig");
 
           setCameraFocus(getSelectedRestGroup());
-          //document.getElementsByTagName("routenav")[1].innerHTML = routes[0];
       }
 
       //obtains the current Route being worked on

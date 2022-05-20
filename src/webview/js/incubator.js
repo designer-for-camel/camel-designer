@@ -3392,6 +3392,45 @@ let code = `<pipeline >
 
     // let activity = createGenericEndpointTo({definition: definition})
     let activity = createGenericEndpointTo({definition: endpoint})
+    // activity.setAttribute("material", "src: #grid; repeat: 12 6;")
+    // activity.setAttribute("material", "wireframe: true; width: 128")
+    // material.wireframe	false
+
+    //create HTTP animated icon
+    let planet = document.createElement('a-entity')
+
+    //helper variables
+    let circle 
+    let radius = .4
+
+    //draw planet's parallels
+    for(let angle=0; angle<180; angle+=30){
+        circle = document.createElement('a-torus')
+        circle.setAttribute("radius", radius)
+        circle.setAttribute("radius-tubular", .004)
+        circle.setAttribute("opacity", '.4')
+        circle.setAttribute("rotation", "0 "+angle+" 0")
+        planet.appendChild(circle)
+    }
+
+    //draw planet's meridians
+    for(let angle=30; angle<180; angle+=30){
+        let mradius = radius * Math.sin(angle * (Math.PI / 180))
+        let merY    = radius * Math.cos(angle * (Math.PI / 180))
+        circle = document.createElement('a-torus')
+        circle.setAttribute("radius", mradius)
+        circle.setAttribute("radius-tubular", .004)
+        circle.setAttribute("opacity", '.4')
+        circle.setAttribute("position", "0 "+merY+" 0")
+        circle.setAttribute("rotation", "90 0 0")
+        planet.appendChild(circle)
+    }
+
+    //animate rotation
+    planet.setAttribute('animation', {property: 'rotation', loop: true, dur: '20000', to: '0 180 0', easing: 'linear'});
+    activity.appendChild(planet)
+    activity.setAttribute("opacity", ".2")
+         
 
     // let target = activity.components.uri.getValue()
 
@@ -3615,6 +3654,7 @@ function createMapData(definition)
             "json data": {
                 prefix: "new",
                 button: true,
+                editable: true,
                 recursive: true
             }
         },
@@ -3663,7 +3703,7 @@ function createMapMailSMTP(definition)
 
     let endpoint = definition.querySelector('to,toD')
 
-    let activity = createGenericEndpointTo({definition: endpoint})
+    let activity = createGenericEndpointTo({definition: endpoint, icon: "#icon-mail"})
 
 
     //we obtain parts separated by '/', and filter out empty values

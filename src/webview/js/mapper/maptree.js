@@ -118,9 +118,9 @@ AFRAME.registerComponent('maptree', {
                     // this.createLeaf(root, key, branch[key], null, (field == "headers"))
                     // this.createLeaf(root, key, branch[key], null, this.targetmodel.custom.hasOwnProperty(field))
 
-                    let editable = this.targetmodel.custom.hasOwnProperty(field) && this.targetmodel.custom[field].editable
+                    //let editable = this.targetmodel.custom.hasOwnProperty(field) && this.targetmodel.custom[field].editable
 
-                    this.createLeaf(root, key, branch[key], null, editable)
+                    this.createLeaf(root, key, branch[key], null)//, editable)
                 }
             }
         }
@@ -138,7 +138,14 @@ AFRAME.registerComponent('maptree', {
                 }
                 else{
                     // this.createLeaf(root, branch[key].localName, branch[key].textContent, false)
-                    this.createLeaf(root, branch[key].localName, branch[key].textContent, false, (field == "headers"))
+                    //let configuration = {editable: (field == "headers")}
+
+                    //this.createLeaf(root, branch[key].localName, branch[key].textContent, false, (field == "headers"))
+                    this.createLeaf(root, 
+                                    branch[key].localName, 
+                                    branch[key].textContent, 
+                                    false)//, 
+                                    //configuration)
                 }
             }   
         }
@@ -147,14 +154,51 @@ AFRAME.registerComponent('maptree', {
     },
 
     //creates a map entry hanging from a parent
-    // createLeaf: function(parent, field, value, ismappable, childbuttonrecursive, childprefix){
-    createLeaf: function(parent, field, value, ismappable, iseditable, childbuttonrecursive, childprefix){
+    // createLeaf: function(parent, field, value, ismappable, iseditable, childbuttonrecursive, childprefix){
+    createLeaf: function(parent, field, value, ismappable, configuration){
 
         // mappable by default
         if(ismappable == null){
             ismappable = true
         }
 
+
+        //we seek configuration for this field
+        let config = this.targetmodel.custom[field]
+
+        //if found, we use it
+        if(config){
+            configuration = config
+        }
+        else{
+            //we try to retrieve the parent's configuration
+            config = parent.getAttribute('configuration')
+
+            //if found, we use it
+            if(config){
+                configuration = JSON.parse(config)
+
+                //only allow a child button if its parent has the recursive flag
+                if(!configuration.recursive){
+                    configuration.button = false
+                }
+
+                // if(configuration.prefix){
+                //     field += "-" + (++this.childcount) 
+                //     value += "-" + (  this.childcount) 
+                // }
+
+
+            }
+            else{
+                //when no configuration is found, we initialise an empty configuration
+                configuration = configuration || {}
+            }
+        }
+
+
+
+/*
         if(iseditable == null){
             //not editable by default
             iseditable = false
@@ -164,10 +208,12 @@ AFRAME.registerComponent('maptree', {
                 iseditable = (this.targetmodel.custom[field].editable == true)
             }
         }
+*/
+        // configuration = configuration || {}
 
-        let configuration = {
-            editable: iseditable
-        }
+        // let configuration = {
+        //     editable: iseditable
+        // }
 
         //for every child we create we increment the counter
         this.initCounter++
@@ -176,10 +222,12 @@ AFRAME.registerComponent('maptree', {
             value = field
         }
 
-        if(childprefix){
-            field += "-" + (++this.childcount) 
-            value += "-" + (  this.childcount) 
-        }
+        // if(childprefix){
+        //if(configuration && configuration.childprefix){
+        // if(configuration && configuration.prefix){
+        //     field += "-" + (++this.childcount) 
+        //     value += "-" + (  this.childcount) 
+        // }
 
         let mapentry = document.createElement('a-map-entry')
         mapentry.setAttribute("position",".2 -.5 0")
@@ -187,7 +235,7 @@ AFRAME.registerComponent('maptree', {
         mapentry.setAttribute("value", value)
         mapentry.setAttribute("width", .4)
         mapentry.setAttribute("ismappable", ismappable)
-        mapentry.setAttribute("iseditable", iseditable)
+        // mapentry.setAttribute("iseditable", iseditable)
         mapentry.setAttribute("istarget", this.data.istarget)
 
         //PENDING
@@ -202,6 +250,7 @@ AFRAME.registerComponent('maptree', {
             mapentry.id = this.el.id + "-" +field
         }
 
+/*        
         // if(iseditable && parent.attributes.value){
         if(parent.attributes.value){
 
@@ -226,26 +275,121 @@ AFRAME.registerComponent('maptree', {
                 // mapentry.setAttribute("langsupport", false) //for testing
             }
         }
+*/
 
-        if(childbuttonrecursive){
-            mapentry.setAttribute("childbutton",    true)
-            mapentry.setAttribute("childprefix",    childprefix)
-            mapentry.setAttribute("childrecursive", childbuttonrecursive)
+/*
+        //we seek configuration for this field
+        let config = this.targetmodel.custom[field]
 
-            configuration.childbutton      = true
-            configuration.childprefix      = childprefix
-            configuration.childrecursive   = childrecursive
+        //if none, and parent is a map entry
+        // if(!config && parent.components.mapentry){
+            // config = configuration
+        // }
+
+        if(config){
+            configuration = config
         }
-        else if(this.targetmodel.custom[field] && this.targetmodel.custom[field].button){
-            mapentry.setAttribute("childbutton",    true)
-            mapentry.setAttribute("childprefix",    this.targetmodel.custom[field].prefix)
+        else{
+            config = parent.getAttribute('configuration')
+
+            if(config){
+                configuration = JSON.parse(config)
+
+                //only allow a child button if its parent has the recursive flag
+                if(!configuration.recursive){
+                    configuration.button = false
+                }
+            }
+            else{
+                configuration = configuration || {}
+            }
+        }
+*/
+
+
+
+        //only editable if explicitely set
+        // configuration.editable = (configuration.editable == true)
+
+/*
+        //if no configuration found
+        // if(!config)
+        else
+        {   //non editable by default
+            configuration.editable = false
+        }
+        else{
+*/
+
+/*
+            if(iseditable == null){
+                iseditable = false
+    
+                //unless configured customisable in the data model
+                if(config.editable){
+                    iseditable = config.editable
+                }
+            }
+            else{
+                configuration.editable = iseditable
+            }
+*/
+            // configuration.editable    = (config.editable == true)
+            // configuration.notify      = config.notify
+            // configuration.langsupport = (config.langsupport == true)
+            // configuration.childlimit  = config.childlimit
+
+            // configuration.editable    = !(configuration.editable == false)
+            configuration.editable    = (configuration.editable == true)
+            // configuration.notify      = config.notify
+            configuration.langsupport = (configuration.langsupport == true)
+            // configuration.childlimit  = config.childlimit
+
+
+            // mapentry.setAttribute("notify",      config.notify)
+            // mapentry.setAttribute("langsupport", (config.langsupport == true))
+            mapentry.setAttribute("notify",      configuration.notify)
+            mapentry.setAttribute("langsupport", configuration.langsupport)
+
+
+            // mapentry.setAttribute("langsupport", false) //for testing
+        //}
+
+        //explicit argument value prevails
+        // if(iseditable != null){
+        //     configuration.editable = iseditable
+        // }
+
+        configuration.button = (configuration.button == true)
+
+
+        // if(childbuttonrecursive){
+        // if(configuration.childrecursive){
+        //if(configuration.recursive){
+            // mapentry.setAttribute("childbutton",    true)
+            //mapentry.setAttribute("childbutton",    configuration.button)
+            // mapentry.setAttribute("childprefix",    childprefix)
+            // mapentry.setAttribute("childrecursive", childbuttonrecursive)
+            mapentry.setAttribute("childrecursive", configuration.recursive)
+
+            // configuration.childbutton      = true
+            //configuration.button      = true
+            // configuration.childprefix      = childprefix
+            // configuration.childrecursive   = childbuttonrecursive
+        //}
+
+/*
+        //else if(this.targetmodel.custom[field] && this.targetmodel.custom[field].button){
+        else if(configuration.button){
+            // mapentry.setAttribute("childbutton",    true)
+            // mapentry.setAttribute("childprefix",    this.targetmodel.custom[field].prefix)
             mapentry.setAttribute("childrecursive", this.targetmodel.custom[field].recursive)
 
             configuration.childbutton      = true
             configuration.childprefix      = this.targetmodel.custom[field].prefix
             configuration.childrecursive   = this.targetmodel.custom[field].recursive
         }
-
+*/
         if(this.data.processvars && parent.attributes.field){
   
             if(parent.attributes.field.value == "exchange")
@@ -269,11 +413,12 @@ AFRAME.registerComponent('maptree', {
             if(this.targetmodel.custom.headers && camelsource.nodeName == 'setHeader'){
                 let mapentry = this.el.querySelector('a-map-entry[value=headers]')
 
-                //headers should not be nested
-                //let recursive = false
 
-                let newchild = mapentry.components.mapentry.createChild(camelsource.attributes.name.nodeValue,null,"")
-                // let newchild = mapentry.components.mapentry.createChild(camelsource.attributes.name.nodeValue,null,"", recursive)
+                let newchild =  mapentry.components.mapentry.createChild(
+                                    camelsource.attributes.name.nodeValue,
+                                    null,
+                                    ""
+                                )
 
                 //we register the child with a pending mapping to complete
                 this.pendingChildMapping[newchild.id] = {
@@ -286,8 +431,11 @@ AFRAME.registerComponent('maptree', {
             else if(this.targetmodel.custom.payload && camelsource.nodeName == 'setBody'){
                 let mapentry = this.el.querySelector('a-map-entry[value=payload]')
 
-                let newchild = mapentry.components.mapentry.createChild("body",false,"")
-                // let newchild = mapentry.components.mapentry.createChild(camelsource.attributes.name.nodeValue,null,"", recursive)
+                let newchild =  mapentry.components.mapentry.createChild(
+                                    "body",
+                                    false,
+                                    ""
+                                )
 
                 //we register the child with a pending mapping to complete
                 this.pendingChildMapping[newchild.id] = {

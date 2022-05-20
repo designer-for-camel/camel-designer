@@ -89,6 +89,8 @@ function createMenuButton(menu, configuration)
 
         console.log('raycaster-intersected: this: '+this.id+ ' target: '+e.target.id)
 
+// this.emit("hint-remove")
+
         let container = document.getElementById(menu.name)
 
         container.setAttribute('visible', 'true')
@@ -723,6 +725,9 @@ function createMenu3D(configuration)
     //create all menus
     let menuFrom = createMenuButton(defMenuFrom, consumers)
     menuFrom.setAttribute('position', '.5 0 0')
+    // menuFrom.setAttribute('hint', 'message: Start your ride\n"from..." here; orientation: up; position: 0 .3 0')
+    menuFrom.setAttribute('hint', "message: Start 'from...' here; orientation: up; position: 0 .3 0; selfdestroy: true")
+
 
     let menuSet = createMenuButton(defMenuSet)
     menuSet.setAttribute('position', '1.5 0 0')

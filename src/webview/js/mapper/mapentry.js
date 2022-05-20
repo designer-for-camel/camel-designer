@@ -9,12 +9,12 @@ AFRAME.registerComponent('mapentry', {
         wrapcount: { type: "number" },
         enabled: { type: "boolean", default: true },
         ismappable: { type: "boolean", default: true },
-        iseditable: { type: "boolean", default: false },
+        // iseditable: { type: "boolean", default: false },
         istarget: { type: "boolean", default: false},
-        childbutton: { type: "boolean", default: false },
-        childprefix: { type: "string", default: "field" },
+        //childbutton: { type: "boolean", default: false },
+        //childprefix: { type: "string", default: "field" },
         childrecursive: { type: "boolean", default: false },
-        childcount: { type: "number", default: 0 },
+        // childcount: { type: "number", default: 0 },
         notify: { type: "string", default: "" },
         langsupport: { type: "boolean", default: false },
 
@@ -48,7 +48,8 @@ AFRAME.registerComponent('mapentry', {
         button.setAttribute('animation__scale_reverse', {property: 'opacity', dur: 0, to: '.3', startEvents: 'mouseup'});
         
         // if children are allowed
-        if(this.data.childbutton){
+        // if(this.data.childbutton){
+        if(this.data.configuration.button){
             button.classList.add('interactive')
         }
         else{
@@ -57,7 +58,8 @@ AFRAME.registerComponent('mapentry', {
         
         // button.object3D.position.setX(textWidth)
         button.object3D.position.setX(2.2)
-        this.childCount = this.data.childcount
+        // this.childCount = this.data.childcount
+        // this.childcount = 0
         button.onclick = function(){ 
             
             let childname  = null
@@ -73,7 +75,8 @@ AFRAME.registerComponent('mapentry', {
                 }
 
                 //prepare child settings
-                childname  = this.data.configuration.childprefix
+                // childname  = this.data.configuration.childprefix
+                childname  = this.data.configuration.prefix
                 childvalue = "hello world"
             }
             
@@ -169,8 +172,11 @@ AFRAME.registerComponent('mapentry', {
                         back.object3D.position.z = -.01
                         this.el.appendChild(back)
 
+                        let configuration = this.el.parentElement.getAttribute('configuration')
 
-                        if(this.el.parentElement.getAttribute('childbutton') == "true"){
+                        // if(this.el.parentElement.getAttribute('childbutton') == "true"){
+                        // if(configuration && configuration.childbutton == true){
+                        if(this.data.configuration.editable == true || this.data.configuration.childlimit){
                             //Create interactive button to delete map entry
                             let del = document.createElement('a-plane')
                             let lbl = appendLabel(del, "X")
@@ -288,7 +294,8 @@ AFRAME.registerComponent('mapentry', {
 
             if(this.data.istarget){
 
-                if(this.data.iseditable)
+                // if(this.data.iseditable)
+                if(this.data.configuration.editable)
                 {
                     //listener to edit the field name
                     back.addEventListener('click', function(event){
@@ -932,19 +939,26 @@ AFRAME.registerComponent('mapentry', {
         }
     },
 
-    //creates a child map-entry node  
-    // createChild: function(childname, editable, value){
-    createChild: function(childname, editable, value, childrecursive){
+    //creates a child map-entry node
+    createChild: function(childname, editable, value){
 
-        let newheader = childname || this.data.childprefix
+        // set child's name default setting
+        let newheader = childname || this.data.configuration.prefix
         
         //if not given we default to the configure value
         // if(childrecursive == null){
         //     childrecursive = this.data.childrecursive
         // }
 
-        //default value to header name
+        //when value is not provided, we assume the user clicked the '+' button to create a child
+        //we then append a suffix to field name and value
         if(value == null){
+
+            //create suffix
+            let suffix = "-"+(++this.maptree.components.maptree.childcount)
+
+            //set field/name 
+            newheader += suffix
             value = newheader
         }
 
@@ -952,15 +966,29 @@ AFRAME.registerComponent('mapentry', {
         // let maptree = this.el.closest('a-map-tree').components.maptree
         let maptree = this.maptree.components.maptree
 
+        let configuration = {
+            editable: editable,
+            childrecursive: this.data.childrecursive,
+            prefix: (childname ? null : this.data.configuration.prefix) //if childname is not given, we prefix the header name
+        }
+
         // let child = this.el.closest('a-map-tree').components.maptree.createLeaf(
+        // let child = maptree.createLeaf(
+        //                 this.el, 
+        //                 newheader, 
+        //                 value,//newheader, 
+        //                 true,
+        //                 editable,
+        //                 this.data.childrecursive,
+        //                 // childname ? null : this.data.childprefix) //if childname is not given, we prefix the header name
+        //                 childname ? null : this.data.configuration.childprefix) //if childname is not given, we prefix the header name
+
         let child = maptree.createLeaf(
-                        this.el, 
-                        newheader, 
-                        value,//newheader, 
-                        true,
-                        editable,
-                        this.data.childrecursive,
-                        childname ? null : this.data.childprefix) //if childname is not given, we prefix the header name
+            this.el, 
+            newheader, 
+            value,//newheader, 
+            true,
+            configuration)    
 
         //obtain data model custom configuration
         // let customConfig = maptree.targetmodel.custom[this.data.field]
@@ -1294,12 +1322,12 @@ AFRAME.registerComponent('mapentry', {
         wrapcount:      "mapentry.wrapcount",
         enabled:        "mapentry.enabled",
         ismappable:     "mapentry.ismappable",
-        iseditable:     "mapentry.iseditable",
+        // iseditable:     "mapentry.iseditable",
         istarget:       "mapentry.istarget",
-        childbutton:    "mapentry.childbutton",
-        childprefix:    "mapentry.childprefix",
+        // childbutton:    "mapentry.childbutton",
+        //childprefix:    "mapentry.childprefix",
         childrecursive: "mapentry.childrecursive",
-        childcount:     "mapentry.childcount",
+        // childcount:     "mapentry.childcount",
         notify:         "mapentry.notify",
         langsupport:    "mapentry.langsupport",
         configuration:  "mapentry.configuration",

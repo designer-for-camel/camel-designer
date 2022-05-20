@@ -483,6 +483,9 @@ AFRAME.registerComponent('mapping', {
 
         switchConfigPaneByActivity(this.el)
 
+        //disable menu buttons
+        enableToButtons(false)
+
         //process data variables may have changed, we refresh before showing mapper
         this.refreshProcessContext()
 
@@ -505,6 +508,9 @@ AFRAME.registerComponent('mapping', {
         //this prevents the activity from triggering the ring selector process
         event.stopPropagation()
     
+        //restore menu buttons
+        enableToButtons(true)
+
         //obtain main camera
         let camera = document.querySelector('#rig')
 
