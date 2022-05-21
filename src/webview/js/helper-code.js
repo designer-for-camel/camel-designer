@@ -307,7 +307,7 @@ function createActivityFromSource(type, delay, definition, lastAction) {
         case 'smtp':
             return createActivityDelayed(createSMTP, delay, definition.definition, lastAction);            
         case 'kafka':
-            return createActivityDelayed(createKafka, delay, definition.definition, lastAction);            
+            return createActivityDelayed(createKafka, delay, definition.definition, lastAction);
     
 
         // case 'kafka':
@@ -373,8 +373,12 @@ function createActivityFromSource(type, delay, definition, lastAction) {
                     break validation
                 }
 
+                //type of endpoint the pipeline contains
+                let pipelineType = targets[0].attributes.uri.value.split(":")[0];
+
                 //at this point all the validation rules are successful
-                return createActivityDelayed(createMapHttp, delay, definition.definition, lastAction);
+                // return createActivityDelayed(createMapHttp, delay, definition.definition, lastAction);
+                return createActivityFromSource(pipelineType, delay, definition)
             }
 
             console.log("INVALID pipeline.")
@@ -851,33 +855,20 @@ function renderActivity(activity, mycode, iterator) {
             break;
 
 
-
-
-        case 'map-mail':
-        case 'http':
-
-            // mycode.text += mycode.tab+'<pipeline id="'+activity.id+'-pipeline">\n'
-
-                mycode.text += activity.components.mapping.processCamelRendering(mycode.tab) 
-
-                // let too = activity.hasAttribute("dynamic") ? "<toD" : "<to"
-                // //assumes activity is an endpoint (<to>) and has URI
-                // mycode.text += mycode.tab+'  '+too+' uri="'+activity.components.uri.getValue()+'" id="'+activity.id+'"/>\n'
-
-            // mycode.text += mycode.tab+'</pipeline>\n'
-
-
+        case 'to':
+            mycode.text += activity.components.mapping.processCamelRendering(mycode.tab) 
             break;
 
-
-
-
-        case 'to':
+/*
+        // case 'to':
+        case 'DISABLEDto':
             let to = activity.hasAttribute("dynamic") ? "<toD" : "<to"
             //assumes activity is an endpoint (<to>) and has URI
             // mycode.text += mycode.tab+'<to uri="'+activity.components.uri.getValue()+'" id="'+activity.id+'"/>\n'
             mycode.text += mycode.tab+to+' uri="'+activity.components.uri.getValue()+'" id="'+activity.id+'"/>\n'
             break;
+*/
+
         default:
             console.warn("could not render activity to XML, type unknown: ["+processorType+"]")
             //code block

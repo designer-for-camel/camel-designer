@@ -43,7 +43,7 @@ AFRAME.registerComponent('mapentry', {
             button.classList.add('interactive')
 
             if(this.data.configuration.hint){
-                button.setAttribute('hint', "message: "+this.data.configuration.hint+"; orientation: up; position: 0 .3 0; selfdestroy: true")
+                button.setAttribute('hint', "message: "+this.data.configuration.hint+"; orientation: up; position: 0 0 0; selfdestroy: true")
             }
         }
         else{

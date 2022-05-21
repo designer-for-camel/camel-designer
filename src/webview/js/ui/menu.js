@@ -576,10 +576,11 @@ function createMenu3D(configuration)
             {
                 label:    "HTTP",
                 function: "createMapHttp"                
-            },
+            },            
             {
                 label:    'kafka',
                 function: 'createKafka',                
+                // function: 'createMapKafka',                
             },
             {
                 label:    'file',
@@ -598,8 +599,8 @@ function createMenu3D(configuration)
                 submenu: [
                     {
                         label:    'smtp',
-                        // function: 'createSMTP' // DEPRECATED
-                        function: 'createMapMailSMTP'         
+                        function: 'createSMTP'
+                        // function: 'createMapMailSMTP'         
                     },
                 ]             
             },

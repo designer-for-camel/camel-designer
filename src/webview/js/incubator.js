@@ -417,12 +417,14 @@ function createPDF(definition)
     return createGenericEndpointTo({definition: definition})
 }
 
+/*
 function createSMTP(definition)
 {
     // definition = definition || new DOMParser().parseFromString('<toD uri="smtp://standalone.demo-mail.svc:3025?from=camel@apache.com&amp;to=demo@demo.com&amp;subject=camel-demo&amp;password=demo&amp;username=demo"/>', "text/xml").documentElement
     definition = definition || new DOMParser().parseFromString('<to uri="smtp://standalone.demo-mail.svc:3025?username=demo&amp;password=demo"/>', "text/xml").documentElement
     return createGenericEndpointTo({definition: definition, icon: "#icon-mail"})
 }
+*/
 
 function createGoogleDrive(definition)
 {
@@ -451,8 +453,8 @@ function createGoogleSheetsStart(definition)
 
 
 
-// function createGenericEndpointTo(definition, type)
-function createGenericEndpointTo(definition)
+// function createGenericActivityTo(definition, type)
+function createGenericActivityTo(definition)
 {
   //default type will be the scheme of the uri (e.g. 'file' in uri="file:name")
 //   type = definition.getAttribute('uri').split(":")[0];
@@ -3390,8 +3392,8 @@ let code = `<pipeline >
     let endpoint = definition.querySelector('to,toD')
     // let endpoint = definition.removeChild(definition.lastChild)
 
-    // let activity = createGenericEndpointTo({definition: definition})
-    let activity = createGenericEndpointTo({definition: endpoint})
+    //let activity = createGenericActivityTo({definition: definition})
+    let activity = createGenericActivityTo({definition: endpoint})
     // activity.setAttribute("material", "src: #grid; repeat: 12 6;")
     // activity.setAttribute("material", "wireframe: true; width: 128")
     // material.wireframe	false
@@ -3408,7 +3410,9 @@ let code = `<pipeline >
         circle = document.createElement('a-torus')
         circle.setAttribute("radius", radius)
         circle.setAttribute("radius-tubular", .004)
+        // circle.setAttribute("radius-tubular", .003)
         circle.setAttribute("opacity", '.4')
+        // circle.setAttribute('color', '#74BEC1')
         circle.setAttribute("rotation", "0 "+angle+" 0")
         planet.appendChild(circle)
     }
@@ -3420,7 +3424,9 @@ let code = `<pipeline >
         circle = document.createElement('a-torus')
         circle.setAttribute("radius", mradius)
         circle.setAttribute("radius-tubular", .004)
+        // circle.setAttribute("radius-tubular", .003)
         circle.setAttribute("opacity", '.4')
+        // circle.setAttribute('color', '#74BEC1')
         circle.setAttribute("position", "0 "+merY+" 0")
         circle.setAttribute("rotation", "90 0 0")
         planet.appendChild(circle)
@@ -3539,7 +3545,7 @@ let code = `<pipeline >
         datatarget: JSON.stringify(targetModel),
     })
 
-    activity.setAttribute('processor-type', "http");
+    // activity.setAttribute('processor-type', "http");
 
     definition.removeChild(endpoint)
 
@@ -3633,7 +3639,7 @@ function createMapData(definition)
     
     let endpoint = definition.querySelector('to')
     
-    let activity = createGenericEndpointTo({definition: endpoint})
+    let activity = createGenericActivityTo({definition: endpoint})
 
     let datamodel = {                       
                         target1: "value1",
@@ -3666,7 +3672,7 @@ function createMapData(definition)
         datatarget: JSON.stringify(targetModel),
         // rootname: "JSON-DATA"
     })
-    activity.setAttribute('processor-type', "map-data");
+    // activity.setAttribute('processor-type', "map-data");
 
     definition.removeChild(endpoint)
 
@@ -3677,8 +3683,8 @@ function createMapData(definition)
 }
 
 
-
-function createMapMailSMTP(definition)
+// function createMapMailSMTP(definition)
+function createSMTP(definition)
 {
     let code = `<pipeline >
 
@@ -3703,7 +3709,7 @@ function createMapMailSMTP(definition)
 
     let endpoint = definition.querySelector('to,toD')
 
-    let activity = createGenericEndpointTo({definition: endpoint, icon: "#icon-mail"})
+    let activity = createGenericActivityTo({definition: endpoint, icon: "#icon-mail"})
 
 
     //we obtain parts separated by '/', and filter out empty values
@@ -3811,7 +3817,7 @@ function createMapMailSMTP(definition)
         datatarget: JSON.stringify(targetModel),
     })
 
-    activity.setAttribute('processor-type', "map-mail");
+    // activity.setAttribute('processor-type', "map-mail");
 
     definition.removeChild(endpoint)
 
@@ -3886,6 +3892,178 @@ function createMapMailSMTP(definition)
 
                 //update component URI
                 activity.components.uri.setTarget(target)
+                break;
+        }
+    }.bind(this))
+
+    return activity
+}
+
+
+
+
+// function createMapKafka(definition)
+// {
+
+//     definition = definition || new DOMParser().parseFromString('<to uri="kafka:topic1?brokers=YOUR_BROKER_SERVICE_URI&amp;autoOffsetReset=earliest"/>', "text/xml").documentElement
+//     return createMapGenericEndpointTo({definition: definition, icon: "#icon-kafka"})
+// }
+
+function createGenericEndpointTo(definition)
+{
+    //keep icon
+    let icon = definition.icon
+
+    //to simplify
+    definition = definition.definition
+
+    //if starts with to/toD
+    if(definition.nodeName == "to" || definition.nodeName == "toD"){
+        //wrap with pipeline
+        let wrap = document.createElement("pipeline")
+        wrap.appendChild(definition)
+        definition = wrap
+    }
+    
+    //obtain endpoint
+    let endpoint = definition.querySelector('to,toD')
+
+    //create activity
+    let activity = createGenericActivityTo({definition: endpoint, icon: icon})
+
+    //obtain target
+    let target = activity.components.uri.getTarget()
+
+    //we obtain URI options
+    let options = activity.components.uri.getOptions()
+
+    //make a shallow copy (to preserve URI object intact)
+    options = Object.assign({}, options);
+
+    //define data model for activity inputs
+    let datamodel = {
+        target: target,
+        options: options,
+        headers: {},
+        payload:{}
+    }
+
+    //define target tree map configuration
+    let targetModel = {
+
+        //name of the model
+        name: activity.components.uri.scheme[0],
+
+        //the data model
+        datamodel: datamodel,
+
+        //define which fields from the datamodel can be customised.
+        //items in the custom list indicate the user can:
+        // - add a new child hanging from the item group
+        // - nest childs if recursive is set to true
+        // - edit the child name and value
+        // - notify user ui updates on fields
+        custom:{
+            target: {
+                notify: "target"
+            },
+            options: {
+                prefix: "option",
+                button: true,
+                editable: true,
+                recursive: false,
+                notify: "option"
+            },
+            headers: {
+                prefix: "header",
+                button: true,
+                editable: true,
+                recursive: false,
+                langsupport: true
+            },
+            payload: {
+                prefix: "body",
+                button: true,
+                childlimit: 1,
+                recursive: false,
+                langsupport: true,
+                hint: "To override the payload (body), add a new body and map it."
+            }
+        }
+    } 
+
+    //set mapping to activity
+    activity.setAttribute("mapping", {
+        datatarget: JSON.stringify(targetModel),
+    })
+
+    //activity.setAttribute('processor-type', "map-mail");
+
+    //to define the mappings, first we strip out the endpoint from the definition
+    definition.removeChild(endpoint)
+
+    //we prepare an array of mappings
+    let mappings = Array.from(definition.children)
+
+    //set mappings to initialise
+    activity.components.mapping.setInitMappings(mappings)
+
+    //listener for changes on options
+    activity.addEventListener('option', function(evt){ 
+        console.log("entry got edited !!: "+ JSON.stringify(evt.detail))
+        
+        switch(evt.detail.action){
+            case 'set':
+                //set option in URI
+                activity.components.uri.setOption(evt.detail.field, evt.detail.value)
+                break;
+            case 'rename':
+                //keep option value
+                let value = activity.components.uri.getOptions()[evt.detail.old]
+                //remove old option
+                activity.components.uri.setOption(evt.detail.old, null)
+                //add new option with same value
+                activity.components.uri.setOption(evt.detail.new, value)
+                break;
+            case 'delete':
+                //remove option from URI
+                activity.components.uri.setOption(evt.detail.field, null)
+                break;
+        }
+    }.bind(this))
+
+    //listener for changes on target
+    activity.addEventListener('target', function(evt){ 
+        console.log("entry got edited !!: "+ JSON.stringify(evt.detail))
+        
+        switch(evt.detail.action){
+            case 'set':
+
+/*
+                //obtain all parameter map entries
+                // let parameters = activity.querySelectorAll('a-map-entry[value="target"] a-map-entry')
+                let parameters = activity.querySelectorAll('a-map-entry[field="target"]')
+
+                //obtain all field expressions (mappings or values)
+                let fields = {
+                    host: parameters[0].components.mapentry.expression.expression,
+                    port: parameters[1].components.mapentry.expression.expression,
+                    // path: parameters[2].components.mapentry.expression.expression,
+                }
+
+                //the event contains the updated value (the expression is not reliable on user update)
+                fields[evt.detail.field] = evt.detail.value
+
+                //ensure path starts with slash
+                // if(!fields.path.startsWith("/")){
+                //     fields.path = "/"+fields.path
+                // }
+
+                //compose target
+                let target = "//"+fields.host+":"+fields.port //+ fields.path
+*/
+                //update component URI
+                activity.components.uri.setTarget(evt.detail.value)
                 break;
         }
     }.bind(this))
