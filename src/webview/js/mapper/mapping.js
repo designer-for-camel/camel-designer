@@ -450,7 +450,7 @@ AFRAME.registerComponent('mapping', {
 
     refreshProcessContext: function()
     {
-        let vars = findExpressionVariables()
+        let vars = findExpressionVariables(this.el)
 
         //sets up datamodel
         let datamodel = {

@@ -62,10 +62,10 @@ function useExpressionVariable(event)
 
 //returns a collection of simple variables defined on preceding activities.
 //simple variables are variables you can use in the Camel simple language
-function findExpressionVariables()
+function findExpressionVariables(activity)
 {
-    //initialise to the preceding activity
-    let activity = getPreviousActivity(getActiveActivity())
+    //if activity not provided, initialise with preceding activity
+    activity = activity || getPreviousActivity(getActiveActivity())
 
     //collection to return
     let variables = []
@@ -74,6 +74,63 @@ function findExpressionVariables()
     while(activity)
     {
         let type = activity.getAttribute('processor-type')
+
+        //if direct, we dive into the route invoked to scan for variables
+        if(type == "direct"){
+
+            //obtain target
+            let target = activity.firstChild.attributes.value.value
+
+            //find direct starting activity
+            let found = document.querySelector("[processor-type=direct][start] > a-text[value="+target+"]")
+            
+            if(found){ //scan route
+                let route = found.closest('[route]')
+                variables = findExpressionVariablesInRoute(route, variables)
+            }
+        }
+
+        //if 'setter' found
+        else if(type == "header" || type == "property"){
+        
+            let simpleNamingConvention
+
+            if(type == "header"){
+                simpleNamingConvention = getCamelSimpleHeaderName()
+            }
+            else{
+                simpleNamingConvention = getCamelSimplePropertyName()
+            }
+
+            //we add to the collection in the format [type.var] (e.g. 'header.h1')
+            let newvar = simpleNamingConvention+"."+activity.getElementsByTagName("a-text")[0].firstChild.getAttribute('value').slice(0, -1)
+
+            //we prevent duplicates
+            if(!variables.includes(newvar)){
+                variables.push(newvar)                
+            }
+        }
+
+        //look next
+        activity = getPreviousActivity(activity)
+    }
+
+    return variables        
+}
+
+function findExpressionVariablesInRoute(route, variables, done)
+{
+    //collection to return
+    variables = variables || []
+
+    //list of routes already scanned (helps preventing cycle calls)
+    done = done || []
+
+    //scan for headers/properties and direct invocations (excluding FROMs)
+    let activities = route.querySelectorAll('[processor-type=property],[processor-type=header],[processor-type=direct]:not([start])')
+
+    for(let i=0; i<activities.length; i++){
+        let type = activities[i].getAttribute('processor-type')
 
         //if 'setter' found
         if(type == "header" || type == "property"){
@@ -88,15 +145,37 @@ function findExpressionVariables()
             }
 
             //we add to the collection in the format [type.var] (e.g. 'header.h1')
-            // variables.push(type+"."+activity.getElementsByTagName("a-text")[0].firstChild.getAttribute('value').slice(0, -1))
-            variables.push(simpleNamingConvention+"."+activity.getElementsByTagName("a-text")[0].firstChild.getAttribute('value').slice(0, -1))
+            let newvar = simpleNamingConvention+"."+activities[i].getElementsByTagName("a-text")[0].firstChild.getAttribute('value').slice(0, -1)
+            
+            //we prevent duplicates
+            if(!variables.includes(newvar)){
+                variables.push(newvar)                
+            }
+        }
+        //if direct, we dive into the route invoked to scan for variables
+        else if(type == "direct"){
+
+            //obtain target
+            let target = activities[i].firstChild.attributes.value.value
+
+            //find direct starting activity
+            let found = document.querySelector("[processor-type=direct][start] > a-text[value="+target+"]")
+            
+            if(found){ //scan route
+                route = found.closest('[route]')
+
+               //we cyclic scans
+                if(!done.includes(route)){
+                    done.push(route)
+                    variables = findExpressionVariablesInRoute(route, variables, done)
+                }
+            }
         }
 
-        //look next
-        activity = getPreviousActivity(activity)
+        
     }
 
-    return variables        
+    return variables
 }
 
 //includes the selection of expression variables in the HTML element given
@@ -3369,7 +3448,7 @@ let code = `<pipeline >
 
 
                 <setBody id="to-8-map-tgt-payload-body">
-                <simple>hello world `+'${body}'+`</simple>
+                <simple>`+'${exchangeProperty.prop1}'+`</simple>
               </setBody>
 
                 <to uri="http://demoserver/apath/somewhere?opt1=`+'${body}'+`" id="to-8"/>
@@ -3385,7 +3464,7 @@ let code = `<pipeline >
     if(definition.nodeName == "to" || definition.nodeName == "toD"){
         // definition = document.createElement("pipeline").appendChild(definition)
         let newdef = document.createElement("pipeline")
-        newdef.appendChild(definition)
+        newdef.appendChild(definition.cloneNode(true))
         definition = newdef
     }
 
