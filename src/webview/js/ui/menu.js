@@ -429,6 +429,8 @@ function createMenu3D(configuration)
                     //     label:    'mock ADMs 2',
                     //     function: 'updateAtlasMapList2',                
                     // },
+
+                    
                     {
                         label:    "map data",
                         function: "createMapData"                
@@ -546,16 +548,7 @@ function createMenu3D(configuration)
             // {
             //     label:    "pipeline",
             //     function: "createPipeline"                
-            // }
-                // {
-                //     label:    "mapHTTP",
-                //     function: "createMapHttp"                
-                // },
-            // {
-            //     label:    "mapMail",
-            //     function: "createMapMailSMTP"                
-            // },
-            
+            // }            
         ]
     }
 
@@ -575,7 +568,7 @@ function createMenu3D(configuration)
             },
             {
                 label:    "HTTP",
-                function: "createMapHttp"                
+                function: "createHttp"                
             },            
             {
                 label:    'kafka',
@@ -1231,11 +1224,30 @@ function createNavigationControl()
     navControlTop.id = controlId
     // navControl.setAttribute("handgrip", "")
     navControl.appendChild(button)
-    navControl.setAttribute("position", ".7 -.3 0")
+    // navControl.setAttribute("position", ".7 -.3 0")
+    // navControl.setAttribute("position", "-.3 .3 0")
+    // navControl.setAttribute("position", "0 0 0")
 
-    setUiItemLocation(navControlTop, -.7, .9)
+    // setUiItemLocation(navControlTop, -.7, .9)
+    // setUiItemLocation(navControlTop, -.9, .8)
+    setUiItemLocation(navControlTop, -.8, .85)
+
     // setUiItemLocation(navControlTop, -.5, .5)
     // setUiItemLocation(navControl, -.5, .5)
+
+
+    //This checkbox's role is to pin the orientation of the nav. system
+    //when pinned, up/down will zoon in/out
+    //when un-pinned, up/down will move the camera vertically
+    let checkbox = document.createElement('a-checkbox')
+    checkbox.setAttribute("label", "pin")
+    // checkbox.setAttribute("position", "-.55 .3 0")
+    // checkbox.setAttribute("position", ".5 -.3 0")
+    checkbox.setAttribute("position", ".25 -.3 0")
+    checkbox.setAttribute("visible", false)
+    checkbox.setAttribute("checked", false)
+    checkbox.setAttribute("scale", ".8 .8 .8")
+    navControl.appendChild(checkbox)
 
 
             button = document.createElement('a-cone')
@@ -1361,8 +1373,11 @@ function createNavigationControl()
                         let rig = document.getElementById("rig")
                         
                         document.addEventListener('keydown', function(e){
-                            if(e.key == "Shift")
+                            if(e.key == "Shift" && checkbox.attributes.checked.value == "false")
                             {
+                                checkbox.setAttribute("visible", true)
+                                checkbox.setAttribute("checked", false)
+
                                 rig.setAttribute("wasd-controls", "wsAxis:z; wsInverted:false")
                                 // console.log("shift: "+evt.type+"/"+evt.key)
                                 // updownControl.setAttribute("rotation", "-50 0 0")
@@ -1370,20 +1385,34 @@ function createNavigationControl()
                                 // navControl.setAttribute("rotation", "0 90 90")
                                 updownControl.setAttribute("rotation", "0 90 -90")
                             }
-                        });
+                        }.bind(this));
                         // }.bind(updownControl));
 
                         document.addEventListener('keyup', function(e){
-                            if(e.key == "Shift")
+                            if(e.key == "Shift" && checkbox.attributes.checked.value == "false")
                             {
+                                checkbox.setAttribute("visible", false)
+
                                 rig.setAttribute("wasd-controls", "wsAxis:y; wsInverted:true")
 
                                 // console.log("shift: "+evt.type+"/"+evt.key)
                                 updownControl.setAttribute("rotation", "0 0 0")
                                 // navControl.setAttribute("rotation", "0 0 0")
                             }
-                        });
+                        }.bind(this));
                         //}.bind(updownControl));
+
+
+                        //when PIN is unchecked we restore vertical camera movement
+                        checkbox.onclick = function(){
+                            if(this.attributes.checked.value == "true"){
+                                //hide pin
+                                checkbox.setAttribute("visible", false)
+                                rig.setAttribute("wasd-controls", "wsAxis:y; wsInverted:true")
+                                updownControl.setAttribute("rotation", "0 0 0")
+                            }
+                        }
+
 
     //attach menu to camera
     // camera.appendChild(navControl)

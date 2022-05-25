@@ -265,7 +265,7 @@ function createActivityFromSource(type, delay, definition, lastAction) {
             //setTimeout(createLog, delay);
             // return createActivityDelayed(createLog, delay, definition,lastAction);
             // return createActivityDelayed(createLog, delay, {definition: definition},lastAction);
-            return createActivityDelayed(createLog, delay, definition,lastAction);
+            return createActivityDelayed(createLog, delay, definition, lastAction);
             // break;
         case 'direct':
             //setTimeout(createDirect, delay);
@@ -301,14 +301,13 @@ function createActivityFromSource(type, delay, definition, lastAction) {
             return createActivityDelayed(createRemoveHeaders, delay, definition, lastAction);            
     
         case 'google-drive':
-            return createActivityDelayed(createGoogleDrive, delay, definition.definition, lastAction);
+            return createActivityDelayed(createGoogleDrive, delay, definition, lastAction);
         case 'google-sheets':
-            return createActivityDelayed(createGoogleSheets, delay, definition.definition, lastAction);            
+            return createActivityDelayed(createGoogleSheets, delay, definition, lastAction);            
         case 'smtp':
-            return createActivityDelayed(createSMTP, delay, definition.definition, lastAction);            
+            return createActivityDelayed(createSMTP, delay, definition, lastAction);            
         case 'kafka':
-            return createActivityDelayed(createKafka, delay, definition.definition, lastAction);
-    
+            return createActivityDelayed(createKafka, delay, definition, lastAction);
 
         // case 'kafka':
         case 'file':
@@ -327,7 +326,7 @@ function createActivityFromSource(type, delay, definition, lastAction) {
         
         case 'atlas':
         case 'atlasmap':
-            return createActivityDelayed(createAtlasMap, delay, definition.definition, lastAction);
+            return createActivityDelayed(createAtlasMap, delay, definition, lastAction);
 
         //The following 3 types adhere to DataFormats
         case 'dataformat':
@@ -337,7 +336,7 @@ function createActivityFromSource(type, delay, definition, lastAction) {
 
 
         case 'http':
-            return createActivityDelayed(createMapHttp, delay, definition.definition, lastAction);
+            return createActivityDelayed(createHttp, delay, definition, lastAction);
 
         case 'pipeline':
 
@@ -377,7 +376,6 @@ function createActivityFromSource(type, delay, definition, lastAction) {
                 let pipelineType = targets[0].attributes.uri.value.split(":")[0];
 
                 //at this point all the validation rules are successful
-                // return createActivityDelayed(createMapHttp, delay, definition.definition, lastAction);
                 return createActivityFromSource(pipelineType, delay, definition)
             }
 

@@ -4,6 +4,7 @@
 
 - Fix: smoother 3D input box when blinking. \
 - Fix: WASD controls now always in-sync with camera position
+- Fix: broken detach/attach functionality for some activities now resolved.
 - New navigation controls to move camera in scene with zoom in/out
 - Scanning of header/property variables improved (includes parent/child routes)
 

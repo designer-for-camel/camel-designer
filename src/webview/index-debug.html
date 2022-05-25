@@ -623,7 +623,7 @@
 
   <script>
     var html = `
-        <a-form handgrip id="ui-route-rename" position="-1 0 -2.5">
+        <a-form handgrip="active: false" id="ui-route-rename" position="-1 0 -2.5">
           <a-plane-rounded opacity=".5" width="2" height="1" radius="0.05" color="grey">
           </a-plane-rounded>
           <a-entity scale=".3 .3 .3">
@@ -634,7 +634,7 @@
           </a-entity>
         </a-form>
 
-        <a-form handgrip id="ui-config-aggregate" position="-1 -1.5 -2" active="false">
+        <a-form handgrip="active: false" id="ui-config-aggregate" position="-1 -1.5 -2" active="false">
           <a-plane-rounded id="3d-config-aggr" opacity=".5" width="1.7" height="1" radius="0.05" color="grey">
           </a-plane-rounded>
           <a-entity scale=".3 .3 .3">
@@ -653,8 +653,8 @@
           </a-entity>
         </a-form>
 
-        <a-form handgrip id="ui-config-atlasmap" position="-1 -1.25 -2" active="false">
-          <a-plane-rounded id="3d-config-aggr" opacity=".5" width="1.8" height=".6" radius="0.05" color="grey">
+        <a-form handgrip="active: false" id="ui-config-atlasmap" position="-1 -1.25 -2" active="false">
+          <a-plane-rounded id="3d-config-amap" opacity=".5" width="1.8" height=".6" radius="0.05" color="grey">
           </a-plane-rounded>
           <a-entity scale=".3 .3 .3">           
             <a-text     position="1.1 1.5 0" value="ADM file: "></a-text>
@@ -666,6 +666,15 @@
             <a-button value="delete" position="5.3 0.3 0" onclick="deleteConfigActivity()"></a-button>      
           </a-entity>
         </a-form>
+
+        <a-form handgrip="active: false" id="ui-config-map-activity" position="-1 -1.25 -2" active="false">
+          <a-plane-rounded position=".075 -.077 0" id="3d-config-activity" opacity=".5" width="1.8" height=".19" radius="0.05" color="grey">
+          </a-plane-rounded>
+          <a-entity scale=".3 .3 .3" position=".075 -.077 0" >
+            <a-button value="delete" position="5.3 0.3 0" onclick="deleteConfigActivity()"></a-button>      
+          </a-entity>
+        </a-form>
+
     `;
 
     document.getElementById('main-camera').insertAdjacentHTML('beforeend', html);

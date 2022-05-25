@@ -486,7 +486,11 @@ AFRAME.registerComponent('mapping', {
         //this prevents the activity from triggering the ring selector process
         event.stopPropagation()
 
-        switchConfigPaneByActivity(this.el)
+        //do we really need to call this here ?!?
+        // switchConfigPaneByActivity(this.el)
+
+        //this is to force the config pane to switch off
+        switchConfigPaneByActivity(null)
 
         //disable menu buttons
         enableToButtons(false)
@@ -514,7 +518,7 @@ AFRAME.registerComponent('mapping', {
         event.stopPropagation()
     
         //restore menu buttons
-        enableToButtons(true)
+        //enableToButtons(true)
 
         //obtain main camera
         let camera = document.querySelector('#rig')
@@ -522,8 +526,11 @@ AFRAME.registerComponent('mapping', {
         //We place the camera at the Y level in preparation for a smooth X axis movement animation
         camera.object3D.position.y = 0
         
+        switchConfigPaneByActivity(this.el)
+
+
         //center view on current activity
-        setCameraFocus(getActiveActivity())
+        // setCameraFocus(getActiveActivity())
     },
 
     update: function (oldData) {

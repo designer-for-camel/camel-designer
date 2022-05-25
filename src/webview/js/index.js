@@ -693,6 +693,13 @@
         document.getElementById('rest-definitions').setAttribute('visible', false)
         document.getElementById('rest-definitions').setAttribute('class', 'not-clickable')
         document.getElementById('rest-definitions').setAttribute('position','0 100 0');
+
+        //obtain camera viewpoint
+        let camera = document.querySelector('#rig')
+
+        //We place the camera at the Y=0 level
+        //it helps having smoother Y transitions if camera set in Mapping definitions
+        camera.object3D.position.setY(0)        
       }
 
       //Updates the activity with the configuration settings
@@ -762,7 +769,9 @@ let configObj = getActiveActivity()
 
       function nextRoute(routeId)
       {
-        //viewRouteDefinitions();
+        //ensures other views are set to inactive
+        viewRouteDefinitions();
+
         //if not given, we rotate the list from the end (so that it starts from first)
         routeId = routeId || routes[routes.length-1];
 
@@ -1459,6 +1468,8 @@ let configObj = getActiveActivity()
             //load configuration into form
             pane.components.form.configure(activity)
           }
+          //activate config pane
+          pane.setAttribute('active',true)
           return
         }
 
@@ -1495,11 +1506,18 @@ let configObj = getActiveActivity()
         setConfigSelector(activity);
 
         //activities with mapping definitions do not have 2D config panels
-        if(activity == null || activity.components.mapping)
+        if(activity == null)// || activity.components.mapping)
         {
           switchConfigPane("introconfig");
           return;
         }
+
+        // if(activity.components.mapping)
+        // {
+        //   switchConfigPane("ui-config-map-activity");
+        //   return;
+        // }
+
 // switchConfigPane('ui-config-aggregate');
 // return
         if(activity.components.detachable && activity.components.detachable.detached)
@@ -1580,9 +1598,13 @@ case 'catch-start':
       break;
 
           case 'to':
-              newConfigPane = "config-endpoint-to";
-              updateConfigEndpointTo(activity);
+              newConfigPane = "ui-config-map-activity";
+
+              //obtain 2D/3D pane from its ID
+              let pane = document.getElementById(newConfigPane);
+              pane.setAttribute("active", true)
               break;
+              
           case 'from':
               newConfigPane = "config-endpoint-to";
               updateConfigEndpointTo(activity);

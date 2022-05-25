@@ -472,28 +472,36 @@ function updateConfigEndpointTo(activity)
 }
 
 
+// function createKafka(definition)
+// {
+//     definition = definition || new DOMParser().parseFromString('<to uri="kafka:topic1?brokers=YOUR_BROKER_SERVICE_URI&amp;autoOffsetReset=earliest"/>', "text/xml").documentElement
+//     return createGenericEndpointTo({definition: definition, icon: "#icon-kafka"})
+// }
+
 function createKafka(definition)
 {
-    definition = definition || new DOMParser().parseFromString('<to uri="kafka:topic1?brokers=YOUR_BROKER_SERVICE_URI&amp;autoOffsetReset=earliest"/>', "text/xml").documentElement
-    return createGenericEndpointTo({definition: definition, icon: "#icon-kafka"})
+    definition = definition || {definition: new DOMParser().parseFromString('<to uri="kafka:topic1?brokers=YOUR_BROKER_SERVICE_URI&amp;autoOffsetReset=earliest"/>', "text/xml").documentElement}
+    definition.icon = "#icon-kafka"
+    return createGenericEndpointTo(definition)
 }
+
 
 function createFile(definition)
 {
-    definition = definition || new DOMParser().parseFromString('<to uri="file:directory?fileName=YOUR_FILE_NAME"/>', "text/xml").documentElement
-    return createGenericEndpointTo({definition: definition})
+    definition = definition || {definition: new DOMParser().parseFromString('<to uri="file:directory?fileName=YOUR_FILE_NAME"/>', "text/xml").documentElement}
+    return createGenericEndpointTo(definition)
 }
 
 function createFTP(definition)
 {
-    definition = definition || new DOMParser().parseFromString('<to uri="ftp://demoserver:21/directoryName?passiveMode=true&amp;username=YOUR_USERNAME&amp;password=YOUR_PASSWORD"/>', "text/xml").documentElement
-    return createGenericEndpointTo({definition: definition})
+    definition = definition || {definition: new DOMParser().parseFromString('<to uri="ftp://demoserver:21/directoryName?passiveMode=true&amp;username=YOUR_USERNAME&amp;password=YOUR_PASSWORD"/>', "text/xml").documentElement}
+    return createGenericEndpointTo(definition)
 }
 
 function createPDF(definition)
 {
-    definition = definition || new DOMParser().parseFromString('<to uri="pdf:create"/>', "text/xml").documentElement
-    return createGenericEndpointTo({definition: definition})
+    definition = definition || {definition: new DOMParser().parseFromString('<to uri="pdf:create"/>', "text/xml").documentElement}
+    return createGenericEndpointTo(definition)
 }
 
 /*
@@ -507,14 +515,16 @@ function createSMTP(definition)
 
 function createGoogleDrive(definition)
 {
-    definition = definition || new DOMParser().parseFromString('<to uri="google-drive://drive-files/insert?clientId=YOUR_ID&amp;clientSecret=YOUR_SECRET&amp;accessToken=YOUR_TOKEN&amp;refreshToken=YOUR_REFRESH_TOKEN"/>', "text/xml").documentElement
-    return createGenericEndpointTo({definition: definition, icon: "#icon-gdrive"})
+    definition = definition || {definition: new DOMParser().parseFromString('<to uri="google-drive://drive-files/insert?clientId=YOUR_ID&amp;clientSecret=YOUR_SECRET&amp;accessToken=YOUR_TOKEN&amp;refreshToken=YOUR_REFRESH_TOKEN"/>', "text/xml").documentElement}
+    definition.icon = "#icon-gdrive"
+    return createGenericEndpointTo(definition)
 }
 
 function createGoogleSheets(definition)
 {
-    definition = definition || new DOMParser().parseFromString('<to uri="google-sheets://data/update?clientId=YOUR_ID&amp;clientSecret=YOUR_SECRET&amp;accessToken=YOUR_TOKEN&amp;refreshToken=YOUR_REFRESH_TOKEN&amp;spreadsheetId=YOUR_SPREADSHEET_ID"/>', "text/xml").documentElement
-    return createGenericEndpointTo({definition: definition, icon: "#icon-gsheets"})
+    definition = definition || {definition: new DOMParser().parseFromString('<to uri="google-sheets://data/update?clientId=YOUR_ID&amp;clientSecret=YOUR_SECRET&amp;accessToken=YOUR_TOKEN&amp;refreshToken=YOUR_REFRESH_TOKEN&amp;spreadsheetId=YOUR_SPREADSHEET_ID"/>', "text/xml").documentElement}
+    definition.icon = "#icon-gsheets"
+    return createGenericEndpointTo(definition)
 }
 
 //PENDING
@@ -3114,12 +3124,13 @@ function editLabel(label){
 function createAtlasMap(definition)
 {
     if(camelVersion == CAMEL_RELEASE.v3)    {
-        definition = definition || new DOMParser().parseFromString('<to uri="atlasmap:demo.adm"/>', "text/xml").documentElement
+        definition = definition || {definition: new DOMParser().parseFromString('<to uri="atlasmap:demo.adm"/>', "text/xml").documentElement}
     }
     else{
-        definition = definition || new DOMParser().parseFromString('<to uri="atlas:demo.adm"/>', "text/xml").documentElement
+        definition = definition || {definition: new DOMParser().parseFromString('<to uri="atlas:demo.adm"/>', "text/xml").documentElement}
     }
-    definition = {definition: definition, icon: "#icon-atlasmap"}
+
+    definition.icon = "#icon-atlasmap"
 
     //default type will be the scheme of the uri (e.g. 'file' in uri="file:name")
     type = definition.definition.getAttribute('uri').split(":")[0];
@@ -3348,134 +3359,55 @@ function openDocumentation(code){
 
 //EXPERIMENTAL =====================
 
-function createMapHttp(definition)
+function createHttp(definition)
 {
-    // definition = definition || new DOMParser().parseFromString('<to uri="http://demoserver:80/resource"/>', "text/xml").documentElement
-    // definition = definition || new DOMParser().parseFromString('<pipeline><to uri="http://demoserver:80/resource"/></pipeline>', "text/xml").documentElement
-    // definition = definition || new DOMParser().parseFromString('<pipeline><log message="split message"/></pipeline>', 'application/xml').documentElement;
+    //TEST xpath from body (no header name attribute)
+    //TEST xpath from header name
+    //TEST xpath with parameters (e.g. saxon=true)
 
-    // let code = `<pipeline id="to-8-pipeline">
-    //                 <setHeader name="Content-Type" id="to-8-mapping-target-Content-Type">
-    //                     <simple>`+'${body}'+`</simple>
-    //                 </setHeader>
-    //                 <to uri="http://demoserver:80/resource" id="to-8"/>
-    //             </pipeline>`
-
-//     let code = `<pipeline id="to-8-pipeline">
-
-//     <setHeader name="Exchange.HTTP_METHOD" id="to-8-mapping-target-method">
-//     <simple>`+'${body}'+`</simple>
-//   </setHeader>
-//                 <setHeader name="Content-Type" id="to-8-mapping-target-Content-Type">
-//                     <simple>client: `+'${header.clientid}, payload: ${body}'+`</simple>
+// let code = `<pipeline >
+//                 <setHeader name="content-type">
+//                     <xpath saxon="true" other="sample">/application/json</xpath>
 //                 </setHeader>
-//                 <to uri="http://demoserver:80/resource" id="to-8"/>
+
+//                 <setHeader name="header-2" >
+//                     <simple>something `+'${body} ${header.data}'+`</simple>
+//                 </setHeader>
+
+
+//                 <setBody id="to-8-map-tgt-payload-body">
+//                 <simple>`+'${exchangeProperty.prop1}'+`</simple>
+//               </setBody>
+
+//                 <to uri="http://demoserver/apath/somewhere?opt1=`+'${body}'+`" id="to-8"/>
 //             </pipeline>`
 
-
-//TEST language parameters (e.g. resultType)
-//TEST dynamic target field creation when field does not exist
-//      let code = `<pipeline id="to-8-pipeline">
-//             <setHeader name="Content-Type" id="to-8-mapping-target-Content-Type">
-//                 <simple resultType="String">payload1: `+'${body}, payload2: ${body}'+`</simple>
-//             </setHeader>
-
-//             <setHeader name="header-1" id="to-8-mapping-target-header-1">
-//             <simple>my payload is: `+'${body}'+`</simple>
-//           </setHeader>
-
-//           <setHeader name="myclient">
-//           <simple>my payload is: `+'${header.client}'+`</simple>
-//         </setHeader>
-
-//             <to uri="http://demoserver:80/resource" id="to-8"/>
-//         </pipeline>`
+    let code = `<to uri="http://demoserver/path"/>`
 
 
+    definition = definition || {definition: new DOMParser().parseFromString(code, "text/xml").documentElement}
 
+    //keep given metadata
+    let metadata = definition
 
+    //simplify definition usage
+    definition = definition.definition
 
-{/* <setHeader name="header-1">
-<xpath headerName="data" saxon="true">/person[@name='James']</xpath>
-</setHeader> */}
-
-
-    //TEST xpath from header name
-    //TEST xpath without header name
-    //TEST xpath with parameters (e.g. saxon=true)
-    // let code = `<pipeline >
-
-
-    //     <setHeader name="user">
-    //         <simple>`+'${body[0].user}'+`</simple>
-    //     </setHeader>
-
-
-    //     <setHeader name="user2">
-    //         <simple>`+'${body.user}'+`</simple>
-    //     </setHeader>
-
-    //     <setHeader name="user3">
-    //         <simple>`+'${body}'+`</simple>
-    //     </setHeader>
-
-    //     <to uri="http://testconfig/apath/somewhere?opt1=val1" id="to-8"/>
-
-    // </pipeline>`
-
-
-    // <to uri="http://demoserver:80/resource" id="to-8"/>
-
-
-//     <setHeader name="header-2" >
-//     <xpath saxon="true">/data/node/field</xpath>
-// </setHeader>
-
-
-{/* <setBody id="to-8-map-tgt-body-value">
-<xpath saxon="true">/your_xpath_expression</xpath>
-</setBody> */}
-
-
-let code = `<pipeline >
-                <setHeader name="content-type">
-                    <xpath saxon="true" other="sample">/application/json</xpath>
-                </setHeader>
-
-                <setHeader name="header-2" >
-                    <simple>something `+'${body} ${header.data}'+`</simple>
-                </setHeader>
-
-
-                <setBody id="to-8-map-tgt-payload-body">
-                <simple>`+'${exchangeProperty.prop1}'+`</simple>
-              </setBody>
-
-                <to uri="http://demoserver/apath/somewhere?opt1=`+'${body}'+`" id="to-8"/>
-            </pipeline>`
-
-
-    definition = definition || new DOMParser().parseFromString(code, "text/xml").documentElement
-
-    // var iterator = definition.evaluate('/pipeline/to', definition, null, XPathResult.ANY_TYPE, null);
-    
-    // let endpoint = definition
-
+    //if activity starts with to/toD (instead of pipeline), we wrap it
     if(definition.nodeName == "to" || definition.nodeName == "toD"){
-        // definition = document.createElement("pipeline").appendChild(definition)
-        let newdef = document.createElement("pipeline")
-        newdef.appendChild(definition.cloneNode(true))
-        definition = newdef
+        let wrapping = document.createElement("pipeline")
+        wrapping.appendChild(definition.cloneNode(true)) //ATTENTION: needs to be cloned!! 'append' operations move nodes from one parent to another
+        definition = wrapping
     }
 
+    //obtain endpoint
     let endpoint = definition.querySelector('to,toD')
-    // let endpoint = definition.removeChild(definition.lastChild)
 
-    //let activity = createGenericActivityTo({definition: definition})
-    let activity = createGenericActivityTo({definition: endpoint})
-    // activity.setAttribute("material", "src: #grid; repeat: 12 6;")
-    // activity.setAttribute("material", "wireframe: true; width: 128")
-    // material.wireframe	false
+    //set endpoint as definition
+    metadata.definition = endpoint
+
+    //create activity
+    let activity = createGenericActivityTo(metadata)
 
     //create HTTP animated icon
     let planet = document.createElement('a-entity')
@@ -3514,8 +3446,7 @@ let code = `<pipeline >
     //animate rotation
     planet.setAttribute('animation', {property: 'rotation', loop: true, dur: '20000', to: '0 180 0', easing: 'linear'});
     activity.appendChild(planet)
-    activity.setAttribute("opacity", ".2")
-         
+    activity.setAttribute("opacity", ".2")      
 
     // let target = activity.components.uri.getValue()
 
@@ -3559,21 +3490,11 @@ let code = `<pipeline >
             method: method || ""
         },
         options: options,
-
         headers: {
-            // "content-type": "Exchange.CONTENT_TYPE",
-
-            // "content-type": "Content-Type",
-            // accept:         "Accept",
-            // authorization:  "Authorization",
-
-            // "content-type": "application/json",
             "content-type": "",
-            accept:         "",
-            authorization:  "",
+            // accept:         "",
+            // authorization:  "",
         },
-
-        // body:{value: ""}
         payload:{}
     }
 
@@ -3614,7 +3535,8 @@ let code = `<pipeline >
                 button: true,
                 childlimit: 1,
                 recursive: false,
-                langsupport: true
+                langsupport: true,
+                hint: "To override the payload (body), add a new body mapping."
             },
         },
     } 
@@ -3768,28 +3690,46 @@ function createSMTP(definition)
     let code = `<pipeline >
 
         <setHeader name="from">
-            <simple>`+'${body[0]}'+`</simple>
+            <simple>user1@demo.camel</simple>
         </setHeader>
         <setHeader name="to">
-          <simple>development@demo.camelk</simple>
+          <simple>user2@demo.camel</simple>
         </setHeader>
         <setHeader name="subject">
-            <simple>hello</simple>
+            <simple>greeting</simple>
         </setHeader>
-        <setHeader name="test">
-            <simple>hello</simple>
-        </setHeader>
+        <setBody>
+            <simple>hello world</simple>
+        </setBody>
         <to uri="smtp://standalone.demo-mail.svc:3025?username=demo&amp;password=demo&amp;to=bmesegue@redhat.com&amp;from=dummy" id="to-8"/>
 
     </pipeline>`
 
 
-    definition = definition || new DOMParser().parseFromString(code, "text/xml").documentElement
+    definition = definition || {definition: new DOMParser().parseFromString(code, "text/xml").documentElement}
+    definition.icon = "#icon-mail"
 
+    //keep given metadata
+    let metadata = definition
+
+    //simplify definition usage
+    definition = definition.definition
+
+    //if activity starts with to/toD (instead of pipeline), we wrap it
+    if(definition.nodeName == "to" || definition.nodeName == "toD"){
+        let wrapping = document.createElement("pipeline")
+        wrapping.appendChild(definition.cloneNode(true)) //ATTENTION: needs to be cloned!! 'append' operations move nodes from one parent to another
+        definition = wrapping
+    }
+
+    //obtain endpoint
     let endpoint = definition.querySelector('to,toD')
 
-    let activity = createGenericActivityTo({definition: endpoint, icon: "#icon-mail"})
+    //set endpoint as definition
+    metadata.definition = endpoint
 
+    //create activity
+    let activity = createGenericActivityTo(metadata)
 
     //we obtain parts separated by '/', and filter out empty values
     let parts   = activity.components.uri.getTarget().split('/').filter(element => element)
@@ -3820,6 +3760,12 @@ function createSMTP(definition)
     let target = parts[0].split(":")
     let host = target[0]
     let port = "80"
+    let username = options.username
+    let password = options.password
+
+    //delete user/pass
+    delete options.username
+    delete options.password
 
     //set port if given
     if(target.length>1){
@@ -3837,7 +3783,8 @@ function createSMTP(definition)
         server: {
             host: host,
             port: port,
-            // path: path
+            username: username || "",
+            password: password || "",
         },
         email: email,
         options: options,
@@ -3953,24 +3900,24 @@ function createSMTP(definition)
 
                 //obtain all field expressions (mappings or values)
                 let fields = {
-                    host: parameters[0].components.mapentry.expression.expression,
-                    port: parameters[1].components.mapentry.expression.expression,
-                    // path: parameters[2].components.mapentry.expression.expression,
+                    host:     parameters[0].components.mapentry.expression.expression,
+                    port:     parameters[1].components.mapentry.expression.expression,
+                    username: parameters[2].components.mapentry.expression.expression,
+                    password: parameters[3].components.mapentry.expression.expression,
                 }
 
                 //the event contains the updated value (the expression is not reliable on user update)
                 fields[evt.detail.field] = evt.detail.value
 
-                //ensure path starts with slash
-                // if(!fields.path.startsWith("/")){
-                //     fields.path = "/"+fields.path
-                // }
-
                 //compose target
                 let target = "//"+fields.host+":"+fields.port //+ fields.path
-
+              
                 //update component URI
                 activity.components.uri.setTarget(target)
+
+                activity.components.uri.setOption("username", fields.username)
+                activity.components.uri.setOption("password", fields.password)
+
                 break;
         }
     }.bind(this))
@@ -3979,36 +3926,29 @@ function createSMTP(definition)
 }
 
 
-
-
-// function createMapKafka(definition)
-// {
-
-//     definition = definition || new DOMParser().parseFromString('<to uri="kafka:topic1?brokers=YOUR_BROKER_SERVICE_URI&amp;autoOffsetReset=earliest"/>', "text/xml").documentElement
-//     return createMapGenericEndpointTo({definition: definition, icon: "#icon-kafka"})
-// }
-
 function createGenericEndpointTo(definition)
 {
-    //keep icon
-    let icon = definition.icon
+    //keep given metadata
+    let metadata = definition
 
-    //to simplify
+    //simplify definition usage
     definition = definition.definition
 
-    //if starts with to/toD
+    //if activity starts with to/toD (instead of pipeline), we wrap it
     if(definition.nodeName == "to" || definition.nodeName == "toD"){
-        //wrap with pipeline
-        let wrap = document.createElement("pipeline")
-        wrap.appendChild(definition)
-        definition = wrap
+        let wrapping = document.createElement("pipeline")
+        wrapping.appendChild(definition.cloneNode(true)) //ATTENTION: needs to be cloned!! 'append' operations move nodes from one parent to another
+        definition = wrapping
     }
-    
+
     //obtain endpoint
     let endpoint = definition.querySelector('to,toD')
 
+    //set endpoint as definition
+    metadata.definition = endpoint
+
     //create activity
-    let activity = createGenericActivityTo({definition: endpoint, icon: icon})
+    let activity = createGenericActivityTo(metadata)
 
     //obtain target
     let target = activity.components.uri.getTarget()
@@ -4117,30 +4057,6 @@ function createGenericEndpointTo(definition)
         
         switch(evt.detail.action){
             case 'set':
-
-/*
-                //obtain all parameter map entries
-                // let parameters = activity.querySelectorAll('a-map-entry[value="target"] a-map-entry')
-                let parameters = activity.querySelectorAll('a-map-entry[field="target"]')
-
-                //obtain all field expressions (mappings or values)
-                let fields = {
-                    host: parameters[0].components.mapentry.expression.expression,
-                    port: parameters[1].components.mapentry.expression.expression,
-                    // path: parameters[2].components.mapentry.expression.expression,
-                }
-
-                //the event contains the updated value (the expression is not reliable on user update)
-                fields[evt.detail.field] = evt.detail.value
-
-                //ensure path starts with slash
-                // if(!fields.path.startsWith("/")){
-                //     fields.path = "/"+fields.path
-                // }
-
-                //compose target
-                let target = "//"+fields.host+":"+fields.port //+ fields.path
-*/
                 //update component URI
                 activity.components.uri.setTarget(evt.detail.value)
                 break;

@@ -15,9 +15,7 @@ AFRAME.registerComponent('handgrip', {
       opacity: { type: "number", default: 0 },
       position: { type: "vec3", default: "0 0 0" },
     //   width: { type: "number", default: 1 }
-
-
-
+      active: { type: "boolean", default: true },
     },
 
     init: function (data) {
@@ -25,12 +23,24 @@ AFRAME.registerComponent('handgrip', {
         this.el.setAttribute('material','color: grey')
         this.el.getObject3D('mesh').rotateX(Math.PI/2)
 
-        this.el.classList.add('interactive')
         this.el.setAttribute('clickable','')
         this.el.setAttribute('dragndrop','')
-    },
+
+        if(this.data.active){
+          this.el.classList.add('interactive')
+        }
+      },
  
-    update: function () {},
+    update: function () {
+      if(this.data.active){
+        this.el.classList.add('interactive')
+      }
+      else{
+        this.el.classList.remove('interactive')
+      }
+    },
+
+
     tick: function () {},
     remove: function () {},
     pause: function () {},

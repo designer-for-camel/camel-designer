@@ -53,13 +53,18 @@ AFRAME.registerComponent('form', {
         UiInput.unfocus()
       }
       this.el.setAttribute('visible', active)
+
+      //if form has a handgrip we should activate/deactivate
+      if(this.el.components.handgrip){
+        this.el.setAttribute("handgrip", {active: active})
+      }
     },
 
     configure: function(activity) {
 
       this.currentActivity = activity
 
-      this.el.setAttribute('active',true)
+      // this.el.setAttribute('active',true)
 
       this.configurator.configure.call(activity, this.el)
     },
