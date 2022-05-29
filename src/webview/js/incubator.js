@@ -3172,7 +3172,7 @@ function createAtlasMap(definition)
     goLive(activity);
 
     //obtain available ADMs to list in configuration dropdown
-    vscodePostMessage('atlasmap-get-adms')
+    vscodePostMessage('atlasmap-get-adms', {id: activity.id})
 
     return activity
 }
@@ -3198,7 +3198,7 @@ function createAtlasMapConfigurator(){
             let list   = form.querySelector('a-dropdown')
 
             //set UI language
-            list.setAttribute('value', activity.components.uri.getTarget())
+            list.components.dropdown.setValue(activity.components.uri.getTarget())
 
             //set UI actions on dropdown selection
             list.onclick = function(){
@@ -3252,8 +3252,18 @@ function updateAtlasMapList2(admlist)
 //Updates the list of available ADMs in the AtlasMap configuration panel
 // - admlist: list of current ADM files in the workspace
 // - newadm: when true it indicates a new ADM file was created
-function updateAtlasMapList(admlist, newadm)
+// - activityId: when provided, sets the list to the activity's value
+function updateAtlasMapList(admlist, newadm, activityId)
 {
+    //helper variable
+    let activity
+
+    //if activity id provided
+    if(activityId){
+        //obtain activity
+        activity = document.getElementById(activityId)
+    }
+
     //obtain the form
     let form = document.getElementById('ui-config-atlasmap').children[1]
 
@@ -3318,17 +3328,20 @@ function updateAtlasMapList(admlist, newadm)
         //we assume the remaining file in the list is the new ADM
         //when the user creates a new ADM file, we update the activity's configuration 
         list.components.dropdown.setValue(admlist[0].label)
-        getActiveActivity().components.uri.setTarget(admlist[0].label)
+        activity.components.uri.setTarget(admlist[0].label)
         
         //as we're updating the activity's ADM, we synchorise the code
         syncEditor();
         return
     }
 
-    //when NOT a new ADM file, and...
-    //when we update the dropdown menu, it's important to maintain the current
-    //ADM file the activity is using
-    list.components.dropdown.setValue(getActiveActivity().components.uri.getTarget())
+    //if there is an activity to use then...
+    if(activity){
+        //when NOT a new ADM file, and...
+        //when we update the dropdown menu, it's important to maintain the current
+        //ADM file the activity is using
+        list.components.dropdown.setValue(activity.components.uri.getTarget())
+    }
 }
 
 //this function opens a documentation URL.
@@ -3361,6 +3374,11 @@ function openDocumentation(code){
 
 function createHttp(definition)
 {
+    //a mapping will be attached and requires async initialisation
+    //we need to pause comms until the mapping is fully ready
+    //the mapping component reactivates comms when ready
+    syncEditorEnabled = false;
+
     //TEST xpath from body (no header name attribute)
     //TEST xpath from header name
     //TEST xpath with parameters (e.g. saxon=true)
@@ -3687,6 +3705,11 @@ function createMapData(definition)
 // function createMapMailSMTP(definition)
 function createSMTP(definition)
 {
+    //a mapping will be attached and requires async initialisation
+    //we need to pause comms until the mapping is fully ready
+    //the mapping component reactivates comms when ready
+    syncEditorEnabled = false;
+
     let code = `<pipeline >
 
         <setHeader name="from">
@@ -3928,6 +3951,11 @@ function createSMTP(definition)
 
 function createGenericEndpointTo(definition)
 {
+    //a mapping will be attached and requires async initialisation
+    //we need to pause comms until the mapping is fully ready
+    //the mapping component reactivates comms when ready
+    syncEditorEnabled = false;
+
     //keep given metadata
     let metadata = definition
 

@@ -79,7 +79,7 @@ function activate(context) {
 
       // Handler for messages from the webview
       console.log('adding message handler');
-      currentPanel.webview.onDidReceiveMessage(
+      let disposableMessageReceiver = currentPanel.webview.onDidReceiveMessage(
         message => {
           // console.log('got message !!');
 
@@ -287,8 +287,17 @@ function activate(context) {
                         adms.push({"label":value[i].path.split(currentPath).pop().substring(1)})
                       }
                       
+                      //prepare response message
+                      let response = { command: 'atlasmap-files-list' , payload: adms}
+
+                      //if request contains a specific activity id, we pass it back
+                      //it's a correlator-id the caller uses to configure activities
+                      if(message.payload.id){
+                        response.id = message.payload.id
+                      }
+
                       //return list of available ADM files in workspace
-                      currentPanel.webview.postMessage({ command: 'atlasmap-files-list' , payload: adms});
+                      currentPanel.webview.postMessage(response);
               })
 
               console.log(vscode.window.visibleTextEditors);
@@ -327,45 +336,16 @@ function activate(context) {
         context.subscriptions
       );//end of onDidReceiveMessage
 
-      currentPanel.onDidDispose(
-        () => {
-          console.log("panel closed");
-          metadata = null
-
-          //this seems to throw a silent exception
-          //not sure what this instruction was meant to do.
-          //debug to find out more
-          vd = currentPanel.webview.html;
-        },
-        null,
-        context.subscriptions
-      );
-    // }
-    // else{
-    //   currentPanel.webview.html = vd;
-    // }
-
-	// // In this example, we want to start watching the currently open doc
-	// let currActiveDoc = currOpenEditor.document;
-
-	// let onDidChangeDisposable = vscode.workspace.onDidChangeTextDocument((event: vscode.TextDocumentChangeEvent)=>{
-	// 	if (event.document === currActiveDoc){
-	// 		console.log('Watched doc changed');
-	// 	}
-	// 	else {
-	// 		console.log('Non watched doc changed');
-	// 	}
-  // });
   
           //sample code change
-          vscode.workspace.onDidChangeTextDocument((e) => {
+          let disposableChangeTextDocument = vscode.workspace.onDidChangeTextDocument((e) => {
             console.log("is it our document: "+(te.document == e.document));          
             // console.log("TEST textChange: "+e.document.fileName);
             // console.log(`changed: ${JSON.stringify(e)}`);
           })
 
           //sample code change
-          vscode.window.onDidChangeTextEditorSelection((e) => {
+          let disposableChangeTextSelection = vscode.window.onDidChangeTextEditorSelection((e) => {
             console.log("is it our textEditor: "+(te == e.textEditor));
             
             //textLine reference
@@ -423,7 +403,7 @@ function activate(context) {
             // }
           })
 
-          vscode.workspace.onDidSaveTextDocument((e) => {
+          let disposableSaveTextDocument = vscode.workspace.onDidSaveTextDocument((e) => {
             console.log("document was saved");     
             // console.log("TEST textChange: "+e.document.fileName);
             // console.log(`changed: ${JSON.stringify(e)}`);
@@ -437,6 +417,25 @@ function activate(context) {
             }
           })
 
+
+          currentPanel.onDidDispose(
+            () => {
+              console.log("panel closed");
+              metadata = null
+    
+              //dispose of panel and listeners
+              currentPanel.dispose();
+              disposableChangeTextDocument.dispose()
+              disposableChangeTextSelection.dispose()
+              disposableSaveTextDocument.dispose()
+              disposableMessageReceiver.dispose()
+
+              vd = null
+              td = null
+            },
+            null,
+            context.subscriptions
+          );
 
     console.log('showDesigner has been registered');
   }); //end of registerCommand

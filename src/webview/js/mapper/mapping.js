@@ -23,7 +23,7 @@ AFRAME.registerComponent('mapping', {
         //On activity creation (no mapping defined yet) a default config 2D panel is activated.
         //Here, when the mapping is defined, we force a config panel reevaluation.
         //The 2D panel gets then deactivated.
-        switchConfigPaneByActivity(this.el)
+        //switchConfigPaneByActivity(this.el)
 
         mapperPosition += 100
 
@@ -48,6 +48,11 @@ AFRAME.registerComponent('mapping', {
         this.mapping.setAttribute("position", "2 "+mapperPosition+" 1") // we place X=2 to create a smooth camera movent event for Route/Mapping transitions
         this.el.appendChild(this.mapping)
 
+
+//test element to fine tune preview image renderer         
+// let test = document.createElement('a-box')
+// this.mapping.appendChild(test)
+
         //this action will ensure there is a default source data tree
         //we create source tree first to allow target tree initialisation to find source elements
         this.refreshProcessContext()
@@ -61,6 +66,8 @@ AFRAME.registerComponent('mapping', {
         this.mapping.appendChild(map)
     
         this.targetTree = map
+
+        console.log("target tree set !!")
 
         // map = document.createElement('a-map-tree')
         // map.setAttribute("tree", JSON.stringify(mapTree))
@@ -95,7 +102,8 @@ AFRAME.registerComponent('mapping', {
         this.previewCamera.setAttribute("camera", {active: false})
         // this.previewCamera.setAttribute("camrender", {cid: "cam2"})
         this.previewCamera.setAttribute("camrender", {cid: camCanvas.id})
-        this.previewCamera.setAttribute("position", "6 3 7")
+        // this.previewCamera.setAttribute("position", "6 3 7")
+        this.previewCamera.setAttribute("position", "0 0 7")
         this.mapping.appendChild(this.previewCamera)
 
 
@@ -142,8 +150,27 @@ AFRAME.registerComponent('mapping', {
     //Actions when closing the Mapping View
     closeMappingView: function(event)
     {
+        //obtain camera viewpoint
+        let camera = document.querySelector('#rig')
+
+        //We place the camera at the Y level in preparation for a smooth X axis movement animation
+        //camera.object3D.position.y = this.mapping.object3D.position.y
+
+        let worldpos = new THREE.Vector3()
+        
+        camera.object3D.getWorldPosition(worldpos)
+
+        let refPos = Utils.getRelativePosition(this.mapping, worldpos)
+
+        this.previewCamera.object3D.position.set(
+            refPos.x,
+            refPos.y,
+            refPos.z
+        )
+
         this.enableRouteView(event)
 
+/*
         let fs = new THREE.Vector3()
         let ft = new THREE.Vector3()
         let ls = new THREE.Vector3()
@@ -176,6 +203,7 @@ AFRAME.registerComponent('mapping', {
            refPos.y + 1.5,
            7
         )
+*/
     },
 
     //Adds a new DataModel source to the Mapping element
@@ -220,8 +248,23 @@ AFRAME.registerComponent('mapping', {
         }
 
         //obtain mappings to initialise
-        // let mappings = this.initMappings
-        mappings = this.initMappings
+        let mappings = this.initMappings
+
+        //if there are mappings, they are processed asynchronously.
+        //We need to keep count.
+        if(mappings.length > 0){
+            this.pendingMappingsCounter = mappings.length
+            //add event listener to receive completion events
+            this.el.addEventListener('mapping-completed', this.notifyInitMappingsCompleted.bind(this))
+            console.log('awaiting pending mappings: '+this.pendingMappings)
+        }
+        //otherwise we consider the activity fully configured
+        //and we can refresh the text editor
+        else{
+            syncEditorEnabled = true;
+            syncEditor();
+            this.el.emit("async-activity-completed");      
+        }
 
         //loop over the mappings
         for (let i = 0; i < mappings.length; i++) {
@@ -247,6 +290,25 @@ AFRAME.registerComponent('mapping', {
 
         //this marks the mapping as initialised (should run only once)
         this.initMappings = null
+    },
+
+    //Function to handle mapping completion events 
+    notifyInitMappingsCompleted: function()
+    {
+        this.pendingMappingsCounter--
+        console.log('pendingMappingsCounter: '+this.pendingMappingsCounter)
+
+        //when counter reaches zero, all mappings are considered configured
+        if(this.pendingMappingsCounter == 0){
+            console.log('mapping completed')
+            //remove listener
+            this.el.removeEventListener('mapping-completed', this.notifyInitMappingsCompleted)
+
+            //sync text editor
+            syncEditorEnabled = true;
+            syncEditor();
+            this.el.emit("async-activity-completed");      
+        }
     },
 
     // createMapping: function(source, target, code)
@@ -583,12 +645,14 @@ AFRAME.registerComponent('camrender',{
        // Height of the renderer element
        height: {
             type: 'number',
-            default: 300
+            // default: 300
+            default: 360
        },
        // Width of the renderer element
        width: {
             type: 'number',
-            default: 400
+            // default: 400
+            default: 640
        }
     },
     'update': function(oldData) {
@@ -604,13 +668,44 @@ AFRAME.registerComponent('camrender',{
             // Set properties for renderer DOM element
             this.renderer.setPixelRatio( window.devicePixelRatio );
             this.renderer.domElement.crossorigin = "anonymous";
+
+            //the webGL camera sets the aspect ratio depending on the window dimensions
+            //different aspect ratios cause rendering distortion
+            //This ensures the aspect ratio remains constant.
+            this.el.components.camera.camera.aspect = window.devicePixelRatio
+            this.el.components.camera.camera.updateProjectionMatrix()            
         };
+
         if (oldData.width !== data.width || oldData.height !== data.height) {
             // Set size of canvas renderer
             this.renderer.setSize(data.width, data.height);
             this.renderer.domElement.height = data.height;
             this.renderer.domElement.width = data.width;
+
+            let viewPort = new THREE.Vector4()
+            this.renderer.getViewport(viewPort)
+            console.log("viewport: " + viewPort)
+
+
+            // this.renderer.setViewport(-185,-90,740,360)
+
+            //best numbers for Chrome
+            // this.renderer.setViewport(-210,-90,740,300)
+
+            //best numbers for VSCode
+            this.renderer.setViewport(-235,-80,740,300)
+            // this.renderer.setViewport(-data.width/4,-data.height/4,data.width,data.height)
+            // this.renderer.setViewport(-185,-90,data.width,data.height)
+
+            // document.querySelectorAll('[camera]')[0].object3D.position.z = 7
+
+            // document.querySelectorAll('[camrender]')[0].components.camrender.renderer.setViewport(-220,-90,740,360)
+            // undefined
+            // document.querySelectorAll('[camrender]')[0].components.camrender.renderer.setViewport(-210,-90,740,360)
+            // undefined
+            // document.querySelectorAll('[camrender]')[0].components.camrender.renderer.setViewport(-185,-90,740,360)
         };
+        
         if (oldData.fps !== data.fps) {
             // Set how often to call tick
             this.tick = AFRAME.utils.throttleTick(this.tick, 1000 / data.fps , this);

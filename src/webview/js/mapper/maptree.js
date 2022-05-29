@@ -10,6 +10,10 @@ AFRAME.registerComponent('maptree', {
     init: function () {
         console.log('maptree init')
 
+        //A-Frame intricacy: the component is not ready/usable until init() completes and 
+        //update() is run its first time. Only then the component is usable.
+        this.firstupdate = true
+
         //when initialising mappings, some target map-entries are dynamically created
         //they need to be initialised asynchronously
         //this variable holds childs with pending mappings to complete
@@ -296,6 +300,14 @@ AFRAME.registerComponent('maptree', {
 
         console.log("update")
 
+        //on first time update triggers
+        if(this.firstupdate){
+            this.firstupdate = false
+            //we announce the map tree is ready
+            this.el.emit("maptree-init-complete", {
+                target: this.data.istarget
+            });    
+        }    
 
         //at creation time there is no data, so we ignore the invocation
         if(Object.keys(oldData).length === 0){

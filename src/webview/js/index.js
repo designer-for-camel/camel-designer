@@ -245,18 +245,66 @@
                   //attempt to detect Camel settings to use
                   autoDetectCamelSettings(message.source)
 
+                  //trigger source code load
+                  runSourceCodeLoad(message)
+/*
+
                   //While building the Visual elements, TextEditor<=>VisualEditor comms need to stop, 
                   syncStartUpEnabled = true;
-                  loadSourceCode(message.source);
-                  loadMetadata(message.metadata);
-                  syncStartUpEnabled = false;
 
-                  //Once comms are back...
-                  //obtain available ADMs to list in configuration dropdown
-                  vscodePostMessage('atlasmap-get-adms')
+                  let parsed = parseSourceCode(message.source)
+                  let numAsyncActivities = parsed.querySelectorAll('to,toD').length
+                  
+                  //case when source code contains activities requiring async loading
+                  if(numAsyncActivities>0){
 
-                  //we need to sync the changes, (new ID values may have been applied)
-                  syncEditor();
+                    console.log("async activities: "+numAsyncActivities)
+
+                    //Async completion handler
+                    let handler = function(){
+                      numAsyncActivities--
+                      console.log("async activity completed: "+numAsyncActivities)
+
+                      if(numAsyncActivities == 0){
+                        console.log("async activities done")
+                        this.removeEventListener('async-activity-completed', handler)
+                        syncStartUpEnabled = false;
+
+                        //Once comms are back...
+                        //obtain available ADMs to list in configuration dropdown
+                        vscodePostMessage('atlasmap-get-adms')
+
+                        //we need to sync the changes, (new ID values may have been applied)
+                        syncEditor();
+                      }
+                    }
+
+                    //obtain top element
+                    let definitions = document.getElementById('route-definitions')
+
+                    //attach event listener
+                    definitions.addEventListener('async-activity-completed', handler.bind(definitions))
+            
+
+                    loadSourceCode(parsed);
+                    loadMetadata(message.metadata);
+                  }
+                  //case when there are no async loading happening
+                  else{
+                    loadSourceCode(parsed);
+                    loadMetadata(message.metadata);
+                    syncStartUpEnabled = false;
+
+                    //Once comms are back...
+                    //obtain available ADMs to list in configuration dropdown
+                    vscodePostMessage('atlasmap-get-adms')
+
+                    //we need to sync the changes, (new ID values may have been applied)
+                    syncEditor();
+                  }
+
+*/
+
                   break;
 
               case 'tracing-activate-poller':
@@ -291,6 +339,7 @@
                   //run UI initialisation with configuration data
                   createMenu3D(message.payload)
                   createMenu3Dcontrol()
+                  createNavigationControl()
                   importSourceCode();
 
 
@@ -299,12 +348,89 @@
               case 'atlasmap-files-list':
             
                 //update AtlasMap configuration dropdown
-                updateAtlasMapList(message.payload, message.newadm)
+                updateAtlasMapList(message.payload, message.newadm, message.id)
 
                 break;
           }
         });
 
+      function runSourceCodeLoad(message)
+      {
+        //While building the Visual elements, TextEditor<=>VisualEditor comms need to stop, 
+        syncStartUpEnabled = true;
+
+        let parsed = parseSourceCode(message.source)
+        // let numAsyncActivities = parsed.querySelectorAll('to,toD').length
+
+        //all TO activities with exceptions:
+        // - direct
+        // - dataformat
+        // - atlasmap
+        let numAsyncActivities = parsed.querySelectorAll('to:not([uri^=direct],[uri^=atlas],[uri^=dataformat]),toD:not([uri^=direct],[uri^=atlas],[uri^=dataformat])').length
+        
+        //case when source code contains activities requiring async loading
+        if(numAsyncActivities>0){
+
+          console.log("async activities: "+numAsyncActivities)
+
+          //obtain routes container
+          let definitions = document.getElementById('route-definitions')
+
+          //Async completion handler
+          let handler = function(){
+            numAsyncActivities--
+            console.log("async activity completed: "+numAsyncActivities)
+
+            if(numAsyncActivities == 0){
+              console.log("async activities done")
+              this.removeEventListener('async-activity-completed', handler)
+              syncStartUpEnabled = false;
+
+              //Once comms are back...
+              //obtain available ADMs to list in configuration dropdown
+              vscodePostMessage('atlasmap-get-adms', {})
+
+              //we need to sync the changes, (new ID values may have been applied)
+              syncEditor();
+
+              //obtain first route
+              let route = definitions.firstElementChild
+
+              //switch view to first route
+              nextRoute(route.id)
+
+              //obtain all route activities
+              let activities = route.querySelectorAll('[processor-type]')
+
+              //set selector on last activity
+              setConfigSelector(activities[activities.length-1])
+            }
+          }
+
+          //attach event listener
+          definitions.addEventListener('async-activity-completed', handler.bind(definitions))
+  
+          //trigger load process
+          loadSourceCode(null,parsed);
+          loadMetadata(message.metadata);
+
+          return
+        }
+        //case when there are no async loading happening
+        else{
+          loadSourceCode(null,parsed);
+          loadMetadata(message.metadata);
+          syncStartUpEnabled = false;
+
+          //Once comms are back...
+          //obtain available ADMs to list in configuration dropdown
+          vscodePostMessage('atlasmap-get-adms', {})
+
+          //we need to sync the changes, (new ID values may have been applied)
+          syncEditor();
+        }
+
+      }
 
       function enableNavigationButtons(enabled)
       {

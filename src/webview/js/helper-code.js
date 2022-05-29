@@ -32,10 +32,16 @@ function importSource()
                 //attempt to detect Camel settings to use
                 autoDetectCamelSettings(reader.result)
                 
+                //simulate message from VSCode
+                message = {source: reader.result}
+                runSourceCodeLoad(message)
+/*
                 loadSourceCode(reader.result);
 
                             //test
                             loadMetadata();
+*/
+
             };
 
             reader.readAsText(file);    
@@ -51,10 +57,30 @@ function importSource()
 //When source code is loaded, a batch of creation activities is triggered
 //This would cause a sequence of code updates sent to VSCode we want to avoid.
 //To stop sending messages to VSCode, COMMS was disabled prior to calling this function
-function loadSourceCode(camelContextImport)
+function parseSourceCode(camelContextImport)
 {
-    //parse source code
-    var xmlDoc = new DOMParser().parseFromString(camelContextImport, 'application/xml');
+    let xmlDoc = new DOMParser().parseFromString(camelContextImport, 'application/xml');
+
+    return xmlDoc
+}
+
+//Parses the source code and generates the visual artifacts
+//When source code is loaded, a batch of creation activities is triggered
+//This would cause a sequence of code updates sent to VSCode we want to avoid.
+//To stop sending messages to VSCode, COMMS was disabled prior to calling this function
+function loadSourceCode(camelContextImport, parsedCode)
+{
+    let xmlDoc
+
+    //if provided
+    if(parsedCode){
+        //use it
+        xmlDoc = parsedCode
+    }
+    else{
+        //parse from code
+        xmlDoc = parseSourceCode(camelContextImport)
+    }
 
     //create REST definitions
     //they might contain inner routes that we need to create

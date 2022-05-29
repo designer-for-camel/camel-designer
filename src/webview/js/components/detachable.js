@@ -339,6 +339,7 @@ AFRAME.registerComponent('detachable', {
             let parent = activity.parentNode
             parent.removeChild(activity)
 
+            //Appending the clone to its parent makes it 'go live'
             if(destination.classList.contains('group-start')){
                 destination.parentNode.parentNode.insertBefore(clone, destination.parentNode)
                 destination.parentNode.parentNode.appendChild(newLink);

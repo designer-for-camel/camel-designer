@@ -193,6 +193,8 @@ AFRAME.registerComponent('mapentry', {
                                 //remove this map entry from the map tree
                                 this.maptree.components.maptree.removeLeaf(this.el)
 
+                                syncEditor()
+
                             }.bind(this));
                         }
 
@@ -915,6 +917,8 @@ AFRAME.registerComponent('mapentry', {
             this.mapPoint.removeAttribute('color')
         }
 
+        syncEditor()
+        this.el.emit("mapping-completed");      
     },
 
     //creates a child map-entry node
@@ -1064,6 +1068,9 @@ AFRAME.registerComponent('mapentry', {
 
                 //remove entire construct (background, plus-button, labels). It all roots from the background
                 toDelete.parentElement.removeChild(toDelete)
+
+                syncEditor()
+
             }.bind(this));
 
 
@@ -1113,6 +1120,9 @@ AFRAME.registerComponent('mapentry', {
                     //update attribute's value
                     this.closest('a-map-entry').components.mapentry.expression.parameters[attributeName] = text
 
+                    syncEditor()
+
+
                 }.bind(this))
             });
 
@@ -1133,6 +1143,8 @@ AFRAME.registerComponent('mapentry', {
         }
 
         this.expression.parameters[attName] = attValue
+
+        syncEditor()
     },
 
     trigger: function(event){
@@ -1253,6 +1265,8 @@ AFRAME.registerComponent('mapentry', {
                 this.expression.target.field = this.data.field
                 this.expression.target.value = this.data.field
             }
+
+            syncEditor()
         }
 
         //if 'enabled' did change        

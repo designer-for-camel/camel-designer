@@ -56,7 +56,7 @@ Utils.preloadAssets = ()=>{
 //example:
 // if   ref. position is 5 5 5 (world position)
 // and  obj. position is 3 3 3 (child of obj in 7 7 7)
-// then obj. relative position to ref. is 5 5 5 
+// then obj. relative position to ref. is 5 5 5 (calculated from (7+3)-5)
 // Utils.getRelativePosition = (reference, object)=>{
 Utils.getRelativePosition = (reference, worldposition)=>{
 

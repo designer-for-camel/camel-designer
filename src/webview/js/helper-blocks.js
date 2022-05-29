@@ -1919,7 +1919,7 @@ function createDataformat(definition)
 function createEndpointDataFormat(definition)
 {
     //translate definition when relevant
-    if(definition.definition.nodeName  != 'to'){
+    if(definition.definition.nodeName  == 'marshal' || definition.definition.nodeName  == 'unmarshal'){
         definition.definition = defineDataFormatAsOneLiner(definition.definition)
     }
 
