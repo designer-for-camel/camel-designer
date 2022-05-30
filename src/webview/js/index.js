@@ -233,6 +233,9 @@
                     break;
                   }
                   else {
+                    //ensure it's a step in the flow (not a mapping element)
+                    activity = activity.closest('[processor-type]')
+
                     viewRouteDefinitions();
                   }
                   // setCameraFocus(activity);
@@ -721,6 +724,9 @@
           //switching to next route will select the new route 
           nextRoute(routeId);
 
+          //ensures top bar buttons are set with correct visibility 
+          viewRouteDefinitions()
+
           //The new route needs to be included in the menu
           createMenu3Dcontrol();
       }
@@ -799,8 +805,11 @@
       }
 
       //Switch to the Route Designer view
-      function viewRouteDefinitions()
+      function viewRouteDefinitions(cameraY)
       {
+        //defaults to camera view at 0 level
+        cameraY = cameraY || 0
+
         //only activate FROM buttons if 'start' is missing
         var activeRoute = getSelectedRoute();
         var isFromMissing = (0 == activeRoute.querySelectorAll("a-sphere[start]").length);
@@ -823,9 +832,9 @@
         //obtain camera viewpoint
         let camera = document.querySelector('#rig')
 
-        //We place the camera at the Y=0 level
+        //We place the camera at the Y=0 (default) level, unless provided
         //it helps having smoother Y transitions if camera set in Mapping definitions
-        camera.object3D.position.setY(0)        
+        camera.object3D.position.setY(cameraY)        
       }
 
       //Updates the activity with the configuration settings
@@ -893,10 +902,10 @@ let configObj = getActiveActivity()
         text.setAttribute('value', condition);
       }
 
-      function nextRoute(routeId)
+      function nextRoute(routeId, cameraY, activity)
       {
         //ensures other views are set to inactive
-        viewRouteDefinitions();
+        viewRouteDefinitions(cameraY);
 
         //if not given, we rotate the list from the end (so that it starts from first)
         routeId = routeId || routes[routes.length-1];
@@ -937,17 +946,19 @@ let configObj = getActiveActivity()
         document.getElementsByTagName("routenav")[1].innerHTML = routes[0];
 
 
-  var defaultActivity = document.getElementById(routes[0]).getAttribute("lastCreated");
+  // var defaultActivity = document.getElementById(routes[0]).getAttribute("lastCreated");
+  activity = activity || document.getElementById(routes[0]).getAttribute("lastCreated");
 
 // scene.setAttribute("lastCreated", to.id);
 // setConfigSelector(activity);
 
-        switchConfigPaneByActivity(document.getElementById(defaultActivity));
+        // switchConfigPaneByActivity(document.getElementById(defaultActivity));
+        switchConfigPaneByActivity(document.getElementById(activity));
         // resetCameraToDefault();
         
         //was
         //setCameraFocus(document.getElementById(defaultActivity), true);
-        viewRouteDefinitions();
+        //viewRouteDefinitions();
 
       }
 
@@ -981,7 +992,7 @@ let configObj = getActiveActivity()
           );
 
           //switch route
-          nextRoute(getActivityRoute(activity).id);
+          nextRoute(getActivityRoute(activity).id, 10, activity.id);
         });
 
         //we give impression current Route disappears upwards by giving camera low Y-coordinate

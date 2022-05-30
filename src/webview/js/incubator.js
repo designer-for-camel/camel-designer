@@ -3031,7 +3031,9 @@ function manageUI(){
     let navControl = document.getElementById("navigation-control");
 
     //place item as per proportions on screen
-    setUiItemLocation(navControl, -.7, .9)
+    // setUiItemLocation(navControl, -.7, .9)
+    // setUiItemLocation(navControl, -.75, .85)
+    setUiItemLocation(navControl, -.8, .85)
 }
 
 

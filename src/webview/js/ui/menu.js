@@ -430,11 +430,12 @@ function createMenu3D(configuration)
                     //     function: 'updateAtlasMapList2',                
                     // },
 
-                    
+/*                    
                     {
                         label:    "map data",
                         function: "createMapData"                
                     },
+*/                    
                 ]
             },
 
