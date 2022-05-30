@@ -4,7 +4,7 @@ AFRAME.registerComponent('hint', {
         message: {type: 'string'},
         orientation: {type: 'string'},
         position: {type: 'string'},
-        selfdestroy: {type: 'boolean'},
+        selfdestroy: {type: 'boolean', default: true},
     },
     init: function () {
 

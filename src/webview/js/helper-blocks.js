@@ -882,6 +882,10 @@ function goLiveTo(to, givenPos, sources, staticLink, parent, handleRewires)
   {
     hintDetachablePending = false
     to.setAttribute('hint', 'message: to detach: SHIFT + CLICK \n to reattach: drag & drop')
+
+    let nav = document.getElementById('navigation-control')
+    nav.setAttribute('hint', 'message: camera control:\nclick or use arrow keys.\n+ SHIFT: zoom in/out')
+
   }
 }
 
