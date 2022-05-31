@@ -319,17 +319,20 @@ function findRouteIdFromDirectUri(targetUri)
     //    the query selector used is:
     //             [start]              all elements that have the 'start' attribute (as in 'start of route')
     //                >                 indicates 'parent of'
-    //       .uri[value="tartet-uri"]   with class 'uri' and attribute 'value' containing the target uri
-    let uri = document.querySelector('[start] > .uri[value="'+targetUri+'"]')
+    //       [value="tartet-uri"]       a-text with attribute 'value' containing the target uri
+    let activity = document.querySelector('[start] > [value='+targetUri+']')
     
     //if nothing found return
-    if(uri == null)
+    if(activity == null)
     {
         return
     }
 
+    //otherwise, we reset the variable to its activity (parent) 
+    activity = activity.parentElement
+
     //return ID of route
-    let routeId = uri.parentElement.parentElement.id
+    let routeId = activity.components.uri.getTarget()
     return routeId
 }
 
@@ -696,6 +699,46 @@ function configEndpointAddOptionNameValue(divOptions, name, value)
 }
 
 
+
+function createDirectStart(definition)
+{
+    let snippet = '<from uri="direct:'+getActiveRoute().id+'"/>'
+    definition = definition || new DOMParser().parseFromString(snippet, "text/xml").documentElement
+    let direct = createGenericEndpointFrom({definition: definition})
+
+    //special attribute needed for REST functionality
+    direct.setAttribute('direct','')
+
+    return direct
+}
+
+function createTimer(definition)
+{
+    let snippet = '<from uri="timer:'+getUniqueID('timer')+'"/>'
+    definition = definition || new DOMParser().parseFromString(snippet, "text/xml").documentElement
+    
+    let timer = createGenericEndpointFrom({definition: definition})
+
+    //create clock hands
+    var minutes = document.createElement('a-triangle');
+    minutes.setAttribute("vertex-a","0 .4 0")
+    minutes.setAttribute("vertex-b","-.02 0 0")
+    minutes.setAttribute("vertex-c",".02 0 0")
+    minutes.setAttribute('animation', {property: 'rotation', dur: '20000', to: '0 0 -360', loop: true, easing: 'linear'});
+
+    var hours = document.createElement('a-triangle');
+    hours.setAttribute("vertex-a","0 .25 0")
+    hours.setAttribute("vertex-b","-.02 0 0")
+    hours.setAttribute("vertex-c",".02 0 0")
+    hours.setAttribute('animation', {property: 'rotation', dur: '240000', to: '0 0 -360', loop: true, easing: 'linear'});
+
+    //add clock hands
+    timer.appendChild(minutes);
+    timer.appendChild(hours);
+
+
+    return timer
+}
 
 
 function createKafkaStart(definition)
@@ -3371,8 +3414,13 @@ function openDocumentation(code){
 }
 
 
+function createHttps(definition)
+{
+    let code = `<to uri="https://demoserver/path"/>`
+    definition = definition || {definition: new DOMParser().parseFromString(code, "text/xml").documentElement}
+    createHttp(definition)
+}
 
-//EXPERIMENTAL =====================
 
 function createHttp(definition)
 {
@@ -3487,8 +3535,9 @@ function createHttp(definition)
   
     //prepare mapping fields
     let target = parts[0].split(":")
+    let scheme = activity.components.uri.getScheme()
     let host = target[0]
-    let port = "80"
+    let port = (scheme == "http") ? "80":"443"
 
     //set port if given
     if(target.length>1){
@@ -3521,7 +3570,8 @@ function createHttp(definition)
     let targetModel = {
 
         //name of the model
-        name: "http",
+        // name: "http",
+        name: scheme,
 
         //the data model
         datamodel: datamodel,

@@ -80,7 +80,7 @@ function createFrom(metadata)
 }
 
 
-function createTimer(metadata)
+function DEPRECATED_createTimer(metadata)
 {
   let params = {};
   params.type = 'timer'
@@ -135,7 +135,7 @@ function createTimer(metadata)
 }
 
 
-function createDirectStart(metadata)
+function DEPRECATED_createDirectStart(metadata)
 {
   let params = {};
   params.type = 'direct'

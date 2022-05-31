@@ -567,10 +567,28 @@ function createMenu3D(configuration)
                 label:    'call (direct)',
                 function: 'createDirect',                
             },
+
+
+
             {
-                label:    "HTTP",
-                function: "createHttp"                
-            },            
+                label:    'http >',
+                submenu: [
+                    {
+                        label:    'http',
+                        function: 'createHttp'     
+                    },
+                    {
+                        label:    'https',
+                        function: 'createHttps'     
+                    },
+                ]             
+            },
+
+            // {
+            //     label:    "HTTP",
+            //     function: "createHttp"                
+            // },
+
             {
                 label:    'kafka',
                 function: 'createKafka',                

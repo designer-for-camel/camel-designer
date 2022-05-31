@@ -100,6 +100,10 @@ AFRAME.registerComponent('uri', {
         return this.dataFormatType
     },
 
+    getScheme: function () {
+        return this.scheme
+    },
+
     getTarget: function () {
         //only if component has initialised we can return a value
         //because the component loads asynchronously, the config panel may first attempt to get the value before the component is ready 

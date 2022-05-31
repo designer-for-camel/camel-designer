@@ -202,10 +202,19 @@ function createRouteDefinitions(routes)
             //we update the ID of the empty default route in the scene ('route1')
             updateRouteId(getSelectedRoute(), route.id);
         }
-        else
+        else //otherwise we create a new route
         {
-            //otherwise we create a new route
-            newRoute(route.id);
+            //check route ID already is in use
+            let used = sceneRoutes.querySelector("[route]#"+route.id)
+
+            if(used){
+                //we don't reuse it, a new id will be generated
+                newRoute(route.id+"-bis")
+            }
+            else{
+                //safe to use the id given 
+                newRoute(route.id);
+            }
         } 
     
         //obtain FROM definition
@@ -216,10 +225,10 @@ function createRouteDefinitions(routes)
 
         switch(type) {
             case 'timer':
-                createTimer({definition: definition});
+                createTimer(definition);
                 break;
             case 'direct':
-                createDirectStart({definition: definition});
+                createDirectStart(definition);
                 break;
             case 'kafka':
                 createKafkaStart(definition);
@@ -362,7 +371,10 @@ function createActivityFromSource(type, delay, definition, lastAction) {
 
 
         case 'http':
-            return createActivityDelayed(createHttp, delay, definition, lastAction);
+            return createActivityDelayed(createHttp,  delay, definition, lastAction);
+        case 'https':
+            return createActivityDelayed(createHttps, delay, definition, lastAction);
+    
 
         case 'pipeline':
 

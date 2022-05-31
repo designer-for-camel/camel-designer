@@ -1016,24 +1016,16 @@ let configObj = getActiveActivity()
           let option;
 
           // obtail all 'from direct' activities
-          let directs = document.evaluate('//a-sphere[@start and @processor-type = "direct"]', document, null, XPathResult.ANY_TYPE, null);
-
-          //helpers
-          let allDirects = [];
-          let thisNode = directs.iterateNext();
-
-          while(thisNode) {
-            allDirects.push(thisNode.querySelector('.uri').getAttribute('value'));
-            thisNode = directs.iterateNext();
-          };
+          // let directs = document.evaluate('//a-sphere[@start and @processor-type = "direct"]', document, null, XPathResult.ANY_TYPE, null);
+          let directs = document.getElementById('route-definitions').querySelectorAll('a-sphere[start][direct]')
 
           //populate options with directs
-          allDirects.forEach(item => {
+          for(let i=0; i<directs.length; i++){
             option = document.createElement('option');
-            option.value = item;
-            option.innerHTML = item;   
-            list.appendChild(option);
-          });
+            option.value = directs[i].components.uri.getTarget();
+            option.innerHTML = directs[i].components.uri.getTarget()  
+            list.appendChild(option);      
+          }
       }
 
       // TODO clean this, and give function a good name
