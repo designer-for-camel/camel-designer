@@ -714,7 +714,7 @@ function createDirectStart(definition)
 
 function createTimer(definition)
 {
-    let snippet = '<from uri="timer:'+getUniqueID('timer')+'"/>'
+    let snippet = '<from uri="timer:'+getUniqueID('timer')+'?period=5000"/>'
     definition = definition || new DOMParser().parseFromString(snippet, "text/xml").documentElement
     
     let timer = createGenericEndpointFrom({definition: definition})

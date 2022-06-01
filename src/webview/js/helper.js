@@ -638,9 +638,13 @@ function autoDetectCamelSettings(source)
   {
     camelSourceEnvelope = CAMEL_SOURCE_ENVELOPE.routeContext
   }
-  else if(source.includes('<'+CAMEL_SOURCE_ENVELOPE.camelK+' '))
+  else if(source.includes('<'+CAMEL_SOURCE_ENVELOPE.routes+' '))
   {
-    camelSourceEnvelope = CAMEL_SOURCE_ENVELOPE.camelK
+    camelSourceEnvelope = CAMEL_SOURCE_ENVELOPE.routes
+  }
+  else if(source.includes('<'+CAMEL_SOURCE_ENVELOPE.rests+' '))
+  {
+    camelSourceEnvelope = CAMEL_SOURCE_ENVELOPE.rests
   }
   else{
     camelSourceEnvelope = CAMEL_SOURCE_ENVELOPE.camelContext

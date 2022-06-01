@@ -23,6 +23,9 @@ function createRestGroup(definition)
     //when a group is created, all REST buttons should be active
     enableRestButtons(true);
 
+    //determines UI elements to be on/off
+    evaluateUIsettings()
+
     //now we're done, we switch back on, and we sync.
     // syncEditorEnabled = true;
     syncEditor();
@@ -327,15 +330,25 @@ function attachDirect(restMethod, yPos, definition)
   let activity = createDirectActivity({scale: scale, definition: definition});
   // let activity = createDirect({scale: scale});
 
+
+  //HACK: hybrid/dual URI handling
+  //since split of REST/ROUTES in Camel Quarkus...
+  //we've added the uri component but kept the old implementation as well
+  activity.setAttribute('uri', {position: "0 -0.6 0", configMethod: [updateConfigEndpointTo]})
   if(definition)
   {
     //updates the target route it points to
-    activity.firstChild.setAttribute("value", definition.getAttribute('uri').substring(7));
+    if(isCamelQuarkus()){
+      activity.components.uri.setDefinition(definition)
+    }
+    else{
+      activity.firstChild.setAttribute("value", definition.getAttribute('uri').substring(7));
+    }
   }
 
   //reposition label (to fit better)
   // activity.querySelector("#routeLabel").setAttribute('position', {x: 0, y: -.5, z: 0});
-  activity.querySelector(".uri").setAttribute('position', {x: 0, y: -.5, z: 0});
+  activity.querySelector(".uri").setAttribute('position', {x: 0, y: -.6, z: 0});
   
   //set relative position
   activity.setAttribute('position', {x: 2, y: yPos, z: 0});
@@ -421,8 +434,22 @@ function selectRestActivity(activity)
 
   if(type == 'direct')
   {
-    let config = switchConfigPane('newDirect');
-    updateConfigDirect(null,activity);
+    //HACK: hybrid/dual URI handling
+    //since split of REST/ROUTES in Camel Quarkus...
+    //we've added the uri component but kept the old implementation as well
+    if(isCamelQuarkus()){
+      //free form configurator to type in target (in Camel K, rests/routes are split)
+      switchConfigPane("config-endpoint-to");
+      updateConfigEndpointTo(activity);
+    }
+    else{
+      //original configurator with target selector
+      switchConfigPane('newDirect');
+      if(activity.components.uri){
+        activity.components.uri.setTarget("")
+      }
+      updateConfigDirect(null,activity);
+    }
   }
   else
   {

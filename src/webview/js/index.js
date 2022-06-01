@@ -62,7 +62,8 @@
       const CAMEL_SOURCE_ENVELOPE = {
         camelContext: "camelContext",
         routeContext: "routeContext",
-        camelK: "routes"
+        routes: "routes",
+        rests: "rests"
       };
 
       //helper variables
@@ -75,7 +76,7 @@
       {
         setCamelVersion3();
         setCamelNamespaceSpring();
-        camelSourceEnvelope = CAMEL_SOURCE_ENVELOPE.camelK
+        camelSourceEnvelope = CAMEL_SOURCE_ENVELOPE.routes
       }
 
       //initialises settings for Camel K development
@@ -83,7 +84,8 @@
       {
         setCamelVersion3();
         setCamelNamespaceSpring();
-        camelSourceEnvelope = CAMEL_SOURCE_ENVELOPE.camelK
+        camelSourceEnvelope = CAMEL_SOURCE_ENVELOPE.routes
+        evaluateUIsettings()
         syncEditor()
       }
 
@@ -93,6 +95,7 @@
         setCamelVersion3()
         setCamelNamespaceSpring()
         camelSourceEnvelope = CAMEL_SOURCE_ENVELOPE.camelContext
+        evaluateUIsettings()
         syncEditor()
       }
 
@@ -102,6 +105,7 @@
         setCamelVersion2()
         setCamelNamespaceSpring()
         camelSourceEnvelope = CAMEL_SOURCE_ENVELOPE.camelContext
+        evaluateUIsettings()
         syncEditor()
       }
 
@@ -111,12 +115,23 @@
         setCamelVersion2()
         setCamelNamespaceBlueprint()
         camelSourceEnvelope = CAMEL_SOURCE_ENVELOPE.camelContext
+        evaluateUIsettings()
         syncEditor()
+      }
+
+      function isCamelQuarkus()
+      {
+        return (camelSourceEnvelope == CAMEL_SOURCE_ENVELOPE.routes || camelSourceEnvelope == CAMEL_SOURCE_ENVELOPE.rests)
       }
 
       function getCamelSourceEnvelope()
       {
         return camelSourceEnvelope
+      }
+
+      function setCamelSourceEnvelope(envelope)
+      {
+        camelSourceEnvelope = envelope
       }
 
       //returns the attribute name to use of setHeader
@@ -372,6 +387,7 @@
         let numAsyncActivities = parsed.querySelectorAll('to:not([uri^=direct],[uri^=atlas],[uri^=dataformat]),toD:not([uri^=direct],[uri^=atlas],[uri^=dataformat])').length
         
         //case when source code contains activities requiring async loading
+        //i.e. activities with mappings
         if(numAsyncActivities>0){
 
           console.log("async activities: "+numAsyncActivities)
@@ -464,6 +480,48 @@
           element = document.getElementsByClassName("bRest");
           element[0].style.opacity = opacity;
           element[0].firstChild.disabled = !enabled;
+      }
+  
+      //toggles REST button ON/OFF in the UI interface
+      function enableRestFunctionality(enabled)
+      {
+        let opacity = .2;
+
+        if(enabled)
+        {
+          opacity = .5;
+        }
+
+        element = document.getElementsByClassName("bRest");
+        element[0].style.opacity = opacity;
+        element[0].firstChild.disabled = !enabled;
+      }
+
+      //toggles REST button ON/OFF in the UI interface
+      function evaluateUIsettings()
+      {
+        let rests  = (document.querySelector('#rest-definitions').children.length > 0)
+        let routes = (document.querySelectorAll('#route-definitions > * > [start]').length > 0)
+
+        if(isCamelQuarkus()){
+          if(routes){
+            enableNavigationButtons(true)
+            enableRestFunctionality(false)
+            enableRestButtons(false)
+            viewRouteDefinitions()
+            setCamelSourceEnvelope(CAMEL_SOURCE_ENVELOPE.routes)
+          }
+          else if(rests){
+            enableNavigationButtons(false)
+            enableRestFunctionality(true)
+            // viewRestDefinitions()
+            setCamelSourceEnvelope(CAMEL_SOURCE_ENVELOPE.rests)
+          }
+        }
+        else{
+          enableNavigationButtons(true)
+          enableRestFunctionality(true)
+        }
       }
 
       //toggles buttons ON/OFF in the UI interface
@@ -1623,7 +1681,7 @@ let configObj = getActiveActivity()
         //   return;
         // }
 
-
+        evaluateUIsettings()
 
         //REST elements have their own switch (to better manage different Designer views)
         if(isRestElement(activity))

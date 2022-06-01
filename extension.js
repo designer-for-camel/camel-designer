@@ -81,7 +81,7 @@ function activate(context) {
       console.log('adding message handler');
       let disposableMessageReceiver = currentPanel.webview.onDidReceiveMessage(
         message => {
-          // console.log('got message !!');
+          // console.log('got message: '+message.command);
 
           switch (message.command) {
 
@@ -109,7 +109,7 @@ function activate(context) {
                   else if(docText.includes("<blueprint ")){
                     codeType = camel.BLUEPRINT
                   }
-                  else if(docText.includes("<routes ")){
+                  else if(docText.includes("<routes ") || docText.includes("<rests ") ){
                     codeType = camel.K
                   }
                   else{
@@ -117,7 +117,7 @@ function activate(context) {
                   }
 
                   // case [X-to-CamelK] scenario
-                  if(message.payload.envelope == "routes"){
+                  if(message.payload.envelope == "routes" || message.payload.envelope == "rests"){
 
                     //For current Camel K code, header flags to be preserved
                     if(codeType == camel.K){

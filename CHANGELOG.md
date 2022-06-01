@@ -12,6 +12,7 @@
 - New HTTP/S endpoint using new configuration system
 - All endpoints (to/toD) upgraded to use new configuration system
 - Starting activities 'direct' and 'timer' now configurable.
+- Split of REST and Route definitions for Camel Quarkus base code.
 
 
 ## 0.10.0

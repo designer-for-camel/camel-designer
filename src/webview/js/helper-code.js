@@ -109,8 +109,13 @@ function loadSourceCode(camelContextImport, parsedCode)
     //create routes
     createRouteDefinitions(contextRoutes)
 
-    //ensures buttons are set to defaults, and camera shows routes
-    viewRouteDefinitions()
+    //ensures buttons are set to defaults, and camera shows rests/routes
+    if(getCamelSourceEnvelope() == CAMEL_SOURCE_ENVELOPE.rests){
+        viewRestDefinitions()
+    }
+    else{
+        viewRouteDefinitions()
+    }
 }
 
 //Creates REST definitions
@@ -543,20 +548,45 @@ function getCamelSource()
 
 function renderCamelContext(mycode) {
 
-    let streamCache =  ' streamCache="true"'
+    //obtain count of rest and route elements
+    let rests  = (document.querySelector('#rest-definitions').children.length > 0)
+    let routes = (document.querySelectorAll('#route-definitions > * > [start]').length > 0)
 
-    if(getCamelSourceEnvelope() == CAMEL_SOURCE_ENVELOPE.camelK){
-        streamCache = ''
+    //Camel Quarkus splits RESTs and ROUTEs in different files
+    if(isCamelQuarkus()){
+
+      //if we have routes, we render ROUTES only
+      //rests are ignored
+      if(routes){
+
+        mycode.text +=  '<routes id="camel" '+getCamelNamespace()+'>\n\n'
+        mycode.tab += '  '
+        renderCamelRoutes(mycode);
+        mycode.tab = mycode.tab.slice(0, -2);
+        mycode.text +=  '</routes>'
+      }
+      //if there are no routes, we render RESTS only
+      else if(rests){    
+        mycode.text +=  '<rests id="camel" '+getCamelNamespace()+'>\n\n'
+        mycode.tab += '  '
+        renderCamelRestDsl(mycode);
+        mycode.tab = mycode.tab.slice(0, -2);
+        mycode.text +=  '</rests>'
+      }
     }
-
-    mycode.text +=  '<'+getCamelSourceEnvelope()+' id="camel" '+getCamelNamespace()+streamCache+'>\n\n'
-    mycode.tab += '  '
-
-    renderCamelRestDsl(mycode);
-    renderCamelRoutes(mycode);
-
-    mycode.tab = mycode.tab.slice(0, -2);
-    mycode.text +=  '</'+getCamelSourceEnvelope()+'>'
+    //otherwise we render both RESTS and ROUTES
+    else{
+        let streamCache =  ' streamCache="true"'
+    
+        mycode.text +=  '<'+getCamelSourceEnvelope()+' id="camel" '+getCamelNamespace()+streamCache+'>\n\n'
+        mycode.tab += '  '
+    
+        renderCamelRestDsl(mycode);
+        renderCamelRoutes(mycode);
+    
+        mycode.tab = mycode.tab.slice(0, -2);
+        mycode.text +=  '</'+getCamelSourceEnvelope()+'>'
+    }
 }
 
 
@@ -570,8 +600,8 @@ function renderCamelRestDsl(mycode) {
 
     while (thisNode) {
 
-        //only once
-        if(!restConfiguration)
+        //only once (if not Quarkus)
+        if(!restConfiguration && !isCamelQuarkus())
         {
             mycode.text +=  mycode.tab+'<restConfiguration component="servlet" apiContextPath="/openapi.json" contextPath="camel" apiContextRouteId="rest1"/>\n\n';
             // mycode.text +=  mycode.tab+'<rest path="/" id="'+thisNode.id+'">\n';
@@ -600,8 +630,16 @@ function renderCamelRestDsl(mycode) {
                 mycode.tab += '  '
 
                 let direct = getRestMethodDirectActivity(value);
-                mycode.text += mycode.tab+'<to uri="direct:'+direct.querySelector(".uri").getAttribute('value')+'" id="'+direct.id+'"/>\n'
-
+                
+                //this is a temporary hack
+                //we're using two different implementation approaches for 'direct' elements
+                //we should really have one only
+                if(isCamelQuarkus()){
+                    mycode.text += mycode.tab+'<to uri="direct:'+direct.components.uri.getTarget()+'" id="'+direct.id+'"/>\n'
+                }
+                else{
+                    mycode.text += mycode.tab+'<to uri="direct:'+direct.querySelector(".uri").getAttribute('value')+'" id="'+direct.id+'"/>\n'
+                }
                 mycode.tab = mycode.tab.slice(0, -2);
                 mycode.text +=  mycode.tab+'</'+value.getAttribute("method")+'>\n'
             }
