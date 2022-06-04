@@ -28,6 +28,23 @@ AFRAME.registerComponent('double-click', {
 
     onDoubleClick: function() {
 
+        //ignore double-click events for REST elements on Camel Quarkus:
+        //REST and ROUTE definitions are split, we can't jump from one file definition to another
+        if(isRestElement(this.el) && isCamelQuarkus()){
+            return
+        }
+
+        //to switch route:
+        // 1) obtain the target 'uri' the direct activity points to
+        // 2) find the route that contains the direct (target)
+        let targetUri = this.el.querySelector(".uri").getAttribute('value')
+        let routeId = findRouteIdFromDirectUri(targetUri)
+
+        //ignore direct elements not being properly configured
+        if(!routeId){
+            return
+        }
+
         // var camera = document.getElementById("main-camera");
         var camera = document.getElementById("rig");
 
@@ -39,12 +56,6 @@ AFRAME.registerComponent('double-click', {
 
           //delete animation
           this.removeAttribute('animation');
-
-          //to switch route:
-          // 1) obtain the target 'uri' the direct activity points to
-          // 2) find the route that contains the direct (target)
-          let targetUri = getSelectedActivityPrimary().querySelector(".uri").getAttribute('value')
-          let routeId = findRouteIdFromDirectUri(targetUri)
 
           //jump to route
           nextRoute(routeId);

@@ -57,6 +57,21 @@ AFRAME.registerComponent('button', {
 
         this.el.appendChild(button)
     },
+    setEnabled: function (enabled) {
+
+        this.data.enabled = enabled
+
+        //enable interaction ON/OFF
+        if(this.data.enabled){
+            this.el.firstChild.classList.add('interactive')
+        }
+        else{
+            this.el.firstChild.classList.remove('interactive')
+        }
+
+        //switch ON/OFF button's visibility
+        this.el.firstChild.setAttribute('visible', this.data.enabled)
+    },
     update: function (oldData) {
 
         //at creation time there is no data, so we ignore the invocation
@@ -66,17 +81,7 @@ AFRAME.registerComponent('button', {
 
         //if 'enabled' did change        
         if(this.data.enabled != oldData.enabled){
-
-            //enable interaction ON/OFF
-            if(this.data.enabled){
-                this.el.firstChild.classList.add('interactive')
-            }
-            else{
-                this.el.firstChild.classList.remove('interactive')
-            }
-
-            //switch ON/OFF button's visibility
-            this.el.firstChild.setAttribute('visible', this.data.enabled)
+            this.setEnabled(this.data.enabled)          
         }
 
         //if 'enabled' did change        

@@ -3315,9 +3315,10 @@ function updateAtlasMapList(admlist, newadm, activityId)
     //we obtain the dropdown element
     let list = form.querySelector('a-dropdown')
 
-    //the 'New' buttom is OFF by default. We switch ON when working with VSCode 
-    form.querySelectorAll('a-button')[0].setAttribute('enabled', true)
-    form.querySelectorAll('a-button')[1].setAttribute('enabled', true)
+    //the 'New' and 'Edit' buttons are OFF by default. We switch them ON when working with VSCode 
+    let buttons = form.querySelectorAll('a-button')
+    buttons[0].components.button.setEnabled(true)
+    buttons[1].components.button.setEnabled(true)
 
     //set default list if none passed (when there is no interaction with the VS extension)
     admlist = admlist || [
@@ -3387,6 +3388,12 @@ function updateAtlasMapList(admlist, newadm, activityId)
         //ADM file the activity is using
         list.components.dropdown.setValue(activity.components.uri.getTarget())
     }
+
+    //the form keeps track of all elements that are interactive, and swithes them on/off during its lifecycle
+    //Above, 2 new buttons have been activated, unsettling the state of the form.
+    //Calling the setActive method will recover its stable state. 
+    form = form.parentElement
+    form.components.form.setActive(form.getAttribute('active') == "true")
 }
 
 //this function opens a documentation URL.

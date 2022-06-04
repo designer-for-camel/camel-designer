@@ -20,20 +20,21 @@ AFRAME.registerComponent('form', {
       helpButton.setAttribute("enabled", "false")
 
       //we append it to the round-plane
-      this.el.children[0].appendChild(helpButton)   
-
-//<a-button value="?" width=".3" wrapcount="2" position=".35 1.8 0" onclick="openDocumentation()"></a-button>
-            
-      //keep record of all interactive elements
-      //this.interactiveElements = Array.from(this.el.querySelectorAll('.interactive'))
-      //this.setActive(this.data.active)
+      this.el.children[0].appendChild(helpButton)
     },
 
     setActive: function(active){
       if(active){
-        this.interactiveElements.forEach(element => {
-          element.classList.add('interactive')
-        });
+        //if there is a list of inactivated elements 
+        if(this.inactiveElements){
+          //make them interactive again
+          this.inactiveElements.forEach(element => {
+            element.classList.add('interactive')
+          });
+
+          //set to null
+          this.inactiveElements = null
+        }
 
         //hack: make '?' (help) button also to be interactive
         //on initialisation, the query to find interactive elements does not find the help button
@@ -41,14 +42,32 @@ AFRAME.registerComponent('form', {
         this.el.children[0].firstElementChild.setAttribute("enabled", "true")
       }
       else{
+        //find elements that are currently interactive
+        let listElements = Array.from(this.el.querySelectorAll('.interactive'))
 
-        //keep record of all interactive elements
-        this.interactiveElements = Array.from(this.el.querySelectorAll('.interactive'))
-
-        //while inactive, ensure elements are not interactive
-        this.interactiveElements.forEach(element => {
+        //make elements not interactive
+        listElements.forEach(element => {
           element.classList.remove('interactive')
         });
+
+        //if there is already a list with deactivated elements
+        if(this.inactiveElements){
+          //merge inactivated elements
+          this.inactiveElements = this.inactiveElements.concat(listElements)
+        }
+        else{
+          //otherwise initialise with new list
+          this.inactiveElements = listElements
+        }
+
+        //keep record of all interactive elements
+        // this.inactiveElements = Array.from(this.el.querySelectorAll('.interactive'))
+
+        //while inactive, ensure elements are not interactive
+        // this.inactiveElements.forEach(element => {
+        //   element.classList.remove('interactive')
+        // });
+
         //ensure any editing on inputs are done
         UiInput.unfocus()
       }

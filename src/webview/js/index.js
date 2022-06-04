@@ -372,6 +372,30 @@
           }
         });
 
+      //Function to troubleshoot the atlasmap activity
+      //simulates a given list of ADMs coming from VSCode
+      function simulateAtlasMapList(){
+        let message =
+        {
+          "command": "atlasmap-files-list",
+          "payload": [
+              {
+                  "label": "demo-mapping.adm"
+              },
+              {
+                  "label": "test-mapping.adm"
+              },
+              {
+                  "label": "response.adm"
+              },
+              {
+                  "label": "request.adm"
+              }
+          ]
+        }
+        updateAtlasMapList(message.payload, message.newadm, message.id)
+      }
+
       function runSourceCodeLoad(message)
       {
         //While building the Visual elements, TextEditor<=>VisualEditor comms need to stop, 
