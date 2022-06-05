@@ -263,6 +263,11 @@ AFRAME.registerComponent('mapping', {
         else{
             syncEditorEnabled = true;
             syncEditor();
+
+            //focus on camera needs to happen after syncEditorEnabled is activated
+            //otherwise the call is ignored
+            setCameraFocus(this.el);
+
             this.el.emit("async-activity-completed");      
         }
 
@@ -307,6 +312,11 @@ AFRAME.registerComponent('mapping', {
             //sync text editor
             syncEditorEnabled = true;
             syncEditor();
+
+            //focus on camera needs to happen after syncEditorEnabled is activated
+            //otherwise the call is ignored
+            setCameraFocus(this.el);
+
             this.el.emit("async-activity-completed");      
         }
     },

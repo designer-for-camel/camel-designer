@@ -1117,6 +1117,12 @@ function createMulticast(definition)
   syncEditorEnabled = true;
   syncEditor();
 
+  //As we're creating many boxes and activities se ensure the camera focusses on the end element
+  //this action requires to happen after syncEditorEnabled is activated
+  //otherwise camera focus action is ignored
+  let end = document.getElementById(multicast.getAttribute('group-end'))
+  switchConfigPaneByActivity(end)
+
   //key of multicast closing activity
   let queryKey = "#"+multicast.getAttribute('group-end')
 
@@ -1334,12 +1340,16 @@ function createMulticast(definition)
           end.object3D.position.z
         )
 
-        setConfigSelector(end)
         redrawAllLinks()
 
         //now we're done, we switch back on, and we sync.
         syncEditorEnabled = true;
         syncEditor();
+
+        //As we're creating many boxes and activities se ensure the camera focusses on the end element
+        //this action requires to happen after syncEditorEnabled is activated
+        //otherwise camera focus action is ignored
+        setConfigSelector(end)
 
         //we return the 'end' activity
         //this is necessary to process nested choices (or an inner choice)

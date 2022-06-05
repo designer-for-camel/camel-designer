@@ -249,7 +249,8 @@
                   }
                   else {
                     //ensure it's a step in the flow (not a mapping element)
-                    activity = activity.closest('[processor-type]')
+                    //has to be an activity or a group
+                    activity = activity.closest('[processor-type],[group-start]')
 
                     viewRouteDefinitions();
                   }
@@ -265,64 +266,6 @@
 
                   //trigger source code load
                   runSourceCodeLoad(message)
-/*
-
-                  //While building the Visual elements, TextEditor<=>VisualEditor comms need to stop, 
-                  syncStartUpEnabled = true;
-
-                  let parsed = parseSourceCode(message.source)
-                  let numAsyncActivities = parsed.querySelectorAll('to,toD').length
-                  
-                  //case when source code contains activities requiring async loading
-                  if(numAsyncActivities>0){
-
-                    console.log("async activities: "+numAsyncActivities)
-
-                    //Async completion handler
-                    let handler = function(){
-                      numAsyncActivities--
-                      console.log("async activity completed: "+numAsyncActivities)
-
-                      if(numAsyncActivities == 0){
-                        console.log("async activities done")
-                        this.removeEventListener('async-activity-completed', handler)
-                        syncStartUpEnabled = false;
-
-                        //Once comms are back...
-                        //obtain available ADMs to list in configuration dropdown
-                        vscodePostMessage('atlasmap-get-adms')
-
-                        //we need to sync the changes, (new ID values may have been applied)
-                        syncEditor();
-                      }
-                    }
-
-                    //obtain top element
-                    let definitions = document.getElementById('route-definitions')
-
-                    //attach event listener
-                    definitions.addEventListener('async-activity-completed', handler.bind(definitions))
-            
-
-                    loadSourceCode(parsed);
-                    loadMetadata(message.metadata);
-                  }
-                  //case when there are no async loading happening
-                  else{
-                    loadSourceCode(parsed);
-                    loadMetadata(message.metadata);
-                    syncStartUpEnabled = false;
-
-                    //Once comms are back...
-                    //obtain available ADMs to list in configuration dropdown
-                    vscodePostMessage('atlasmap-get-adms')
-
-                    //we need to sync the changes, (new ID values may have been applied)
-                    syncEditor();
-                  }
-
-*/
-
                   break;
 
               case 'tracing-activate-poller':
@@ -910,13 +853,6 @@
         document.getElementById('rest-definitions').setAttribute('visible', false)
         document.getElementById('rest-definitions').setAttribute('class', 'not-clickable')
         document.getElementById('rest-definitions').setAttribute('position','0 100 0');
-
-        //obtain camera viewpoint
-        let camera = document.querySelector('#rig')
-
-        //We place the camera at the Y=0 (default) level, unless provided
-        //it helps having smoother Y transitions if camera set in Mapping definitions
-        camera.object3D.position.setY(cameraY)        
       }
 
       //Updates the activity with the configuration settings
@@ -1281,10 +1217,33 @@ let configObj = getActiveActivity()
               //return;
           }
 
-
-          let posActivity = getPositionInScene(activity);
-          
-          setCameraPosition(posActivity)
+          //only allow camera movements when editor is enabled
+          //if editor is disabled, it means source code is being loaded
+          if(syncEditorEnabled){
+            //if the activity is not loaded yet...
+            if(!activity.hasLoaded){
+              //create the asynchronous task to trigger the camera movement
+              let asyncTask = 
+                function(evt){
+                    //when the activity has loaded
+                    if (activity.hasLoaded) {
+                        console.log('async set camera position: '+activity.id);
+                        let posActivity = getPositionInScene(activity);
+                        setCameraPosition(posActivity)
+                        //clean the event listener
+                        activity.removeEventListener('loaded', asyncTask)
+                    }
+                }
+              //create the event listener
+              activity.addEventListener('loaded', asyncTask)
+            }
+            //when loaded
+            else{
+              //trigger standard camera movement 
+              let posActivity = getPositionInScene(activity);
+              setCameraPosition(posActivity)
+            }
+          }
       }
 
 
@@ -1322,6 +1281,11 @@ let configObj = getActiveActivity()
             x: position.x,
             y: position.y,
             z: cameraZ}
+
+          //smoothens transitions when Y difference is too much
+          if(Math.abs(camera.object3D.position.y - target.y) > 10 ){
+            camera.object3D.position.y = target.y
+          }
 
           camera.setAttribute('animation__focus', {property: 'position', dur: '1000', to: target, loop: false, easing: "easeInOutQuad"});
       }

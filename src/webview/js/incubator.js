@@ -283,34 +283,39 @@ function createPredefinedSet(event)
 function createPredefinedSetWithId(id)
 {
     //While building the Visual elements, TextEditor<=>VisualEditor comms need to stop, 
-    syncStartUpEnabled = true;
+    syncEditorEnabled = false
 
     //boolean to decide if set needs to be built
     let createSet = !Boolean(findRouteIdFromDirectUri(id))
 
+    //helper variable
+    let activity = null
+
     switch(id){
         case 'xpath-json-to-xml':
-            createPredefinedSetJson2xmlXpath(createSet)
+            activity = createPredefinedSetJson2xmlXpath(createSet)
             break;
         case 'xpath-xml-to-json':
-            createPredefinedSetXml2jsonXpath(createSet)
+            activity = createPredefinedSetXml2jsonXpath(createSet)
             break;
         case 'df-json-to-xml':
-            createPredefinedSetJson2xmlDataFormat(createSet)
+            activity = createPredefinedSetJson2xmlDataFormat(createSet)
             break;
         case 'df-xml-to-json':
-            createPredefinedSetXml2jsonDataFormat(createSet)
+            activity = createPredefinedSetXml2jsonDataFormat(createSet)
             break;
         
         case 'experiment-1':
-            createPredefinedSetExperiment1(createSet)
+            activity = createPredefinedSetExperiment1(createSet)
             break;
     }
     
 
     //Once finished, we need to sync the changes, (new ID values may have been applied)
-    syncStartUpEnabled = false;
+    syncEditorEnabled = true
     syncEditor();
+
+    switchConfigPaneByActivity(activity)
 }
 
 function findRouteIdFromDirectUri(targetUri)
@@ -350,7 +355,7 @@ function createPredefinedSetJson2xmlXpath(createSet)
 
     let snippet = '<route id="'+uri+'"><from uri="direct:'+uri+'"/><log message="input:\n${body}"/><setBody><simple>&lt;data&gt;${body}&lt;/data&gt;</simple></setBody><setBody><xpath saxon="true">json-to-xml(/data)</xpath></setBody><convertBodyTo type="String"/><log message="output:\n${body}"/></route>'
 
-    createPredefinedSetTemplate(uri, snippet, createSet)
+    return createPredefinedSetTemplate(uri, snippet, createSet)
 }
 
 function createPredefinedSetXml2jsonXpath(createSet)
@@ -359,7 +364,7 @@ function createPredefinedSetXml2jsonXpath(createSet)
 
     let snippet = '<route id="'+uri+'"><from uri="direct:'+uri+'"/><log message="input:\n${body}"/><setBody><xpath saxon="true" resultType="String">xml-to-json(., map { \'indent\' : true() })</xpath></setBody><log message="output:\n${body}"/></route>'
 
-    createPredefinedSetTemplate(uri, snippet, createSet)
+    return createPredefinedSetTemplate(uri, snippet, createSet)
 }
 
 function createPredefinedSetJson2xmlDataFormat(createSet)
@@ -368,7 +373,7 @@ function createPredefinedSetJson2xmlDataFormat(createSet)
 
     let snippet = '<route id="'+uri+'"><from uri="direct:'+uri+'"/><log message="input:\n${body}"/><to uri="dataformat:json-jackson:unmarshal"/><to uri="dataformat:jacksonxml:marshal?prettyPrint=true"/><log message="output:\n${body}"/></route>'
 
-    createPredefinedSetTemplate(uri, snippet, createSet)
+    return createPredefinedSetTemplate(uri, snippet, createSet)
 }
 
 function createPredefinedSetXml2jsonDataFormat(createSet)
@@ -377,7 +382,7 @@ function createPredefinedSetXml2jsonDataFormat(createSet)
 
     let snippet = '<route id="'+uri+'"><from uri="direct:'+uri+'"/><log message="input:\n${body}"/><to uri="dataformat:jacksonxml:unmarshal"/><to uri="dataformat:json-jackson:marshal?prettyPrint=true"/><log message="output:\n${body}"/></route>'
 
-    createPredefinedSetTemplate(uri, snippet, createSet)
+    return createPredefinedSetTemplate(uri, snippet, createSet)
 }
 
 
@@ -387,7 +392,7 @@ function createPredefinedSetExperiment1(createSet)
 
     let snippet = '<route id="'+uri+'"><from uri="direct:'+uri+'"/><log message="trace1"/><log message="trace2"/><log message="trace3"/><log message="trace4"/></route>'
 
-    createPredefinedSetTemplate(uri, snippet, createSet)
+    return createPredefinedSetTemplate(uri, snippet, createSet)
 }
 
 
@@ -412,7 +417,7 @@ function createPredefinedSetTemplate(uri,snippet,createSet)
 
     //we then create a 'direct' activity pointing to the kit just created
     let direct = new DOMParser().parseFromString('<to uri="direct:'+uri+'">', 'application/xml').documentElement
-    createDirect({definition: direct})
+    return createDirect({definition: direct})
 }
 
 function loadExpressionConfiguration(panel, activity)
@@ -1543,15 +1548,15 @@ function createSplit(definition)
     start.setAttribute('expression', {position: "0 -0.7 0", configMethod: [updateConfigSplit]})
     start.components.expression.setDefinition(fullDefinition)
 
-    //As we're creating many boxes and re-positioning, the camera is all over the place
-    //so we reset it where we want it to be 
-    switchConfigPaneByActivity(
-        document.getElementById(splitBox.getAttribute('group-end'))
-    )
+    //now we're done, we switch back on, and we sync.
+    syncEditorEnabled = true;
+    syncEditor();
 
-  //now we're done, we switch back on, and we sync.
-  syncEditorEnabled = true;
-  syncEditor();
+    //As we're creating many boxes and activities se ensure the camera focusses on the end element
+    //this action requires to happen after syncEditorEnabled is activated
+    //otherwise camera focus action is ignored
+    let end = document.getElementById(splitBox.getAttribute('group-end'))
+    switchConfigPaneByActivity(end)
 }
 
 //Creates a Try/Catch code segment
@@ -1751,15 +1756,15 @@ catchStart.components.exceptions.setExceptions(exceptions)
         }
     }
 
-    //As we're creating many boxes and re-positioning, the camera is all over the place
-    //so we reset it where we want it to be 
-    switchConfigPaneByActivity(
-        document.getElementById(tryBox.getAttribute('group-end'))
-    )
+    //now we're done, we switch back on, and we sync.
+    syncEditorEnabled = true;
+    syncEditor();
     
-  //now we're done, we switch back on, and we sync.
-  syncEditorEnabled = true;
-  syncEditor();
+    //As we're creating many boxes and activities se ensure the camera focusses on the end element
+    //this action requires to happen after syncEditorEnabled is activated
+    //otherwise camera focus action is ignored
+    let end = document.getElementById(tryBox.getAttribute('group-end'))
+    switchConfigPaneByActivity(end)
 }
 
 function createButtonReveal()
@@ -2672,18 +2677,15 @@ function defineDataFormatAsOneLiner(definition)
         //setup form configurator for Aggregator
         createAggregatorConfigurator()
 
-        //As we're creating many boxes and re-positioning, the camera is all over the place
-        //so we reset it where we want it to be 
-        switchConfigPaneByActivity(
-            document.getElementById(aggregateBox.getAttribute('group-end'))
-        )
-    
-    //   get3DconfigPanel()
-            // UiInput.setValue(start.components.definition.getValue("strategyRef"))
+        //now we're done, we switch back on, and we sync.
+        syncEditorEnabled = true;
+        syncEditor();
 
-      //now we're done, we switch back on, and we sync.
-      syncEditorEnabled = true;
-      syncEditor();
+        //As we're creating many boxes and activities se ensure the camera focusses on the end element
+        //this action requires to happen after syncEditorEnabled is activated
+        //otherwise camera focus action is ignored
+        let end = document.getElementById(aggregateBox.getAttribute('group-end'))
+        switchConfigPaneByActivity(end)
     }
 
     //creates a 3D panel configurator for the Aggregator EIP

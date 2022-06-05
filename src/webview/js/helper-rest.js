@@ -80,7 +80,7 @@ function createRestGroupBox(definition)
 
     //ATTENTION: this attribute registers the drag & drop behaviour
     box.classList.add('interactive')
-    box.setAttribute('dragndrop','')
+    box.setAttribute('dragndrop','standalone: true')
 
     // var text = document.createElement('a-text');
     var text = createText();
@@ -327,7 +327,7 @@ function attachDirect(restMethod, yPos, definition)
   let scale = {x: .8, y: .8, z: .8};
 
   //create activity
-  let activity = createDirectActivity({scale: scale, definition: definition});
+  let activity = createDirectActivity({scale: scale, definition: definition, dragndrop: false});
   // let activity = createDirect({scale: scale});
 
 
@@ -428,7 +428,9 @@ function selectRestActivity(activity)
   console.log("rest ring created on: "+activity.id);
 
   //this is not working proper
-  setCameraFocus(activity.parentElement);
+  // setCameraFocus(activity.parentElement);
+  //now this seems to work as expected 
+  setCameraFocus(activity)
 
   var type = activity.getAttribute('processor-type');
 
