@@ -82,7 +82,8 @@ function findExpressionVariables(activity)
             let target = activity.firstChild.attributes.value.value
 
             //find direct starting activity
-            let found = document.querySelector("[processor-type=direct][start] > a-text[value="+target+"]")
+            // let found = document.querySelector("[processor-type=direct][start] > a-text[value="+target+"]")
+            let found = document.querySelector("a-sphere[start][direct] > a-text[value="+target+"]")
             
             if(found){ //scan route
                 let route = found.closest('[route]')

@@ -2,18 +2,18 @@
 
 ## 0.X.0
 
-- Fix: smoother 3D input box when blinking. \
-- Fix: WASD controls now always in-sync with camera position
-- Fix: broken detach/attach functionality for some activities now resolved.
-- Fix: Webview disposal revised and corrected.
-- Fix: Prevent duplication of route IDs when loading source code.
 - New navigation controls to move camera in scene with zoom in/out function.
 - Scanning of header/property variables improved (includes parent/child routes)
 - New HTTP/S endpoint using new configuration system
 - All endpoints (to/toD) upgraded to use new configuration system
 - Starting activities 'direct' and 'timer' now configurable.
 - Split of REST and Route definitions for Camel Quarkus base code.
-
+- Fix: smoother 3D input box when blinking. \
+- Fix: WASD controls now always in-sync with camera position
+- Fix: broken detach/attach functionality for some activities now resolved.
+- Fix: Webview disposal revised and corrected.
+- Fix: Prevent duplication of route IDs when loading source code.
+- Fix: Camera movements now acquiring accurate coordinates
 
 ## 0.10.0
 
