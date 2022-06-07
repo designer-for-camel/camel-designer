@@ -12,10 +12,12 @@ Please bear in mind this *VSCode* extension is in 'early-prototype' phase and is
 
 * Easy visual design of processing flows
 * Organise activities and groups with drag & drop
-* REST definitions
+* Configure inputs with drag & drop mapping actions.
+* REST definitions 
 * Click in the text editor to:
   - switch between routes
   - select activities to configure
+* Camera controls to move and Zoom in/out
 * Predefined EIPs (e.g. *Choice* / *Split* / *Aggregator*)
 * DataFormat definitions
 * Error handling with Try/Catch/Finally statements

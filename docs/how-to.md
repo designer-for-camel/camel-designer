@@ -5,7 +5,9 @@ This section describes how to perform some of the most common user actions with 
  - [Getting Started](#getting-started)
  - [Define REST definitions](#define-rest-definitions)
  - [Navigate the code](#navigate-the-code)
+ - [Zoom & pan controls](#zoom--pan-controls)
  - [Organise activities](#organise-activities)
+ - [Work with the inputs/mapping view](#work-with-the-inputsmapping-view)
  - [Work with Groups](#work-with-groups)
  - [Work with Try-Catch blocks](#work-with-try-catch-blocks)
  - [Work with the AtlasMap activity](#work-with-the-atlasmap-activity)
@@ -33,6 +35,9 @@ When starting from scratch and to start defining Camel routes, follow the steps 
 ## Define REST definitions
 
 The visual editor includes a REST designer where you can define groups of REST methods. As you create new REST elements, the tool translates them into Camel REST DSL in the text editor.
+
+> **Attention:** \
+Camel Quarkus based code splits in different source code files REST definitions from Camel route definitions. The tool initialises by default in Camel K mode, allowing you to define Routes or REST only. You can select a different code base (Camel3/Spring/Blueprint) to allow editing of REST and Route definitions simultaneously in the same source code file.
 
 It's important to know that REST definitions represent HTTP entry points to Camel. You can define REST methods such as GET/POST/PUT.
 For each entry point defined (REST operation), Camel Designer links the REST method to a Camel Route that will process the request. REST Camel routes require to have a `'direct'` starting activity.
@@ -77,6 +82,32 @@ The animation below illustrates how to navigate the code by interacting with the
 
 <br>
 
+## Zoom & pan controls
+
+When your Camel process definition includes many activities, you may not see the complete process. You can use the zoom and pan controls to move around with freedom.
+
+There are two ways for users to control the camera in the scene.
+
+1. Using the visual controls (by default located in the bottom left corner):
+    - Click on the directional pointers to move the camera up/down/left/right.
+    - Press <kbd>SHIFT</kbd> to switch the camera movement from an up/down motion to a zoom in/out effect.
+    - To pin the zoom function, press <kbd>SHIFT</kbd> and click the `pin` checkbox.
+    - You can drag & drop the camera controls from the central disc if you prefer to relocate them elsewhere. 
+
+      ![Camera controls](images/readme/vs-extension-nav-control.gif)
+
+
+2. Using the keyboard:
+    - Use the arrow keys <kbd>←</kbd><kbd>↑</kbd><kbd>↓</kbd><kbd>→</kbd> in your keyboard to move the camera around.
+    - To activate the zoom motion, press <kbd>SHIFT</kbd>. Click the pin checkbox if you want to keep the zoom function ON.
+
+    </br>
+
+    > **Attention:** \
+    Your arrow keys may be unresponsive, ensure you click in the background to activate them.
+
+<br>
+
 ## Organise activities
 
 One of the main motivation to use Visual Editors is to gain the ability to intuitively understand processing flows.
@@ -105,6 +136,50 @@ The animation below illustrates how to detach/attach activities:
 
 <br>
 
+## Work with the inputs/mapping view
+
+Certain activities (typically under the `to...` menu) are configured from the inputs (or mapping) view. These activities have a floating button above them. When you click the `inputs` button, the user interface switches to a view with two data trees:
+ - On the left, the source data tree.
+ - On the right, the component to be configured (target tree).
+
+The source data tree (left) is not editable, while the component's data tree (right) allows adding/renaming/mapping/deleting data entries. The target data tree (the component's configuration) contains:
+ - Static fields: they can't be renamed or deleted.
+ - Dynamic fields: they can be created, renamed and deleted. 
+
+<br>
+
+The animation below illustrates how to open and configure the HTTP activity.
+
+![Inputs](images/readme/vs-extension-http-demo.gif)
+
+### Add new fields
+When a <kbd>+</kbd> button is displayed alongside a node in the tree, it means you can create child entries. To add a new field, click the button. The newly created field will be pre-populated with a default value.
+
+### Rename fields
+Non-static fields can be renamed by clicking on them, entering the new name and pressing <kbd>Enter</kbd>. There are some exceptions where fields can't me renamed; special fields like `body` for example are not editable.
+
+### Delete fields
+Non-static fields can be deleted. Hover the mouse pointer over the field's name. A background box will highlight with an <kbd>X</kbd> button you can click to delete the field.
+
+### Configure/Map fields
+The user can set the value of a target field by:
+ - A drag & drop action from a source field to a target field.
+ - By manually editing the target value.
+ - A combination of both.
+ 
+To map a value with a drag & drop action, pick from the source tree:
+ - a process property
+ - a process header
+ - the process's body
+
+and drag it to the target field. This action will set a variable in the field's value, using by default Camel's `Simple` language.
+
+Some fields in the target tree allow the user to select a different language (i.e. xpath/jsonpath) and add/delete language attributes.
+
+To manually edit the field's value, point and click. A white text box will prompt you to enter the new value. When you're done editing, click the black background or any other element on the screen, and the text box will close.
+
+<br>
+
 ## Work with Groups
 
 Certain EIP patterns may contain activities inside a *Group*, for example the *Split* pattern. Visually, these groups are represented in *Camel Designer* as boxes containing activities.
@@ -121,7 +196,7 @@ You can interact with *Groups* in a number of ways to organise activities. In su
 
 The animation below illustrates how to interact with a group of activities:
 
-![Groups](images/readme/vs-extension-groups.gif)  
+![Groups](images/readme/vs-extension-groups.gif)
 
 <br>
 

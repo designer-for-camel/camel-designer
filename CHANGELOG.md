@@ -1,10 +1,11 @@
 # Change Log
 
-## 0.X.0
+## 0.11.0
 
+- New source/target data view to configure/map inputs on target activities (to) 
 - New navigation controls to move camera in scene with zoom in/out function.
 - Scanning of header/property variables improved (includes parent/child routes)
-- New HTTP/S endpoint using new configuration system
+- New HTTP/S endpoint using new configuration view
 - All endpoints (to/toD) upgraded to use new configuration system
 - Starting activities 'direct' and 'timer' now configurable.
 - Split of REST and Route definitions for Camel Quarkus base code.
