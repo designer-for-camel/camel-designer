@@ -395,6 +395,12 @@ function createMenu3D(configuration)
                 label:    'clean headers',
                 function: 'createRemoveHeaders',                
             },
+            {
+                label:    'convert body',
+                function: 'createConvertBodyTo',                
+            },
+
+            
         ]
     }
 

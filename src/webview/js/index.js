@@ -1721,6 +1721,8 @@ let configObj = getActiveActivity()
           enableToButtons(true);
         }
 
+        //helper variable
+        // let pane3D = null
 
         switch(type) {
           case 'log':
@@ -1776,10 +1778,28 @@ case 'catch-start':
               newConfigPane = "ui-config-map-activity";
 
               //obtain 2D/3D pane from its ID
-              let pane = document.getElementById(newConfigPane);
-              pane.setAttribute("active", true)
+              // let pane = document.getElementById(newConfigPane);
+              // pane.setAttribute("active", true)
               break;
-              
+
+
+          case 'convert-body-to':
+            newConfigPane = "ui-config-convert-body";
+
+            //obtain 2D/3D pane from its ID
+            // pane3D = document.getElementById(newConfigPane);
+            // pane3D.setAttribute("active", true)
+            break;
+    
+          case 'remove-headers':
+            newConfigPane = "ui-config-remove-headers";
+
+            //obtain 2D/3D pane from its ID
+            // pane3D = document.getElementById(newConfigPane);
+            // pane3D.setAttribute("active", true)
+            break;
+                
+
           case 'from':
               newConfigPane = "config-endpoint-to";
               updateConfigEndpointTo(activity);

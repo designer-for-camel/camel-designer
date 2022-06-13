@@ -188,6 +188,14 @@ AFRAME.registerComponent('uri', {
         }
         
         if(this.scheme == 'dataformat'){
+
+            //temporary solution...
+            //we should not rely on the outer function
+            //(pending to improve)
+            //this allows to handle different Camel 2/3 versions for the dataformat naming
+            let details = getDataFormatDetails(this.el)
+            this.dataFormatType = details.name
+
             return this.scheme+":"+this.dataFormatType+":"+target+options
         }
 

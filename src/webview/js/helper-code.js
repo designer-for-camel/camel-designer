@@ -339,7 +339,10 @@ function createActivityFromSource(type, delay, definition, lastAction) {
 
         case 'removeHeaders':
             return createActivityDelayed(createRemoveHeaders, delay, definition, lastAction);            
-    
+
+        case 'convertBodyTo':
+            return createActivityDelayed(createConvertBodyTo, delay, definition, lastAction);            
+        
         case 'google-drive':
             return createActivityDelayed(createGoogleDrive, delay, definition, lastAction);
         case 'google-sheets':
@@ -906,6 +909,10 @@ function renderActivity(activity, mycode, iterator) {
         case 'remove-headers':
             mycode.text += mycode.tab+'<removeHeaders pattern="*" id="'+activity.id+'"/>\n'
             break;
+
+        case 'convert-body-to':
+            mycode.text += mycode.tab+'<convertBodyTo type="'+activity.components.definition.getAttributes().type+'" id="'+activity.id+'"/>\n'
+            break;            
 
         case 'dataformat':
             //assumes activity is an endpoint (<to>) and has URI

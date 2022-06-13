@@ -2536,33 +2536,57 @@ function getDataFormatDetails(dataformat)
     let type = dataformat.components.uri.getDataFormat()
     let dir  = dataformat.components.uri.getTarget()
 
+    //helper variable
+    let name = null
+
     switch(type){
         case 'base64':
             if(dir == 'marshal'){
-                return {info:'(String to Base64)', in: 'str', out: 'B64'}
+                return {info:'(String to Base64)', in: 'str', out: 'B64', name: 'base64'}
             }
             else{
-                return {info:'(Base64 to String)', in: 'B64', out: 'str'}
+                return {info:'(Base64 to String)', in: 'B64', out: 'str', name: 'base64'}
             }
-        ;
 
-        case 'jacksonxml':
-            if(dir == 'marshal'){
-                return {info:'(Java to XML)', in: 'Java',   out: 'XML'}
-            }
-            else{
-                return {info:'(XML to Java)', in: 'XML', out: 'Java', }
-            }
-        ;
+        case 'jacksonxml': //camel 2
+        case 'jacksonXml': //camel 3
 
-        case 'json-jackson':
+            name = "jacksonXml"
+
+            if(camelVersion == CAMEL_RELEASE.v2){
+                name = "jacksonxml"
+            }
+
             if(dir == 'marshal'){
-                return {info:'(Java to JSON)', in: 'Java',   out: 'JSON'}
+                return {info:'(Java to XML)', in: 'Java',   out: 'XML', name: name}
             }
             else{
-                return {info:'(JSON to Java)', in: 'JSON', out: 'Java', }
+                return {info:'(XML to Java)', in: 'XML', out: 'Java', name: name}
             }
-        ;
+
+        case 'json-jackson': //camel 2
+        case 'jackson':      //camel 3
+
+            name = "jackson"
+
+            if(camelVersion == CAMEL_RELEASE.v2){
+                name = "json-jackson"
+            }
+
+            if(dir == 'marshal'){
+                return {info:'(Java to JSON)', in: 'Java',   out: 'JSON', name: name}
+            }
+            else{
+                return {info:'(JSON to Java)', in: 'JSON', out: 'Java', name: name}
+            }
+
+        default:
+            if(dir == 'marshal'){
+                return {info:'unknown: (type1 to type2)', in: 'Type1', out: 'Type2', name: type}
+            }
+            else{
+                return {info:'unknown: (type2 to type1)', in: 'Type2', out: 'Type1', name: type}
+            }
     }
 }
 
@@ -3039,10 +3063,67 @@ function createRemoveHeaders(definition)
   text.setAttribute('align', 'center');
   text.setAttribute('side', 'double');
 
+  //add definition component
+  activity.setAttribute('definition', null)
+  activity.components.definition.setDefinition(definition.definition)
+
+  //label to display pattern configuration
+  text = createText();
+  activity.appendChild(text);
+  text.setAttribute('value', activity.components.definition.getAttributes().pattern);
+  text.setAttribute('color', 'white');
+  text.setAttribute('align', 'center');
+  text.setAttribute('side', 'double');
+  text.setAttribute('position', '0 -.7 0');
+
+  //configurator
+  createRemoveHeadersConfigurator()
+
   goLive(activity);
 
   return activity
 }
+
+
+//creates a configurator for the 3D panel RemoveHeaders
+//this function is intimately related to the 3D Form definition
+function createRemoveHeadersConfigurator(){
+
+    let form = document.getElementById('ui-config-remove-headers')
+
+    //if the form already has its configurator, nothing to do
+    if(form.components.form.configurator){
+        return
+    }
+
+    //define the activity's configurator
+    let configurator = {configure: function(form) {
+
+        //here 'this' is the 1st argument from the dynamic call 'configure.call(activity, form)'
+        let activity = this
+
+        //get UI elements
+        let input   = form.querySelector('a-textinput')
+
+        //obtain body type
+        let pattern = activity.components.definition.getAttributes().pattern
+
+        //set input's callback
+        input.components.textinput.setCallback(pattern, 14, function(text){
+
+            //update definition
+            activity.components.definition.setAttribute("pattern", text)
+
+            //update text label
+            activity.children[1].setAttribute('value', text)
+        }.bind(this))
+        } 
+    }       
+
+    //set the configurator in the form
+    form.components.form.setConfigurator(configurator)
+}
+
 
 //function invoked my 'window resize' events
 //certain UI element's position needs to be recalculated (i.e Menus)
@@ -4154,4 +4235,86 @@ function createGenericEndpointTo(definition)
     }.bind(this))
 
     return activity
+}
+
+
+
+function createConvertBodyTo(definition)
+{
+  //default definition if not provided
+  definition = definition || {definition: new DOMParser().parseFromString('<convertBodyTo type="String"/>', "text/xml").documentElement}
+
+  // let activity = createActivity({type: 'body', definition: definition});
+  definition.type = 'convert-body-to'
+  let activity = createActivity(definition);
+
+  //this is the label inside the geometry (activity descriptor)
+  var text = createText();
+  activity.appendChild(text);
+  text.setAttribute('value', 'convert\nbody to');
+  text.setAttribute('color', 'white');
+  text.setAttribute('align', 'center');
+  text.setAttribute('side', 'double');
+
+  //add definition component
+  activity.setAttribute('definition', null)
+  activity.components.definition.setDefinition(definition.definition)
+
+  //label to display type configuration
+  text = createText();
+  activity.appendChild(text);
+  text.setAttribute('value', activity.components.definition.getAttributes().type);
+  text.setAttribute('color', 'white');
+  text.setAttribute('align', 'center');
+  text.setAttribute('side', 'double');
+  text.setAttribute('position', '0 -.7 0');
+
+  //configurator
+  createConvertBodyToConfigurator()
+
+  goLive(activity);
+
+  return activity
+}
+
+
+//creates a configurator for the 3D panel ConvertBodyTo
+//this function is intimately related to the 3D Form definition
+function createConvertBodyToConfigurator(){
+
+    let form = document.getElementById('ui-config-convert-body')
+
+    //if the form already has its configurator, nothing to do
+    if(form.components.form.configurator){
+        return
+    }
+
+    //define the activity's configurator
+    let configurator = {configure: function(form) {
+        console.log("configuring CovertBodyTo")
+
+        //here 'this' is the 1st argument from the dynamic call 'configure.call(activity, form)'
+        let activity = this
+
+        //get UI elements
+        let input   = form.querySelector('a-textinput')
+
+        //obtain body type
+        let bodyType = activity.components.definition.getAttributes().type
+
+        //set input's callback
+        input.components.textinput.setCallback(bodyType, 128, function(text){
+            console.log("ConvertBodyTo got the text: "+text)
+
+            //update definition
+            activity.components.definition.setAttribute("type", text)
+
+            //update text label
+            activity.children[1].setAttribute('value', text)
+        }.bind(this))
+        } 
+    }       
+
+    //set the configurator in the form
+    form.components.form.setConfigurator(configurator)
 }

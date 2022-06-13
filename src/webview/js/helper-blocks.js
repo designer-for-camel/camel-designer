@@ -1886,7 +1886,7 @@ function createDataformat(definition)
     label.setAttribute('color', 'white');
     label.setAttribute('align', 'center');
     label.setAttribute('side', 'double');
-    label.setAttribute('value', details['info'])
+    label.setAttribute('value', details.info)
     label.setAttribute('scale', '.8 .8 .8')
     label.object3D.position.set(0, -.7, 0)
 

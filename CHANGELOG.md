@@ -1,5 +1,12 @@
 # Change Log
 
+## 0.11.1
+
+- Introduced action to convert body type (in Camel `<convertBodyTo/>`)
+- Support for Camel 2/3 DataFormats naming (i.e. `json-jackson` and `jackson`)
+- Allow for unknown (to Camel Designer) DataFormat names when importing from source code.
+- (pending) provide link to open issue in github
+
 ## 0.11.0
 
 - New source/target data view to configure/map inputs on target activities (to) 
