@@ -262,7 +262,7 @@
                   //console.log("got source code: "+ message.source);
 
                   //attempt to detect Camel settings to use
-                  autoDetectCamelSettings(message.source)
+                  // autoDetectCamelSettings(message.source)
 
                   //trigger source code load
                   runSourceCodeLoad(message)
@@ -343,6 +343,9 @@
       {
         //While building the Visual elements, TextEditor<=>VisualEditor comms need to stop, 
         syncStartUpEnabled = true;
+
+        //attempt to detect Camel settings to use
+        autoDetectCamelSettings(message.source)
 
         let parsed = parseSourceCode(message.source)
         // let numAsyncActivities = parsed.querySelectorAll('to,toD').length

@@ -45,6 +45,7 @@
     <script src="${srcPathScheme}/src/webview/js/mapper/maptree.js"></script>
     <script src="${srcPathScheme}/src/webview/js/mapper/mapping.js"></script>
     <script src="${srcPathScheme}/src/webview/js/ui/textarea.js"></script>
+    <script src="${srcPathScheme}/src/webview/js/ui/textinput.js"></script>
 
  
     <script src="${srcPathScheme}/src/webview/js/ui/utils.js"></script>
@@ -479,6 +480,26 @@
             <a-plane-rounded position=".075 -.077 0" id="3d-config-activity" opacity=".5" width="1.8" height=".19" radius="0.05" color="grey">
             </a-plane-rounded>
             <a-entity scale=".3 .3 .3" position=".075 -.077 0" >
+              <a-button value="delete" position="5.3 0.3 0" onclick="deleteConfigActivity()"></a-button>      
+            </a-entity>
+          </a-form>
+
+          <a-form handgrip="active: false" id="ui-config-convert-body" position="-1 -1.25 -2" active="false">
+            <a-plane-rounded position=".075 -.1 0" id="3d-config-activity" opacity=".5" width="1.8" height=".19" radius="0.05" color="grey">
+            </a-plane-rounded>
+            <a-entity scale=".3 .3 .3" position=".075 -.1 0" >
+              <a-text scale="1 1 1" position=".8 0.32 .01" value="to type:"></a-text>
+              <a-textinput scale="2.5 2.5 2.5" position="3 0.3 .01" cols="20" content="somethingString" hide="false"></a-textinput>
+              <a-button value="delete" position="5.3 0.3 0" onclick="deleteConfigActivity()"></a-button>      
+            </a-entity>
+          </a-form>
+
+          <a-form handgrip="active: false" id="ui-config-remove-headers" position="-1 -1.25 -2" active="false">
+            <a-plane-rounded position=".075 -.1 0" id="3d-config-activity" opacity=".5" width="1.8" height=".19" radius="0.05" color="grey">
+            </a-plane-rounded>
+            <a-entity scale=".3 .3 .3" position=".075 -.1 0" >
+              <a-text scale="1 1 1" position=".8 0.32 .01" value="Pattern:"></a-text>
+              <a-textinput scale="2.5 2.5 2.5" position="3 0.3 .01" cols="20" content="somethingString" hide="false"></a-textinput>
               <a-button value="delete" position="5.3 0.3 0" onclick="deleteConfigActivity()"></a-button>      
             </a-entity>
           </a-form>

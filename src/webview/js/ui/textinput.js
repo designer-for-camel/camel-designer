@@ -147,8 +147,9 @@ this.el.addEventListener('input-origin-changed', this._updateCursorGeometry.bind
 
 
       //add listeners
-      this.textarea.addEventListener('keypress',  this.currentbinding);
-      this.textarea.addEventListener('focusout', this.currentbinding);
+      this.textarea.addEventListener('keypress',           this.currentbinding);
+      this.textarea.addEventListener('focusout',           this.currentbinding);
+            this.el.addEventListener('input-text-changed', this.currentbinding);
 
     },
     focusout: function () {
@@ -157,8 +158,8 @@ this.el.addEventListener('input-origin-changed', this._updateCursorGeometry.bind
         this.hasFocus = false
         this.blinkEnabled = false
       
-        //remove keypress listener
-        //the 'focusout' event will be processed and then will remove the focusout listener
+        //remove keypress listener only
+        //the 'focusout' event will be processed and then will remove the other registered listeners
         this.textarea.removeEventListener('keypress',  this.currentbinding)
     },
     _initTextarea: function () {
@@ -499,9 +500,6 @@ this.el.addEventListener('input-origin-changed', this._updateCursorGeometry.bind
         // callback(this.textarea.value)
         // e.preventDefault();
       }
-      else if(e.keyCode){
-        callback(this.textarea.value + String.fromCharCode(e.keyCode))
-      }
       //when the user clicks somewhere else
       else if(e.type == "focusout"){
 
@@ -512,9 +510,16 @@ this.el.addEventListener('input-origin-changed', this._updateCursorGeometry.bind
         // better tp invoke callback after hiding textarea.
         callback(this.textarea.value)
 
-        //remove listener
-        this.textarea.removeEventListener('focusout', this.currentbinding)
+        //remove remaining listeners
+        this.textarea.removeEventListener('focusout',           this.currentbinding)
+              this.el.removeEventListener('input-text-changed', this.currentbinding);
       }
+      //when text changes, invoke callback
+      else if(e.type == "input-text-changed"){
+        callback(this.textarea.value)
+        syncEditor()
+      }
+
     },
 
     //deactivates and hides the textarea

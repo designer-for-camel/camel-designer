@@ -3504,6 +3504,19 @@ function openDocumentation(code){
     }
 }
 
+//this function opens a documentation URL.
+function reportBug(){
+
+    let url = "https://github.com/designer-for-camel/camel-designer/issues/new?assignees=&labels=&template=bug_report.md&title="
+ 
+    if(runningAsVscodeWebview()){
+        vscodePostMessage('documentation-url', {url: url})
+    }
+    else{
+        window.open(url)
+    }
+}
+
 
 function createHttps(definition)
 {

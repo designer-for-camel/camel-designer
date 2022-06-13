@@ -966,6 +966,10 @@ function createMenu3Dcontrol()
         enabled: true, 
         menu: [
             {
+                label:    'report bug',
+                function: 'reportBug',                
+            },
+            {
                 label:    'how to...',
                 function: 'openDocumentation',                
             },

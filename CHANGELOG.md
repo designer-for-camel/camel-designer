@@ -2,10 +2,12 @@
 
 ## 0.11.1
 
-- Introduced action to convert body type (in Camel `<convertBodyTo/>`)
-- Support for Camel 2/3 DataFormats naming (i.e. `json-jackson` and `jackson`)
+- Introduced activity to convert body type (in Camel `<convertBodyTo/>`).
+- Added 3D configuration pane for action `removeHeaders`.
+- Support for Camel 2/3 DataFormats naming (i.e. `json-jackson` and `jackson`).
 - Allow for unknown (to Camel Designer) DataFormat names when importing from source code.
-- (pending) provide link to open issue in github
+- Added entry in Help menu to report a bug in github.
+- Fix: better Camel version auto-detection when loading source code.
 
 ## 0.11.0
 
@@ -60,7 +62,8 @@
 - Menu option to switch Camel code type (under control menu)
 - Menu option to select Camel route
 - VR mode enabled (for browsers, not VSCode)
-- Mouse and VR controllers alignment (same underlying implementation)- New 3D forms to configure activities (to replace 2D HTML ones). New configurators for:
+- Mouse and VR controllers alignment (same underlying implementation)
+- New 3D forms to configure activities (to replace 2D HTML ones). New configurators for:
   - Aggregator
   - Route name
 

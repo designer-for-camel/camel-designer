@@ -628,7 +628,11 @@ function autoDetectCamelSettings(source)
   }
 
   //Auto-detect Camel version from syntax
-  if(source.includes("propertyName") || source.includes("headerName"))
+  if(   source.includes("propertyName") 
+     || source.includes("headerName")
+     || source.includes("json-jackson")
+     || source.includes("jacksonxml")
+    )
   {
     setCamelVersion2();
   }
@@ -637,14 +641,17 @@ function autoDetectCamelSettings(source)
   if(source.includes('<'+CAMEL_SOURCE_ENVELOPE.routeContext+' '))
   {
     camelSourceEnvelope = CAMEL_SOURCE_ENVELOPE.routeContext
+    setCamelVersion2();
   }
   else if(source.includes('<'+CAMEL_SOURCE_ENVELOPE.routes+' '))
   {
     camelSourceEnvelope = CAMEL_SOURCE_ENVELOPE.routes
+    setCamelVersion3();
   }
   else if(source.includes('<'+CAMEL_SOURCE_ENVELOPE.rests+' '))
   {
     camelSourceEnvelope = CAMEL_SOURCE_ENVELOPE.rests
+    setCamelVersion3();
   }
   else{
     camelSourceEnvelope = CAMEL_SOURCE_ENVELOPE.camelContext

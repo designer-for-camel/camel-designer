@@ -30,7 +30,7 @@ function importSource()
                 console.log(reader.result);
 
                 //attempt to detect Camel settings to use
-                autoDetectCamelSettings(reader.result)
+                // autoDetectCamelSettings(reader.result)
                 
                 //simulate message from VSCode
                 message = {source: reader.result}
@@ -907,7 +907,7 @@ function renderActivity(activity, mycode, iterator) {
             break;
             
         case 'remove-headers':
-            mycode.text += mycode.tab+'<removeHeaders pattern="*" id="'+activity.id+'"/>\n'
+            mycode.text += mycode.tab+'<removeHeaders pattern="'+activity.components.definition.getAttributes().pattern+'" id="'+activity.id+'"/>\n'
             break;
 
         case 'convert-body-to':
