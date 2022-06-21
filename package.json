@@ -27,8 +27,8 @@
 				"command": "extension.showDesigner",
 				"title": "Camel Designer: show Designer view",
 				"icon": {
-					"light": "src/media/preview.svg",
-					"dark": "src/media/preview.svg"
+					"light": "src/media/camel-origami.png",
+					"dark": "src/media/camel-origami.png"
 				}
 			}
 		],

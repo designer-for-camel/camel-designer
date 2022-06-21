@@ -742,15 +742,64 @@ function renderRouteActivity(activity, mycode, iterator)
     return getNextActivity(activity);
 }
 
+//clears text nodes (nodeType == 3) recursively
+function minify(node){
+    
+    // code = code || ""
+    
+    let code="<"+node.tagName
+
+    if(node.attributes.length > 0)
+    for (const att of node.attributes) {
+        code+=' '+att.name+'="'+att.value+'"'
+    }
+
+    code+=">"
+
+    //obtain children
+    let children = node.children
+
+    if(children.length > 0){
+        //iterate children (no increment)
+        for(let i=0; i<children.length; i++){
+            code+=minify(children[i])
+        }
+    }
+    else{
+        code+=node.textContent
+    }
+
+    code += "</"+node.tagName+">"
+
+    return code
+    /*
+    //iterate children (no increment)
+    for(let i=0; i<children.length; ){
+        //if text node found, then remove
+        if(children[i].nodeType == 3){
+            children[i].parentNode.removeChild(children[i])
+        }
+        else{
+            //recursive call
+            // minify(children[i])
+            i++ //increment counter
+        }
+    }
+    */
+}
+
 // function renderRouteActivity(activity, mycode, iterator) {
 function renderActivity(activity, mycode, iterator) {
 
     var processorType = activity.getAttribute('processor-type');
+    let attName
+
 
     switch(processorType) {
         case 'log':
             mycode.text += mycode.tab+'<log message='+activity.getElementsByTagName('a-text')[0].firstChild.getAttribute('value')+' id="'+activity.id+'"/>\n'
             break;
+/*
         case 'property':
             mycode.text += mycode.tab+'<setProperty '+getCamelAttributePropertyName()+'="'+activity.getElementsByTagName('a-text')[0].firstChild.getAttribute('value').slice(0,-1)+'" id="'+activity.id+'">\n'+
                         //    mycode.tab+mycode.tab+'<simple>'+activity.getElementsByTagName('a-text')[0].lastChild.getAttribute('value').slice(1,-1)+'</simple>\n'+
@@ -759,19 +808,53 @@ function renderActivity(activity, mycode, iterator) {
                            mycode.tab+'  '+activity.components.expression.getXml()+'\n'+
                            mycode.tab+'</setProperty>\n'
             break;
+*/            
+        case 'property':
+            attName = activity.components.definition.definition.attributes.name || activity.components.definition.definition.attributes.propertyName
+            activity.components.definition.definition.removeAttribute('propertyName')
+            activity.components.definition.definition.removeAttribute('name')
+            activity.components.definition.definition.setAttribute(getCamelAttributePropertyName(), attName.value)
+
         case 'header':
-            mycode.text += mycode.tab+'<setHeader '+getCamelAttributeHeaderName()+'="'+activity.getElementsByTagName('a-text')[0].firstChild.getAttribute('value').slice(0,-1)+'" id="'+activity.id+'">\n'+
-                        //    mycode.tab+mycode.tab+'<simple>'+activity.getElementsByTagName('a-text')[0].lastChild.getAttribute('value').slice(1,-1)+'</simple>\n'+
-                        //    mycode.tab+mycode.tab+'<'+activity.attributes.language.value+activity.getLanguageAttributes()+'>'+activity.getElementsByTagName('a-text')[0].lastChild.getAttribute('value').slice(1,-1)+'</'+activity.attributes.language.value+'>\n'+
-                           mycode.tab+'  '+activity.components.expression.getXml()+'\n'+
-                           mycode.tab+'</setHeader>\n'
+            attName = activity.components.definition.definition.attributes.name || activity.components.definition.definition.attributes.headerName
+            activity.components.definition.definition.removeAttribute('headerName')
+            activity.components.definition.definition.removeAttribute('name')
+            activity.components.definition.definition.setAttribute(getCamelAttributeHeaderName(), attName.value)
+
+        case 'body':
+        case 'setter':
+
+            let output = minify(activity.components.definition.definition)
+
+            //serialise from definition
+            // let output = new XMLSerializer().serializeToString(activity.components.definition.definition)
+            // let output = activity.components.definition.definition.outerHTML//.replace('/>\s+</g', '><')
+
+            //prepare for pretty-print operation
+            let parts = output.split('>')
+
+            //part 3 might be empty when expression is empty (i.e. <xpath/> instead of <xpath>data/</xpath>)
+            if(parts[3] == ""){
+                output = mycode.tab+parts[0]+">\n"+
+                         mycode.tab+"  "+parts[1]+">\n"+
+                         mycode.tab+parts[2]+">\n"
+            }else{
+                output = mycode.tab+parts[0]+">\n"+
+                        mycode.tab+"  "+parts[1]+">"+parts[2]+">\n"+
+                        mycode.tab+parts[3]+">\n"
+            }
+
+            //add result
+            mycode.text += output
             break;
+/*
         case 'body':
             mycode.text += mycode.tab+'<setBody id="'+activity.id+'">\n'+
                         //    mycode.tab+mycode.tab+'<simple>'+activity.getElementsByTagName('a-text')[0].firstChild.getAttribute('value').slice(1,-1)+'</simple>\n'+
                            mycode.tab+'  '+activity.components.expression.getXml()+'\n'+
                            mycode.tab+'</setBody>\n'
             break;
+*/            
         case 'direct':
             // mycode.text += mycode.tab+'<to uri="direct:'+activity.querySelector("#routeLabel").getAttribute('value')+'" id="'+activity.id+'"/>\n'
             mycode.text += mycode.tab+'<to uri="direct:'+activity.querySelector(".uri").getAttribute('value')+'" id="'+activity.id+'"/>\n'

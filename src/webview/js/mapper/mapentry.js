@@ -20,6 +20,9 @@ AFRAME.registerComponent('mapentry', {
     },
     init: function () {
 
+        //width of attribute's editing box
+        this.width = 2
+
         let textWidth = this.data.field.length / 10 + .5
  
         //keep reference to parent map tree
@@ -166,7 +169,7 @@ AFRAME.registerComponent('mapentry', {
                         this.el.appendChild(back)
 
                         //allow a delete button when editable or has child limit (assumes childs can be added/deleted)
-                        if(this.data.configuration.editable == true || this.data.configuration.childlimit){
+                        if((this.data.configuration.editable == true || this.data.configuration.childlimit) && !this.data.configuration.blockdelete){
                             //Create interactive button to delete map entry
                             let del = document.createElement('a-plane')
                             let lbl = appendLabel(del, "X")
@@ -397,6 +400,37 @@ AFRAME.registerComponent('mapentry', {
     
                 }.bind(this));
 
+                //Create interactive button to delete map entry
+                let clr = document.createElement('a-plane')
+                let lbl = appendLabel(clr, "C")
+                lbl.object3D.position.z+=.01
+                clr.setAttribute("width", .3)
+                clr.setAttribute("height",".3")
+                clr.setAttribute("color","#515A5A")
+                clr.setAttribute("position","-2.65 0 .01")
+                clr.classList.add('interactive')
+                back.appendChild(clr)
+
+                clr.addEventListener('click', function(event){
+                    event.stopPropagation()
+console.log("clear mapping value")
+this.setManualMappingExpression("")
+/*
+                    //if configured to notify
+                    if(this.data.configuration.notify){
+                        //emit notification for removal
+                        this.el.emit(this.data.configuration.notify, {
+                            action: "delete",
+                            field: this.data.field
+                        });                                
+                    }
+
+                    syncEditor()
+*/
+                }.bind(this));
+
+
+
                 //This section builds language support elements (language selector and attributes)
                 if(this.data.configuration.langsupport){
 
@@ -405,7 +439,8 @@ AFRAME.registerComponent('mapentry', {
                         {"label":"simple"},
                         {"label":"constant"},
                         {"label":"xpath"},
-                        {"label":"jsonpath"}
+                        {"label":"jsonpath"},
+                        {"label":"jq"}
                     ]
 
                     let langmenu = {
@@ -451,7 +486,8 @@ AFRAME.registerComponent('mapentry', {
                                     break;
                 
                                 case 'xpath':
-                                    this.expression.expression = "/your_xpath_expression"
+                                    // this.expression.expression = "/your_xpath_expression"
+                                    this.expression.expression = "//demo"
                                     this.createAttribute("saxon", "true")
 
                                     //if source mapping is a header, create attribute
@@ -461,9 +497,14 @@ AFRAME.registerComponent('mapentry', {
                                     break;
                                 
                                 case 'jsonpath':
-                                    this.expression.expression = "$.your_jsonpath_expression"
+                                    // this.expression.expression = "$.your_jsonpath_expression"
+                                    this.expression.expression = "$.demo"
                                     break;
-                
+            
+                                case 'jq':
+                                    this.expression.expression = ".demo"
+                                    break;
+
                                 case 'constant':
                                     this.expression.expression = "your constant expression"
                                     break;
@@ -593,13 +634,19 @@ AFRAME.registerComponent('mapentry', {
         // this.updateMappings(expression)
     },
 
-    updateMappings: function(expression){
+    // updateMappings: function(expression){
+    updateMappings: function(){
+
+        let expression = this.expression.expression
 
         //helper variable
         let vars = {}
 
         //first phase: identify variables in expression
-        if(this.expression.language == "simple"){
+        // if(this.expression.language == "simple"){
+        switch(this.expression.language){
+
+          case "simple":
 
             if(expression.includes('${body')){
                 vars["${body}"] = "body"
@@ -619,16 +666,26 @@ AFRAME.registerComponent('mapentry', {
 
                 let instances = expression.split('${exchangeProperty.')
                
-                for(let i = 1; i<instances.length; i+=2){
+                // for(let i = 1; i<instances.length; i+=2){
+                for(let i = 1; i<instances.length; i++){
                     let property = instances[i].split('}')[0]
                     vars["${exchangeProperty."+property+"}"] = "property"
                 } 
             }
-        }
-        else if(this.expression.language == "constant"){
+
+            break
+
+        // }
+        // else if(this.expression.language == "constant"){
             //do nothing
-        }
-        else if(this.expression.language == "xpath"){
+        // }
+        // else if(this.expression.language == "xpath"){
+          
+          case "body":
+            vars.body = "body"
+            break
+
+          default: 
             if(this.expression.expression.length > 0){
                 if(this.expression.parameters.headerName){
                     vars[this.expression.parameters.headerName] = "header"
@@ -639,9 +696,12 @@ AFRAME.registerComponent('mapentry', {
                     vars.body = "body"
                 }
             }
-        }
-        else{ //we assume all other languages evaluate against the body
-            vars.body = "body"
+
+            break
+
+        // }
+        // else{ //we assume all other languages evaluate against the body
+        //     vars.body = "body"
         }
 
         let current = this.expression.sources
@@ -652,7 +712,10 @@ AFRAME.registerComponent('mapentry', {
 
             let sourceVar = ""
 
-            if(this.expression.language == "simple"){
+            switch(this.expression.language){
+
+              case "simple":
+            // if(this.expression.language == "simple"){
                 if(current[i].type == "headers"){
                     sourceVar = "${header." + current[i].field + "}"
                 }
@@ -662,19 +725,32 @@ AFRAME.registerComponent('mapentry', {
                 else if(current[i].type == "body"){
                     sourceVar = "${body}"
                 }
-            }
-            else if(this.expression.language == "xpath"){
-                sourceVar = "body"
+                break
+              
+              case "constant":
+                break
 
-                if(this.expression.parameters.headerName){
+            // }
+              default:
+            // else if(this.expression.language == "xpath"){
+                // sourceVar = "body"
+                sourceVar = ""
+
+                // if(current[i].type == "headers" && this.expression.parameters.headerName){
+                if(current[i].type == "headers" && current[i].field == this.expression.parameters.headerName){
                     sourceVar = this.expression.parameters.headerName
                 }
+                break
             }
 
             //if current source field not found in expression, we delete the mapping
             if(!vars[sourceVar]){
                 var mapping = this.el.querySelector('a-rope[start='+current[i].id+']')
-                this.el.removeChild(mapping)
+                
+                //only remove if still exists 
+                if(mapping){
+                    this.el.removeChild(mapping)
+                }
             }
             else{
                 //we retain the mapping in the new sources list
@@ -799,18 +875,33 @@ AFRAME.registerComponent('mapentry', {
             let varType     = sourceEntry.attributes.vartype.value
             let sourceField = sourceEntry.attributes.field.value
 
-            if(this.expression.language == "simple"){
-                switch(varType) {
-                    case 'properties':
-                        this.expression.expression = '${exchangeProperty.'+sourceField+'}'
-                        break
-                    case 'headers':
-                        this.expression.expression = '${header.'+sourceField+'}'
-                        break;
-                    case 'body':
-                        this.expression.expression = '${body}'
-                        break;
-                }
+            switch(this.expression.language){
+                case "simple":
+                // if(this.expression.language == "simple"){
+                    switch(varType) {
+                        case 'properties':
+                            this.expression.expression = '${exchangeProperty.'+sourceField+'}'
+                            break
+                        case 'headers':
+                            this.expression.expression = '${header.'+sourceField+'}'
+                            break;
+                        case 'body':
+                            this.expression.expression = '${body}'
+                            break;                        
+                    }
+                    break
+
+                case "constant":
+                    break
+
+                default:
+                    if(varType == "headers"){
+                        this.createAttribute("headerName", sourceField)
+                    }
+                    else{
+                        this.removeAttribute("headerName")
+                    }
+                    break
             }
 
 /*            
@@ -853,6 +944,9 @@ AFRAME.registerComponent('mapentry', {
             //set expression's language
             this.expression.language = camelsource.firstElementChild.nodeName
 
+            //set the expression as is from the source code
+            this.expression.expression = camelsource.firstElementChild.textContent
+
             //set dropdown option to obtained language
             if(this.data.configuration.langsupport){
                 this.el.querySelector('a-dropdown').setAttribute("value", this.expression.language)              
@@ -868,9 +962,6 @@ AFRAME.registerComponent('mapentry', {
                 //create visual attribute
                 this.createAttribute(attrs[i].name, attrs[i].value)
             }
-
-            //set the expression as is from the source code
-            this.expression.expression = camelsource.firstElementChild.textContent
         }
         else if(literal != null){
             this.expression.expression = literal
@@ -885,7 +976,16 @@ AFRAME.registerComponent('mapentry', {
         //when the user drags & drops to create a mapping (not from code and not literal: text editing on target)...
         //...if a mapping value already exists, we append the new mapping value to the existing one
         if(!camelsource && literal == null && valueMapping && valueMapping != ""){
-            this.expression.expression = valueMapping+" "+this.expression.expression
+            switch(this.expression.language){
+                case "simple":
+                    this.expression.expression = valueMapping+" "+this.expression.expression
+                    break
+                case "constant":
+                    break
+                default:
+                    this.expression.expression = valueMapping
+                    break
+            }
         }
 
         //set the expression in the visual label
@@ -897,14 +997,16 @@ AFRAME.registerComponent('mapentry', {
             this.el.emit(this.data.configuration.notify, {
                 action: "set",
                 field: this.data.field,
-                value: this.expression.expression
+                value: this.expression.expression,
+                language: this.expression.language
             });                                
         }
 
         //if mapping was not provided
-        if(!mapping){
-            this.updateMappings(this.expression.expression)
-        }
+        // if(!mapping){
+            // this.updateMappings(this.expression.expression)
+            this.updateMappings()
+        // }
 
         if(this.expression.expression != ""){
             this.mapPoint.setAttribute('opacity', '1')
@@ -918,7 +1020,7 @@ AFRAME.registerComponent('mapentry', {
         }
 
         syncEditor()
-        this.el.emit("mapping-completed");      
+        this.el.emit("mapping-completed");    
     },
 
     //creates a child map-entry node
@@ -983,13 +1085,29 @@ AFRAME.registerComponent('mapentry', {
     //creates a child map-entry node
     createAttribute: function(attName, attValue){
 
+        // let maptree = this.maptree.components.maptree
+
+
         if(!this.expression){
             this.initExpression()
         }
 
-        //ignore if attribute already exists
+        //if attribute already exists we delete the attribute first
+        //we need to disable notifications to prevent 2 async notifications (removal/creation)
+        //they might get executed in wrong order
         if(this.expression.parameters[attName]){
-            return
+            //keep original notification
+            // let notify = this.data.configuration.notify
+
+            //disable removal notification
+            // this.data.configuration.notify = false
+
+            //trigger removal
+            this.removeAttribute(attName, null , null, true)
+
+            //restore notification
+            // this.data.configuration.notify = notify
+            // return
         }
 
         if(this.data.configuration.langsupport){
@@ -997,8 +1115,7 @@ AFRAME.registerComponent('mapentry', {
             //obtain attribute creator button
             let addbutton = this.el.querySelector('[attcreator]')
 
-            //width of attribute's editing box
-            let width = 2
+            //position
             let positionX = addbutton.object3D.position.x
 
             //attribute's parent
@@ -1007,11 +1124,11 @@ AFRAME.registerComponent('mapentry', {
             //This is the new attribute's background
             let back = document.createElement("a-plane")
             //back.id = this.el.id + "-" + "plane"
-            back.setAttribute("width", width)
+            back.setAttribute("width", this.width)
             back.setAttribute("height",".3")
             back.setAttribute("opacity",".5")
             back.setAttribute("visible",true)
-            back.object3D.position.x =      positionX + width/2 - .15
+            back.object3D.position.x =      positionX + this.width/2 - .15
             back.object3D.position.z = -.01
             // parent.appendChild(back)
             parent.insertBefore(back, addbutton)
@@ -1031,48 +1148,13 @@ AFRAME.registerComponent('mapentry', {
             //add delete action
             del.addEventListener('click', function(event){
                 event.stopPropagation()
-                console.log("removing attribute...")
 
                 //obtain attribute to delete
                 let toDelete = event.target.parentElement
 
-                //variable helpers
-                let nextAttribute = toDelete.nextSibling
-                let nextPos = toDelete.object3D.position.x
-                let temp
-                
-                //we iterate over the attributes that follow to shift them left to fill the empty space left
-                while(nextAttribute){
-                    //we keep next position
-                    temp = nextAttribute.object3D.position.x
-
-                    //we shift back the next attribute
-                    nextAttribute.object3D.position.x = nextPos
-
-                    //we keep the attribute's position for the next shift
-                    nextPos = temp
-
-                    //we look for the next sibling
-                    nextAttribute = nextAttribute.nextSibling
-                }
-
-                //we also shift left the + button
-                // addbutton.object3D.position.x = nextPos - width/2 + .15
-                addbutton.object3D.position.x = nextPos - width -.05
-
-                //obtain attribute name. the label includes a colon that needs to be ignored
-                let delAttribute = toDelete.children[1].attributes.value.value.slice(0, -1)
-
-                //remote attribute from list
-                delete this.expression.parameters[delAttribute]
-
-                //remove entire construct (background, plus-button, labels). It all roots from the background
-                toDelete.parentElement.removeChild(toDelete)
-
-                syncEditor()
-
+                //call remove
+                this.removeAttribute(null, toDelete, addbutton)
             }.bind(this));
-
 
             back.classList.add('interactive')
 
@@ -1115,37 +1197,159 @@ AFRAME.registerComponent('mapentry', {
                     lbl2edit.setAttribute("value", text)
 
                     //obtain attribute name. the label includes a colon that needs to be ignored
-                    let attributeName = lbl2edit.previousSibling.attributes.value.value.slice(0, -1)
+                    // let attributeName = lbl2edit.previousSibling.attributes.value.value.slice(0, -1)
+                    let attributeName = lbl2edit.previousSibling.attributes.value.value//.slice(0, -1)
 
                     //update attribute's value
-                    this.closest('a-map-entry').components.mapentry.expression.parameters[attributeName] = text
+                    // this.closest('a-map-entry').components.mapentry.expression.parameters[attributeName] = text
+                    let mapentry = this.closest('a-map-entry').components.mapentry
+                    mapentry.expression.parameters[attributeName] = text
+
+                    let notify = mapentry.data.configuration.notify
+
+                    //if configured to notify
+                    if(notify){
+                    // if(customConfig && customConfig.notify){
+                        //emit notification with update
+                        mapentry.el.emit(notify, {
+                            action: "set-attribute",
+                            name: attributeName,
+                            value: text
+                        });                                
+                    }
+
+                    //special case where the source field might change
+                    if(attributeName=="headerName"){
+                        mapentry.updateMappings()
+                    }
 
                     syncEditor()
-
 
                 }.bind(this))
             });
 
             //Attribute Name label
             let label = document.createElement('a-text')
-            label.setAttribute("value",attName+":")
-            label.setAttribute("position", -(width/2)+" .3 0")
+            // label.setAttribute("value",attName+":")
+            label.setAttribute("value",attName)
+            label.setAttribute("position", -(this.width/2)+" .3 0")
             back.appendChild(label)
 
             //Attribute Value label
             label = document.createElement('a-text')
             label.setAttribute("value",attValue)
-            label.setAttribute("position", -(width/2)+" 0 0")
+            label.setAttribute("position", -(this.width/2)+" 0 0")
             back.appendChild(label)
 
             //relocate the ADD button to the far right
-            addbutton.object3D.position.setX(addbutton.object3D.position.x + width +.05)
+            addbutton.object3D.position.setX(addbutton.object3D.position.x + this.width +.05)
         }
 
         this.expression.parameters[attName] = attValue
 
+        //special case where the header name might dictate the source mapping
+        if(attName=="headerName"){
+            this.updateMappings()
+        }
+
+        // let customConfig = this.maptree.components.maptree.targetmodel.custom[this.attrValue.field]
+        let notify = this.data.configuration.notify
+
+                            //if configured to notify
+                            if(notify){
+                            // if(customConfig && customConfig.notify){
+                                //emit notification with update
+                                this.el.emit(notify, {
+                                    action: "set-attribute",
+                                    name: attName,
+                                    value: attValue
+                                });                                
+                            }
+
         syncEditor()
     },
+
+    //creates a child map-entry node
+    removeAttribute: function(attribute, toDelete, addbutton, ignoresync){
+
+        if(!toDelete){
+            //obtain attribute ui
+            toDelete = this.el.querySelector('a-plane > a-text[value="'+attribute+'"]')
+
+            //if no attribute UI, nothing to do
+            if(!toDelete){
+                return
+            }
+
+            toDelete = toDelete.parentElement
+        }
+
+        // toDelete  = toDelete  || this.el.querySelector('a-plane > a-text[value="'+attribute+'"]').previousElementSibling
+        // toDelete  = toDelete  || this.el.querySelector('a-plane > a-text[value="'+attribute+'"]').parentElement
+        addbutton = addbutton || this.el.querySelector('[attcreator]')
+
+        console.log("removing attribute...")
+
+        //variable helpers
+        let nextAttribute = toDelete.nextSibling
+        let nextPos = toDelete.object3D.position.x
+        let temp
+        
+        //we iterate over the attributes that follow to shift them left to fill the empty space left
+        while(nextAttribute){
+            //we keep next position
+            temp = nextAttribute.object3D.position.x
+
+            //we shift back the next attribute
+            nextAttribute.object3D.position.x = nextPos
+
+            //we keep the attribute's position for the next shift
+            nextPos = temp
+
+            //we look for the next sibling
+            nextAttribute = nextAttribute.nextSibling
+        }
+
+        //we also shift left the + button
+        // addbutton.object3D.position.x = nextPos - width/2 + .15
+        addbutton.object3D.position.x = nextPos - this.width -.05
+
+        //obtain attribute name. the label includes a colon that needs to be ignored
+        // let delAttribute = toDelete.children[1].attributes.value.value.slice(0, -1)
+        let delAttribute = toDelete.children[1].attributes.value.value
+
+        //remove attribute from list
+        delete this.expression.parameters[delAttribute]
+
+        //remove entire construct (background, plus-button, labels). It all roots from the background
+        toDelete.parentElement.removeChild(toDelete)
+
+        // let mapentry = this.closest('a-map-entry').components.mapentry
+        // mapentry.expression.parameters[attributeName] = text
+
+        let notify = this.data.configuration.notify
+
+        //if configured to notify
+        if(notify){
+            //emit notification with update
+            this.el.emit(notify, {
+                action: "remove-attribute",
+                name: delAttribute,
+            });                                
+        }
+
+        //special case where the header name might dictate the source mapping
+        if(delAttribute=="headerName"){
+            this.updateMappings()
+        }
+
+        if(ignoresync){
+            return
+        }
+
+        syncEditor()
+    },
+
 
     trigger: function(event){
         // event.stopPropagation()

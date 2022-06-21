@@ -355,15 +355,15 @@
         // - dataformat
         // - atlasmap
         let numAsyncActivities = parsed.querySelectorAll('to:not([uri^=direct],[uri^=atlas],[uri^=dataformat]),toD:not([uri^=direct],[uri^=atlas],[uri^=dataformat])').length
-        
+    
+        //obtain routes container
+        let definitions = document.getElementById('route-definitions')
+
         //case when source code contains activities requiring async loading
         //i.e. activities with mappings
         if(numAsyncActivities>0){
 
           console.log("async activities: "+numAsyncActivities)
-
-          //obtain routes container
-          let definitions = document.getElementById('route-definitions')
 
           //Async completion handler
           let handler = function(){
@@ -417,8 +417,19 @@
 
           //we need to sync the changes, (new ID values may have been applied)
           syncEditor();
-        }
 
+          //obtain first route
+          let route = definitions.firstElementChild
+
+          //switch view to first route
+          nextRoute(route.id)
+
+          //obtain all route activities
+          let activities = route.querySelectorAll('[processor-type]')
+
+          //set selector on last activity
+          setConfigSelector(activities[activities.length-1])
+        }
       }
 
       function enableNavigationButtons(enabled)
@@ -1222,7 +1233,8 @@ let configObj = getActiveActivity()
 
           //only allow camera movements when editor is enabled
           //if editor is disabled, it means source code is being loaded
-          if(syncEditorEnabled){
+          // if(syncEditorEnabled){
+          if(!syncStartUpEnabled){
             //if the activity is not loaded yet...
             if(!activity.hasLoaded){
               //create the asynchronous task to trigger the camera movement
@@ -1739,16 +1751,19 @@ let configObj = getActiveActivity()
               }
               break;
           case 'property':
-              newConfigPane = "name-value-pair";
-              updateConfigNameValuePair();
+              // newConfigPane = "name-value-pair";
+              // updateConfigNameValuePair();
+              newConfigPane = "ui-config-map-activity";
               break;
           case 'header':
-              newConfigPane = "name-value-pair";
-              updateConfigNameValuePair();
+              // newConfigPane = "name-value-pair";
+              // updateConfigNameValuePair();
+              newConfigPane = "ui-config-map-activity";
               break;
           case 'body':
-              newConfigPane = "set-body";
-              updateConfigBody();
+              // newConfigPane = "set-body";
+              // updateConfigBody();
+              newConfigPane = "ui-config-map-activity";
               break;
 
 case 'split-start':

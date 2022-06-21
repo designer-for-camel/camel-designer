@@ -64,8 +64,20 @@ function useExpressionVariable(event)
 //simple variables are variables you can use in the Camel simple language
 function findExpressionVariables(activity)
 {
-    //if activity not provided, initialise with preceding activity
-    activity = activity || getPreviousActivity(getActiveActivity())
+    //helper variable
+    let type
+
+    if(activity == null){
+        activity = getPreviousActivity(getActiveActivity())
+    }
+    else{
+        type = activity.getAttribute('processor-type')
+
+        //we skip self header/property
+        if(type == "header" || type == "property"){
+            activity = getPreviousActivity(activity)
+        }
+    }
 
     //collection to return
     let variables = []
@@ -73,7 +85,7 @@ function findExpressionVariables(activity)
     //while not the end of the route
     while(activity)
     {
-        let type = activity.getAttribute('processor-type')
+        type = activity.getAttribute('processor-type')
 
         //if direct, we dive into the route invoked to scan for variables
         if(type == "direct"){
@@ -94,17 +106,31 @@ function findExpressionVariables(activity)
         //if 'setter' found
         else if(type == "header" || type == "property"){
         
-            let simpleNamingConvention
-
-            if(type == "header"){
-                simpleNamingConvention = getCamelSimpleHeaderName()
-            }
-            else{
-                simpleNamingConvention = getCamelSimplePropertyName()
-            }
+            //helper variables
+            let newvar
+            let attributes = activity.components.definition.definition.attributes
 
             //we add to the collection in the format [type.var] (e.g. 'header.h1')
-            let newvar = simpleNamingConvention+"."+activity.getElementsByTagName("a-text")[0].firstChild.getAttribute('value').slice(0, -1)
+            if(type == "header"){
+                //we try Camel 3 version
+                if(attributes.name){
+                    newvar = getCamelSimpleHeaderName()+"."+attributes.name.value
+                }
+                //otherwise we assume Camel 2 version
+                else{
+                    newvar = getCamelSimpleHeaderName()+"."+attributes.headerName.value
+                }
+            }
+            else{
+                //we try Camel 3 version
+                if(attributes.name){
+                    newvar = getCamelSimplePropertyName()+"."+attributes.name.value
+                }
+                //otherwise we assume Camel 2 version
+                else{
+                    newvar = getCamelSimplePropertyName()+"."+attributes.propertyName.value
+                }
+            }
 
             //we prevent duplicates
             if(!variables.includes(newvar)){
@@ -136,18 +162,31 @@ function findExpressionVariablesInRoute(route, variables, done)
         //if 'setter' found
         if(type == "header" || type == "property"){
         
-            let simpleNamingConvention
+            //helper variables
+            let newvar
+            let attributes = activities[i].components.definition.definition.attributes
 
             if(type == "header"){
-                simpleNamingConvention = getCamelSimpleHeaderName()
+                //we try Camel 3 version
+                if(attributes.name){
+                    newvar = getCamelSimpleHeaderName()+"."+attributes.name.value
+                }
+                //otherwise we assume Camel 2 version
+                else{
+                    newvar = getCamelSimpleHeaderName()+"."+attributes.headerName.value
+                }
             }
             else{
-                simpleNamingConvention = getCamelSimplePropertyName()
+                //we try Camel 3 version
+                if(attributes.name){
+                    newvar = getCamelSimplePropertyName()+"."+attributes.name.value
+                }
+                //otherwise we assume Camel 2 version
+                else{
+                    newvar = getCamelSimplePropertyName()+"."+attributes.propertyName.value
+                }
             }
 
-            //we add to the collection in the format [type.var] (e.g. 'header.h1')
-            let newvar = simpleNamingConvention+"."+activities[i].getElementsByTagName("a-text")[0].firstChild.getAttribute('value').slice(0, -1)
-            
             //we prevent duplicates
             if(!variables.includes(newvar)){
                 variables.push(newvar)                
@@ -4330,4 +4369,339 @@ function createConvertBodyToConfigurator(){
 
     //set the configurator in the form
     form.components.form.setConfigurator(configurator)
+}
+
+
+//=============================
+//=============================
+
+function createGenericSetterProperty(definition)
+{
+  //default definition if not provided
+  definition = definition || {definition: new DOMParser().parseFromString('<setProperty name=""><simple>dummy</simple></setProperty>', "text/xml").documentElement}
+  //activity type
+  definition.type = 'property'
+  return createGenericSetter(definition)
+}
+
+function createGenericSetterHeader(definition)
+{
+  //default definition if not provided
+  definition = definition || {definition: new DOMParser().parseFromString('<setHeader name=""><simple>dummy</simple></setHeader>', "text/xml").documentElement}
+  //activity type
+  definition.type = 'header'
+  return createGenericSetter(definition)
+}
+
+function createGenericSetter(definition)
+{
+    //a mapping will be attached and requires async initialisation
+    //we need to pause comms until the mapping is fully ready
+    //the mapping component reactivates comms when ready
+    syncEditorEnabled = false;
+
+  //creation
+  let activity = createActivity(definition);
+
+  //autodefine setter name if not provided
+  if(definition.definition.attributes.name.value == ""){
+    definition.definition.attributes.name.value = activity.id
+  }
+
+  //this is the label inside the geometry (activity descriptor)
+  var text = createText();
+  activity.appendChild(text);
+  text.setAttribute('value', definition.type);
+  text.setAttribute('color', 'white');
+  text.setAttribute('align', 'center');
+  text.setAttribute('side', 'double');
+
+  //add definition component
+  activity.setAttribute('definition', null)
+  activity.components.definition.setDefinition(definition.definition)
+
+  //helper variable
+  let attName = null
+
+  if(definition.type == "property"){
+    attName = getCamelAttributePropertyName()
+  }
+  else if(definition.type == "header"){
+    attName = getCamelAttributeHeaderName()
+  }
+  else{
+    console.log("not expected type: definition.type: "+definition.type)
+  }
+
+  //label to display type configuration
+  text = createText();
+  activity.appendChild(text);
+  text.setAttribute('value', activity.components.definition.attributes[attName]);
+  text.setAttribute('color', 'grey');
+  text.setAttribute('align', 'center');
+  text.setAttribute('side', 'double');
+  text.setAttribute('position', '0 -.7 0');
+
+        //label to display the expression value set for the activity
+        text = createText();
+        activity.appendChild(text);
+        text.setAttribute('value', '"'+definition.definition.firstElementChild.textContent+'"');
+        text.setAttribute('color', 'white');
+        text.setAttribute('align', 'center');
+        text.setAttribute('position', "0 -1 0");
+        text.setAttribute('side', 'double');
+
+  //configurator
+  createGenericSetterConfigurator()
+
+  goLive(activity);
+
+  //setter name
+  let name = activity.components.definition.getAttributes()[attName]
+
+  //initialise data model
+  let datamodel = {}
+
+  //set name
+  datamodel[name] = definition.definition.firstElementChild.textContent
+
+  //beheviour flags for mapper
+  let flags = {
+      notify: "setter",
+      button: false,
+      editable: true,
+      blockdelete: true,
+      childlimit: 1,
+      recursive: false,
+      langsupport: true,
+      hint: "To override the payload (body), add a new body and map it."
+  }
+
+  //define target tree map configuration
+  let targetModel = {
+
+      //name of the model
+      name: definition.type,
+
+      //the data model
+      datamodel: datamodel,
+
+      //placeholder for behaviour flags
+      custom: {}
+  }
+
+  //set behaviour flags
+  targetModel.custom[name] = flags
+
+  //set mapping to activity
+  activity.setAttribute("mapping", {
+      datatarget: JSON.stringify(targetModel),
+  })
+
+  //we prepare an array of mappings (this action has 1 item only)
+  let mappings = [definition.definition]
+
+  //set mappings to initialise
+  activity.components.mapping.setInitMappings(mappings)
+
+  //listener for changes on target
+  activity.addEventListener('setter', function(evt){ 
+      console.log("entry got edited !!: "+ JSON.stringify(evt.detail))
+      
+      switch(evt.detail.action){
+          case 'rename':
+              definition.definition.attributes[attName].value = evt.detail.new
+              activity.children[1].setAttribute("value", evt.detail.new+":")
+              break
+
+          case 'set':
+              //update expression value
+              definition.definition.firstElementChild.textContent = evt.detail.value
+
+              //update label
+              activity.children[2].setAttribute("value", '"'+evt.detail.value+'"')
+
+              //keep current expression (before update)
+              let oldExpression = definition.definition.firstElementChild
+
+              //initialise new expression (update)
+              let newExpression = "<"+evt.detail.language+">"+oldExpression.textContent+"</"+evt.detail.language+">"
+
+              //replace in definition old expression by the new one
+              definition.definition.innerHTML = newExpression
+
+              //obtain the DOM object for the new expression
+              newExpression = definition.definition.firstElementChild
+
+              //copy all atributes from old expression to the new one
+              for(let attr of  oldExpression.attributes) {
+                newExpression.setAttribute(attr.name, attr.value);
+              }
+
+              break
+
+          case 'set-attribute':
+              definition.definition.firstElementChild.setAttribute(evt.detail.name, evt.detail.value)
+              break
+
+          case 'remove-attribute':
+              definition.definition.firstElementChild.removeAttribute(evt.detail.name)
+              break
+      }
+  }.bind(this))
+
+  return activity
+}
+
+//creates a configurator for the 3D panel
+//this function is intimately related to the 3D Form definition
+function createGenericSetterConfigurator(){
+
+    let form = document.getElementById('ui-config-map-activity')
+
+    //if the form already has its configurator, nothing to do
+    if(form.components.form.configurator){
+        return
+    }
+
+    //define the activity's configurator
+    let configurator = {configure: function(form) {
+            console.log("no configuration needed for this component")
+        } 
+    }       
+
+    //set the configurator in the form
+    form.components.form.setConfigurator(configurator)
+}
+
+
+function createBodySetter(definition)
+{
+    //a mapping will be attached and requires async initialisation
+    //we need to pause comms until the mapping is fully ready
+    //the mapping component reactivates comms when ready
+    syncEditorEnabled = false;
+
+
+  //default definition if not provided
+  definition = definition || {definition: new DOMParser().parseFromString('<setBody><simple>{"demo":"data"}</simple></setBody>', "text/xml").documentElement}
+  definition.type = 'body'
+
+  //creation
+  let activity = createActivity(definition);
+
+  //this is the label inside the geometry (activity descriptor)
+  var text = createText();
+  activity.appendChild(text);
+  text.setAttribute('value', definition.type);
+  text.setAttribute('color', 'white');
+  text.setAttribute('align', 'center');
+  text.setAttribute('side', 'double');
+
+  //add definition component
+  activity.setAttribute('definition', null)
+  activity.components.definition.setDefinition(definition.definition)
+
+  //label to display the expression value set for the activity
+  text = createText();
+  activity.appendChild(text);
+//   text.setAttribute('value', '"'+definition.definition.firstChild.textContent+'"');
+  text.setAttribute('value', definition.definition.firstElementChild.textContent);
+  text.setAttribute('color', 'white');
+  text.setAttribute('align', 'center');
+  text.setAttribute('position', "0 -1 0");
+  text.setAttribute('side', 'double');
+
+  //configurator
+  createGenericSetterConfigurator()
+
+  goLive(activity);
+
+  //define target tree map configuration
+  let targetModel = {
+
+      //name of the model
+      name: "exchange",
+
+      //the data model and default value
+      datamodel: {
+        body: definition.definition.firstElementChild.textContent
+      },
+
+      //placeholder for behaviour flags
+      custom: {
+            body: {
+                notify: "setter",
+                button: false,
+                // editable: true,
+                blockdelete: true,
+                childlimit: 1,
+                recursive: false,
+                langsupport: true,
+                hint: "To override the payload (body), add a new body and map it."
+            }
+      }
+  }
+
+  //set mapping to activity
+  activity.setAttribute("mapping", {
+      datatarget: JSON.stringify(targetModel),
+  })
+
+  //we prepare an array of mappings (this action has 1 item only)
+  let mappings = [definition.definition]
+
+  //set mappings to initialise
+  activity.components.mapping.setInitMappings(mappings)
+
+  //listener for changes on target
+  activity.addEventListener('setter', function(evt){ 
+      console.log("entry got edited !!: "+ JSON.stringify(evt.detail))
+      
+      switch(evt.detail.action){
+        //   case 'rename':
+        //       definition.definition.attributes[attName].value = evt.detail.new
+        //       activity.children[1].setAttribute("value", evt.detail.new+":")
+        //       break
+
+          case 'set':
+              //update expression value
+              definition.definition.firstElementChild.textContent = evt.detail.value
+
+              //update label
+            //   activity.children[1].setAttribute("value", '"'+evt.detail.value+'"')
+              activity.children[1].setAttribute("value", evt.detail.value)
+
+              //keep current expression (before update)
+              let oldExpression = definition.definition.firstElementChild
+
+              //initialise new expression (update)
+              let newExpression = "<"+evt.detail.language+">"+oldExpression.textContent+"</"+evt.detail.language+">"
+
+              //replace in definition old expression by the new one
+              definition.definition.innerHTML = newExpression
+
+              //obtain the DOM object for the new expression
+              newExpression = definition.definition.firstElementChild
+
+              //copy all atributes from old expression to the new one
+              for(let attr of  oldExpression.attributes) {
+                newExpression.setAttribute(attr.name, attr.value);
+              }
+
+              break
+
+          case 'set-attribute':
+              console.log("setting attribute: "+evt.detail.name+"="+evt.detail.value)
+              definition.definition.firstElementChild.setAttribute(evt.detail.name, evt.detail.value)
+              break
+
+          case 'remove-attribute':
+              console.log("removing attribute: "+evt.detail.name)
+              definition.definition.firstElementChild.removeAttribute(evt.detail.name)
+              break
+      }
+  }.bind(this))
+
+  return activity
 }

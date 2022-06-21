@@ -629,7 +629,10 @@ function autoDetectCamelSettings(source)
 
   //Auto-detect Camel version from syntax
   if(   source.includes("propertyName") 
-     || source.includes("headerName")
+
+     //better leave this line out as 'headerName' is used both in Camel v2 and v3 (i.e. xpath)
+     //|| source.includes("headerName")
+
      || source.includes("json-jackson")
      || source.includes("jacksonxml")
     )

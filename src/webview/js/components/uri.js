@@ -11,12 +11,13 @@ AFRAME.registerComponent('uri', {
     },
     init: function () {
 
-        // let defaultValue = this.defaultExpression || "hello world";
+        //helps shortening the label's length
+        this.truncateRegex = /(.{15})..+/
 
         //label to display the expression value set for the activity
         this.label = createText();
         this.el.appendChild(this.label);
-        this.label.setAttribute('value', this.defaultUri);
+        this.label.setAttribute('value', this.defaultUri.replace(this.truncateRegex, "$1..."));
         this.label.setAttribute('color', 'white');
         this.label.setAttribute('align', 'center');
         this.label.setAttribute('position', this.attrValue.position);
@@ -28,8 +29,6 @@ AFRAME.registerComponent('uri', {
         {
             this.attrValue.configMethod[0](this.el)
         }
-        
-        // this.attributes        = {}
     },
 
 
@@ -107,26 +106,26 @@ AFRAME.registerComponent('uri', {
     getTarget: function () {
         //only if component has initialised we can return a value
         //because the component loads asynchronously, the config panel may first attempt to get the value before the component is ready 
-        if(this.label)
+        // if(this.label)
         {
-            return this.label.getAttribute('value')
+            // return this.label.getAttribute('value')
         }
 
         //for dataformats we return the action (marshal/unmarshal)
-        if(this.scheme == "dataformat"){
-            return this.dataFormatAction
-        }
+        // if(this.scheme == "dataformat"){
+        //     return this.dataFormatAction
+        // }
 
         //otherwise return default one (init might not have yet run)
         return this.defaultUri
     },
 
     setTarget: function (uri) {
-        if(this.label)
+        // if(this.label)
         {
-            this.label.setAttribute('value', uri)
+            this.label.setAttribute('value', uri.replace(this.truncateRegex, "$1..."))
         }
-        else
+        // else
         {
             //init() might not have executed, so we set value as default
             this.defaultUri = uri
@@ -155,9 +154,9 @@ AFRAME.registerComponent('uri', {
 
         //only if component has initialised we can return the label value
         //because the component loads asynchronously, the config panel may first attempt to get the value before the component is ready 
-        if(this.label)
+        // if(this.label)
         {
-            target = this.label.getAttribute('value')
+            // target = this.label.getAttribute('value')
         }
 
         //get options

@@ -238,6 +238,16 @@ AFRAME.registerComponent('mapping', {
     setInitMappings: function(mappings)
     {
         this.initMappings = mappings
+
+        //if there are mappings, they are processed asynchronously.
+        //We need to keep count.
+        if(mappings.length > 0){
+            this.pendingMappingsCounter = mappings.length
+            //add event listener to receive completion events
+            this.el.addEventListener('mapping-completed', this.notifyInitMappingsCompleted.bind(this))
+            console.log('awaiting pending mappings: '+this.pendingMappings)
+        }
+
     },
 
     
@@ -249,7 +259,8 @@ AFRAME.registerComponent('mapping', {
 
         //obtain mappings to initialise
         let mappings = this.initMappings
-
+        
+/*
         //if there are mappings, they are processed asynchronously.
         //We need to keep count.
         if(mappings.length > 0){
@@ -258,9 +269,13 @@ AFRAME.registerComponent('mapping', {
             this.el.addEventListener('mapping-completed', this.notifyInitMappingsCompleted.bind(this))
             console.log('awaiting pending mappings: '+this.pendingMappings)
         }
+*/
+
         //otherwise we consider the activity fully configured
         //and we can refresh the text editor
-        else{
+        // else{
+        if(mappings.length == 0){
+        
             syncEditorEnabled = true;
             syncEditor();
 
@@ -280,7 +295,8 @@ AFRAME.registerComponent('mapping', {
 
             //if element is body setter
             if(element.nodeName == "setBody"){
-                target = this.targetTree.querySelector('a-map-entry[field="body"] > a-map-entry')
+                // target = this.targetTree.querySelector('a-map-entry[field="body"] > a-map-entry')
+                target = this.targetTree.querySelector('a-map-entry[field="body"]')
             }
             else{
                 //TEMP: assumed element is 'setHeader'
@@ -395,7 +411,8 @@ AFRAME.registerComponent('mapping', {
         }
         //we assume here other languages evaluate against the body
         else{
-            source = this.datasource.querySelector('a-map-entry[value="body"] > a-plane.interactive')
+            // source = this.datasource.querySelector('a-map-entry[value="body"] > a-plane.interactive')
+            source = this.datasource.querySelector('a-map-entry[field="'+expression+'"] > a-plane.interactive')
         }
 
 
@@ -473,8 +490,8 @@ AFRAME.registerComponent('mapping', {
                             tabulation+'  </setHeader>\n'
                     break;
 */
-
-                case 'headers':
+                case 'header':  //standalone setHeader
+                case 'headers': //pipeline setHeader
                     renderPipeline = true
                     code += tabulation+'  <setHeader '+getCamelAttributeHeaderName()+'="'+expr.target.field+'" id="'+element.id+'">\n'+
                             tabulation+'    '+'<'+expr.language+attributes+'>'+expression+'</'+expr.language+'>'+'\n'+
@@ -492,6 +509,10 @@ AFRAME.registerComponent('mapping', {
 
         //helper variable
         let activity = this.el
+
+        if(activity.getAttribute("processor-type") == "header"){
+            return code
+        }
 
         //obtain URI
         let uri = activity.components.uri.getValue()
@@ -535,10 +556,16 @@ AFRAME.registerComponent('mapping', {
         for (let index = 0; index < vars.length; index++) {
            const element = vars[index];
 
+            //camel 2/3
             if(element.startsWith("header")){
                 datamodel.headers[element.split('.')[1]] = ""
             }
+            //camel 3
             else if(element.startsWith("exchangeProperty")){
+                datamodel.properties[element.split('.')[1]] = ""
+            }
+            //camel 2
+            else if(element.startsWith("property")){
                 datamodel.properties[element.split('.')[1]] = ""
             }
         }

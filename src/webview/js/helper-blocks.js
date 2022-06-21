@@ -357,8 +357,15 @@ function createLog(metadata)
   return log
 }
 
+
 //creates a setProperty activity
 function createProperty(definition)
+{
+  return createGenericSetterProperty(definition)
+}
+
+//creates a setProperty activity
+function DEPRECATED_createProperty(definition)
 {
   //default definition if not provided (note there's no propertyName given to force a default value)
   definition = definition || {definition: new DOMParser().parseFromString('<setProperty><simple>dummy</simple></setProperty>', "text/xml").documentElement}
@@ -383,6 +390,7 @@ function createProperty(definition)
 
     //if property name is not given, we leave the default one from 'createNameValuePair' 
     if(propertyName != null){
+      header.components.definition.getDefinition().setAttribute(getCamelAttributePropertyName(),headerName)
       property.getElementsByTagName("a-text")[0].firstChild.setAttribute('value', propertyName+':');
     }
     else{
@@ -398,6 +406,12 @@ function createProperty(definition)
 
 //creates a setHeader activity
 function createHeader(definition)
+{
+  return createGenericSetterHeader(definition)
+}
+
+//creates a setHeader activity
+function DEPRECATED_createHeader(definition)
 {
   //default definition if not provided (note there's no headerName given to force a default value)
   definition = definition || {definition: new DOMParser().parseFromString('<setHeader><simple>dummy</simple></setHeader>', "text/xml").documentElement}
@@ -422,6 +436,8 @@ function createHeader(definition)
 
     //if header name is not given, we leave the default one from 'createNameValuePair' 
     if(headerName != null){
+      // definition.definition.setAttribute(getCamelAttributeHeaderName(),headerName)
+      header.components.expression.getDefinition().setAttribute(getCamelAttributeHeaderName(),headerName)
       header.getElementsByTagName("a-text")[0].firstChild.setAttribute('value', headerName+':');
     }
     else{
@@ -432,16 +448,23 @@ function createHeader(definition)
     }
   }
 
+  // var header = createNameValuePair(definition);
+
+
   return header
 }
 
-function createNameValuePair(definition)
+function DEPRECATED_createNameValuePair(definition)
 {
   let activity = createActivity(definition);
 
   //add expression component (and load definition)
   activity.setAttribute('expression', {position: "0 -1 0", configMethod: [updateConfigNameValuePair]})
   activity.components.expression.setDefinition(definition.definition)
+
+  activity.setAttribute('definition', null)
+  activity.components.definition.setDefinition(definition.definition)
+  
 
   if(!definition.definition)
   {
@@ -541,6 +564,11 @@ function createUnknown(definition)
 }
 
 function createBody(definition)
+{
+  return createBodySetter(definition)
+}
+
+function DEPRECATED_createBody(definition)
 {
   //default definition if not provided
   definition = definition || {definition: new DOMParser().parseFromString('<setBody><simple>hello world</simple></setBody>', "text/xml").documentElement}

@@ -309,6 +309,8 @@
           <option>simple</option>
           <option>constant</option>
           <option>xpath</option>
+          <option>jq</option>
+          <option>jsonpath</option>
         </select>
         <br/>
         <input type="text" size="50" oninput="submitConfigChoice();syncEditor();">
@@ -336,6 +338,8 @@
                 <option value="method">method</option>
                 <option value="tokenize">tokenize</option>
                 <option value="header">header</option>
+                <option value="jq">jq</option>
+                <option value="jsonpath">jsonpath</option>
               </select>
               <div class="attributes" onchange="useExpressionAttribute(event);syncEditor();"></div>
             </div>

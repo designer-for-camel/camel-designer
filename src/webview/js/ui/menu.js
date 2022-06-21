@@ -389,7 +389,7 @@ function createMenu3D(configuration)
             },
             {
                 label:    'body',
-                function: 'createBody',                
+                function: 'createBody',
             },
             {
                 label:    'clean headers',
@@ -399,8 +399,6 @@ function createMenu3D(configuration)
                 label:    'convert body',
                 function: 'createConvertBodyTo',                
             },
-
-            
         ]
     }
 
