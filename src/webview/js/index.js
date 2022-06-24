@@ -1765,6 +1765,10 @@ let configObj = getActiveActivity()
               // updateConfigBody();
               newConfigPane = "ui-config-map-activity";
               break;
+          
+          case 'process':
+              newConfigPane = "3d-config-processor"
+              break
 
 case 'split-start':
     newConfigPane = "set-body";

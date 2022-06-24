@@ -241,7 +241,9 @@ function createRouteDefinitions(routes)
             case 'file':
                 createFileStart(definition);
                 break;
-
+            case 'ftp':
+                createFtpStart(definition);
+                break;
             case 'google-sheets-stream':
                 createGoogleSheetsStart(definition);
                 break;  
@@ -747,13 +749,16 @@ function minify(node){
     
     // code = code || ""
     
+    //open tag
     let code="<"+node.tagName
 
+    //render attributes
     if(node.attributes.length > 0)
     for (const att of node.attributes) {
         code+=' '+att.name+'="'+att.value+'"'
     }
 
+    //close start tag
     code+=">"
 
     //obtain children
@@ -766,9 +771,11 @@ function minify(node){
         }
     }
     else{
+        //render node value
         code+=node.textContent
     }
 
+    //render closing tag
     code += "</"+node.tagName+">"
 
     return code
@@ -793,7 +800,7 @@ function renderActivity(activity, mycode, iterator) {
 
     var processorType = activity.getAttribute('processor-type');
     let attName
-
+    let processHeader = true
 
     switch(processorType) {
         case 'log':
@@ -814,16 +821,19 @@ function renderActivity(activity, mycode, iterator) {
             activity.components.definition.definition.removeAttribute('propertyName')
             activity.components.definition.definition.removeAttribute('name')
             activity.components.definition.definition.setAttribute(getCamelAttributePropertyName(), attName.value)
+            processHeader = false
 
         case 'header':
-            attName = activity.components.definition.definition.attributes.name || activity.components.definition.definition.attributes.headerName
-            activity.components.definition.definition.removeAttribute('headerName')
-            activity.components.definition.definition.removeAttribute('name')
-            activity.components.definition.definition.setAttribute(getCamelAttributeHeaderName(), attName.value)
-
+            if(processHeader){
+                attName = activity.components.definition.definition.attributes.name || activity.components.definition.definition.attributes.headerName
+                activity.components.definition.definition.removeAttribute('headerName')
+                activity.components.definition.definition.removeAttribute('name')
+                activity.components.definition.definition.setAttribute(getCamelAttributeHeaderName(), attName.value)
+            }
         case 'body':
         case 'setter':
 
+            activity.components.definition.definition.id = activity.id
             let output = minify(activity.components.definition.definition)
 
             //serialise from definition
@@ -847,7 +857,8 @@ function renderActivity(activity, mycode, iterator) {
             //add result
             mycode.text += output
             break;
-/*
+
+/* OLD IMPLEMENTATION
         case 'body':
             mycode.text += mycode.tab+'<setBody id="'+activity.id+'">\n'+
                         //    mycode.tab+mycode.tab+'<simple>'+activity.getElementsByTagName('a-text')[0].firstChild.getAttribute('value').slice(1,-1)+'</simple>\n'+
@@ -1175,8 +1186,22 @@ function getMetadata()
 
     // var metadata = "";
 
+    let scene = document.querySelector('a-scene')
+
+    //find all processors and groups
+    let itemList = scene.querySelectorAll('[dragndrop][processor-type],[dragndrop][group-start]')
+
+    // var activities = Array.from(toMetadata);
     var activities = [];
 
+    for (let item of itemList) {
+        activities.push({
+            id: item.id,
+            x:  item.object3D.position.x,
+            y:  item.object3D.position.y
+        })
+    }
+/*
     while (thisNode) {
 
         activities.push({
@@ -1188,7 +1213,7 @@ function getMetadata()
         //metadata += "id:"+thisNode.id+" x:"+thisNode.object3D.position.x+" y:"+thisNode.object3D.position.y+"\n"
         thisNode = iterator.iterateNext();
     }
-
+*/
     //return metadata;
     return JSON.stringify(activities,null,'\t');
 }

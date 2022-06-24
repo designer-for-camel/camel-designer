@@ -1597,6 +1597,9 @@ function createSplit(definition)
     //otherwise camera focus action is ignored
     let end = document.getElementById(splitBox.getAttribute('group-end'))
     switchConfigPaneByActivity(end)
+
+    //return the end activity
+    return end
 }
 
 //Creates a Try/Catch code segment
@@ -1617,8 +1620,8 @@ function createTryCatch(definition)
     }
 
     //split definition in separate entities
-    let definitionDoCatch   = definition.querySelector('doCatch')
-    let definitionDoFinally = definition.querySelector('doFinally')
+    let definitionDoCatch   = definition.querySelector(':scope > doCatch')   //scope is needed to prevent nested try/catch problems
+    let definitionDoFinally = definition.querySelector(':scope > doFinally') //scope is needed to prevent nested try/catch problems
     definition.removeChild(definitionDoCatch)
     if(definitionDoFinally){
         definition.removeChild(definitionDoFinally)
@@ -1628,7 +1631,7 @@ function createTryCatch(definition)
     let tryBox = createActivityGroup('try', 'try', 'end', definition)
 
     //obtain frame
-    let tryFrame = tryBox.querySelector('.dnd-handler')
+    let tryFrame = tryBox.querySelector(':scope > .dnd-handler') //scope is needed to prevent nested try/catch problems
 
     let width = tryFrame.getAttribute('width')
 
@@ -1805,6 +1808,9 @@ catchStart.components.exceptions.setExceptions(exceptions)
     //otherwise camera focus action is ignored
     let end = document.getElementById(tryBox.getAttribute('group-end'))
     switchConfigPaneByActivity(end)
+
+    //return the end activity
+    return end
 }
 
 function createButtonReveal()
@@ -2750,6 +2756,9 @@ function defineDataFormatAsOneLiner(definition)
         //otherwise camera focus action is ignored
         let end = document.getElementById(aggregateBox.getAttribute('group-end'))
         switchConfigPaneByActivity(end)
+
+        //return the end activity
+        return end
     }
 
     //creates a 3D panel configurator for the Aggregator EIP
@@ -3022,10 +3031,6 @@ function createProcess(definition)
         "text/xml").documentElement}
 
     //create activity
-    // let process = createEndpointDataFormat(definition)
-    // dataformat.setAttribute('opacity', 0.2)
-
-    //create activity
     definition.type = "process"
     let activity = createActivity(definition);
 
@@ -3071,13 +3076,56 @@ function createProcess(definition)
 
     activity.appendChild(gear)
 
-    //add uri component (and load definition)
-    // activity.setAttribute('uri', {position: "0 -.9 0", configMethod: [updateConfigEndpointDataformat]})
-    // activity.components.uri.setDefinition(definition.definition)
+    //add definition component
+    activity.setAttribute('definition', null)
+    activity.components.definition.setDefinition(definition.definition)
+
+    //create configurator
+    createProcessConfigurator()
 
     goLive(activity);
 
     return activity
+}
+
+
+//creates a configurator for the 3D panel Processor
+//this function is intimately related to the 3D Form definition
+function createProcessConfigurator(){
+
+    let form = document.getElementById('3d-config-processor')
+
+    //if the form already has its configurator, nothing to do
+    if(form.components.form.configurator){
+        return
+    }
+
+    //define the activity's configurator
+    let configurator = {configure: function(form) {
+
+        //here 'this' is the 1st argument from the dynamic call 'configure.call(activity, form)'
+        let activity = this
+
+        //get UI elements
+        let input = form.querySelector('a-textinput')
+
+        //obtain processor
+        let ref = activity.components.definition.getAttributes().ref
+
+        //set input's callback
+        input.components.textinput.setCallback(ref, 32, function(text){
+
+            //update definition
+            activity.components.definition.setAttribute("ref", text)
+
+            //update text label
+            activity.firstElementChild.firstElementChild.setAttribute('value', text)
+        }.bind(this))
+        } 
+    }       
+
+    //set the configurator in the form
+    form.components.form.setConfigurator(configurator)
 }
 
 function createRemoveHeaders(definition)

@@ -331,7 +331,11 @@ AFRAME.registerComponent('mapping', {
 
             //focus on camera needs to happen after syncEditorEnabled is activated
             //otherwise the call is ignored
-            setCameraFocus(this.el);
+
+            // setCameraFocus seems problematic when we have 2 different routes
+            // as 1 route is hidden in higher Y axis... then getWorldPosition does not return Y=0
+            // setCameraFocus(this.el); //camera focus seems problematic when we have 2 different routes, a
+            switchConfigPaneByActivity(this.el)
 
             this.el.emit("async-activity-completed");      
         }

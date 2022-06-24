@@ -1,5 +1,15 @@
 # Change Log
 
+## 0.11.2
+
+- Setter activities (header/property/body) upgraded to use new 'inputs' configuration view.
+- Added JQ expression language.
+- Added configuration panel for `Processor` activity.
+- Fix: resolved problems when nesting groups of activities.
+- Fix: record metadata for activities inside groups.
+- Fix: resolved conflicts with variables in configuration view.
+- Fix: FTP starting activity code parsing was missing.
+
 ## 0.11.1
 
 - Introduced activity to convert body type (in Camel `<convertBodyTo/>`).

@@ -609,7 +609,7 @@ function loadMetadata(metadata)
 function redrawAllLinks()
 {
   //get all links of all routes
-  var allLinks = document.getElementById('route-definitions').getElementsByTagName("A-CYLINDER");
+  var allLinks = document.getElementById('route-definitions').querySelectorAll('a-cylinder[source][destination]')
 
   //redraw them
   for(let i=0; i<allLinks.length;i++)
